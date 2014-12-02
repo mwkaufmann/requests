@@ -1,6 +1,7 @@
 #Requests
 
-Requests is a http request lib for human beings who use java inspired by python requests module.
+Requests is a http request lib for java inspired by The Python [Requests](http://docs.python-requests.org/) Module.
+
 The Httpclient lib is greate, but has too complex API, which confuse beginners. Requests build simple and flexible api, both for common and advanced Usage.
 
 #User Guide
