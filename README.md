@@ -165,7 +165,7 @@ Proxy.httpProxy("127.0.0.1", 8080)
 //https proxy
 Proxy.httpsProxy("127.0.0.1", 8080)
 //socket proxy
-Proxy.httpsProxy("127.0.0.1", 5678)
+Proxy.socketProxy("127.0.0.1", 5678)
 //with auth
 Proxy.httpProxy("127.0.0.1", 8080, userName, password)
 ```
