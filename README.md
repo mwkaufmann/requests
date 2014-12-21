@@ -24,8 +24,7 @@ Post and other method:
 ```java
 resp = Requests.post(url).text();
 resp = Requests.head(url).text();
-resp = Requests.delete(url).text();
-resp = Requests.options(url).text();
+...
 ```
 ##Response Content
 The response object have common http response field to be used:
@@ -101,6 +100,9 @@ formData.put("k1", "v1");
 formData.put("k2", "v2");
 // send form-encoded data. x-www-form-urlencoded header will be send automatically
 Response<String> resp = Requests.post(url).data(formData).text();
+// send byte array data
+byte[] data = ...;
+resp = Requests.post(url).data(data).text();
 // send string data
 String str = ...;
 resp = Requests.post(url).data(str, "UTF-8").text();
