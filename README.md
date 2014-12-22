@@ -46,23 +46,21 @@ Response<File> resp2 = Requests.get(url).file("/path/to/save/file");
 ```
 or you can custom http response processor your self:
 ```java
-Response<String> resp = Requests.get(url).handler(new ResponseHandler<String>() {
-    @Override
-    public String handle(int statusCode, Headers headers, InputStream in)
-            throws IOException {
-        return null;
-    }
-});
+Response<String> resp = Requests.get(url).handler(new ResponseHandler<String>() {...});
 ```
 ##Passing Parameters
-You can pass parameters in urls use param or params method:
+Pass parameters in urls using param or params method:
 ```java
 Map<String, Object> params = new HashMap<>();
 params.put("k1", "v1");
 params.put("k2", "v2");
 Response<String> resp = Requests.get(url)
-        .param("key1", "value1").params(params)
-        //.params(new Parameter(...), new Parameter(...))
+        // add one param
+        .param("key1", "value1")
+        // add multi params by map
+        .params(params)
+        // add multi params
+        .params(new Parameter(...), new Parameter(...))
         .text();
 ```
 ##Custom Headers
@@ -72,8 +70,12 @@ Map<String, Object> headers = new HashMap<>();
 headers.put("k1", "v1");
 headers.put("k2", "v2");
 Response<String> resp = Requests.get(url)
-        .header("key1", "value1").headers(headers)
-        //.headers(new Header(...), new Header(...))
+        // add one header
+        .header("key1", "value1")
+        // add multi headers by map
+        .headers(headers)
+        // add multi headers
+        .headers(new Header(...), new Header(...))
         .text();
 ```
 ##Cookies
@@ -83,8 +85,12 @@ Map<String, Object> cookies = new HashMap<>();
 cookies.put("k1", "v1");
 cookies.put("k2", "v2");
 Response<String> resp = Requests.get(url)
-        .cookie("key1", "value1").cookies(cookies)
-        //.cookies(new Cookie(...), new Cookie(...))
+        // add one cookie
+        .cookie("key1", "value1")
+        // add multi cookies by map
+        .cookies(cookies)
+        // add multi headers
+        .cookies(new Cookie(...), new Cookie(...))
         .text();
 ```
 ##UserAgent
@@ -98,7 +104,7 @@ Http Post, Put, Patch method can send request bodys. Take Post for example:
 Map<String, Object> formData = new HashMap<>();
 formData.put("k1", "v1");
 formData.put("k2", "v2");
-// send form-encoded data. x-www-form-urlencoded header will be send automatically
+// send www-form-encoded data. x-www-form-urlencoded header will be added automatically
 Response<String> resp = Requests.post(url).data(formData).text();
 // send byte array data
 byte[] data = ...;
