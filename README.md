@@ -118,12 +118,15 @@ resp = Requests.post(url).data(in).text();
 ```
 One more complicate situation is multiPart post request, this can be done via multiPart method:
 ```java
-Map<String, Object> formData = new HashMap<>();
-formData.put("k1", "v1");
-formData.put("k2", "v2");
 // send form-encoded data
-Response<String> resp = Requests.post(url).data(formData).multiPart("ufile", "/path/to/file")
-        .multiPart(..., ...).text();
+InputStream in = ...;
+byte[] bytes = ...;
+Response<String> resp = Requests.post(url)
+        .multiPart("test", "value")
+        .multiPart("byFile", new File("/path/to/file"))
+        .multiPart("byStream", mimeType, in)
+        .multiPart("byBytes", mimeType, bytes)
+        .text();
 ```
 ###Redirection
 Requests will handle 301/302 http redirect, you can get redirect history:

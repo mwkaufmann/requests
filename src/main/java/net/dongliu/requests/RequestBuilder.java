@@ -10,7 +10,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -388,31 +387,37 @@ public class RequestBuilder {
 
     /**
      * add multi part file, will send multiPart requests.
-     * this should be used with post method
+     *
+     * @param name the http request field name for this file
+     * @param file the file to be send
      */
-    public RequestBuilder multiPart(List<MultiPart> files) {
+    public RequestBuilder multiPart(String name, File file) {
         ensureMultiPart();
-        this.multiParts.addAll(files);
+        this.multiParts.add(new MultiPart(name, file));
         return this;
     }
 
     /**
-     * add multi part file, will send multiPart requests.
-     * this should be used with post method
+     * add multi part field by byte array, will send multiPart requests.
+     *
+     * @param name  the http request field name for this field
+     * @param bytes the multipart request content
      */
-    public RequestBuilder multiPart(MultiPart... files) {
-        ensureMultiPart();
-        Collections.addAll(this.multiParts, files);
+    public RequestBuilder multiPart(String name, String mimeType, byte[] bytes) {
+        multiPart(name, mimeType, null, bytes);
         return this;
     }
 
     /**
-     * add multi part file, will send multiPart requests.
-     * this should be used with post method
+     * add multi part field by byte array, will send multiPart requests.
+     *
+     * @param name     the http request field name for this field
+     * @param fileName the file name. can be null
+     * @param bytes    the multipart request content
      */
-    public RequestBuilder multiPart(MultiPart file) {
+    public RequestBuilder multiPart(String name, String mimeType, String fileName, byte[] bytes) {
         ensureMultiPart();
-        this.multiParts.add(file);
+        this.multiParts.add(new MultiPart(name, mimeType, fileName, bytes));
         return this;
     }
 
@@ -421,11 +426,52 @@ public class RequestBuilder {
      * this should be used with post method
      *
      * @param name     the http request field name for this file
-     * @param filePath the file path
+     * @param mimeType the mimeType for file
+     * @param file     the file to be send
      */
-    public RequestBuilder multiPart(String name, String filePath) {
+    public RequestBuilder multiPart(String name, String mimeType, File file) {
         ensureMultiPart();
-        this.multiParts.add(new MultiPart(name, filePath));
+        this.multiParts.add(new MultiPart(name, mimeType, file));
+        return this;
+    }
+
+
+    /**
+     * add multi part field by inputStream, will send multiPart requests.
+     *
+     * @param name     the http request field name for this field
+     * @param mimeType the mimeType for file
+     * @param in       the inputStream for the content
+     */
+    public RequestBuilder multiPart(String name, String mimeType, InputStream in) {
+        multiPart(name, mimeType, null, in);
+        return this;
+    }
+
+    /**
+     * add multi part field by inputStream, will send multiPart requests.
+     *
+     * @param name     the http request field name for this field
+     * @param mimeType the mimeType for file
+     * @param fileName the file name. can be null
+     * @param in       the inputStream for the content
+     */
+    public RequestBuilder multiPart(String name, String mimeType, String fileName, InputStream in) {
+        ensureMultiPart();
+        this.multiParts.add(new MultiPart(name, mimeType, fileName, in));
+        return this;
+    }
+
+    /**
+     * add multi part key-value parameter.
+     * this should be used with post method.
+     *
+     * @param name  the http request field name
+     * @param value the file to be send
+     */
+    public RequestBuilder multiPart(String name, String value) {
+        ensureMultiPart();
+        this.multiParts.add(new MultiPart(name, value));
         return this;
     }
 

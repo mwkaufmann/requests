@@ -225,12 +225,25 @@ class RequestExecutor<T> {
         HttpPost httpPost = new HttpPost(uri);
         if (request.getMultiParts() != null) {
             MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
-            for (Parameter parameter : request.getParamBody()) {
-                entityBuilder.addTextBody(parameter.getName(), parameter.getValue());
-            }
             for (MultiPart f : request.getMultiParts()) {
-                entityBuilder.addBinaryBody(f.getName(), f.getFile(),
-                        ContentType.create(f.getMime()), f.getFileName());
+                switch (f.getType()) {
+                    case TEXT:
+                        entityBuilder.addTextBody(f.getName(), f.getValue());
+                        break;
+                    case FILE:
+                        entityBuilder.addBinaryBody(f.getName(), f.getFile(),
+                                ContentType.create(f.getMime()), f.getFileName());
+                        break;
+                    case STREAM:
+                        entityBuilder.addBinaryBody(f.getName(), f.getIn(),
+                                ContentType.create(f.getMime()), f.getFileName());
+                        break;
+                    case BYTES:
+                        entityBuilder.addBinaryBody(f.getName(), f.getBytes(),
+                                ContentType.create(f.getMime()), f.getFileName());
+                        break;
+                }
+
             }
             httpPost.setEntity(entityBuilder.build());
         } else if (request.getBody() != null) {

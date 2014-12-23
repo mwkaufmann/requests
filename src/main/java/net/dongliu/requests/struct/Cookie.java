@@ -13,9 +13,6 @@ public class Cookie extends Pair<String, String> {
     private String path;
     private Date expiry;
 
-    public Cookie() {
-    }
-
     public Cookie(String name, String value) {
         super(name, value);
     }

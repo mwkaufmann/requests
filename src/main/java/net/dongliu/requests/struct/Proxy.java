@@ -6,14 +6,10 @@ package net.dongliu.requests.struct;
  * @author Dong Liu
  */
 public class Proxy {
-    private Scheme scheme;
-    private String host;
-    private int port;
-    private AuthInfo authInfo;
-
-    public Proxy() {
-
-    }
+    private final Scheme scheme;
+    private final String host;
+    private final int port;
+    private final AuthInfo authInfo;
 
     public Proxy(Scheme scheme, String host, int port, AuthInfo authInfo) {
         this.scheme = scheme;
@@ -50,24 +46,12 @@ public class Proxy {
         return host;
     }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
-
     public int getPort() {
         return port;
     }
 
-    public void setPort(int port) {
-        this.port = port;
-    }
-
     public AuthInfo getAuthInfo() {
         return authInfo;
-    }
-
-    public void setAuthInfo(AuthInfo authInfo) {
-        this.authInfo = authInfo;
     }
 
     public String getUserName() {
@@ -80,10 +64,6 @@ public class Proxy {
 
     public Scheme getScheme() {
         return scheme;
-    }
-
-    public void setScheme(Scheme scheme) {
-        this.scheme = scheme;
     }
 
     public static enum Scheme {

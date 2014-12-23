@@ -67,19 +67,6 @@ public class MultiMap<K, V, T extends Pair<K, V>> implements Iterable<T> {
     }
 
     /**
-     * delete items with key
-     */
-    public void delete(K key) {
-        List<T> pairs = new ArrayList<>(this.pairs.size());
-        for (T pair : this.pairs) {
-            if (!pair.getName().equals(key)) {
-                pairs.add(pair);
-            }
-        }
-        this.pairs = pairs;
-    }
-
-    /**
      * return all data
      */
     public Collection<T> items() {

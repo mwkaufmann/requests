@@ -6,15 +6,8 @@ package net.dongliu.requests.struct;
  * @author Dong Liu dongliu@wandoujia.com
  */
 public class Host {
-    private String domain;
-    private int port;
-
-    /**
-     * create host with domain and port 80
-     */
-    public Host(String domain) {
-        this(domain, 80);
-    }
+    private final String domain;
+    private final int port;
 
     /**
      * create host with domain and port
@@ -28,16 +21,9 @@ public class Host {
         return domain;
     }
 
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
 
     public int getPort() {
         return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 
     @Override
