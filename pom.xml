@@ -13,7 +13,7 @@
     <artifactId>requests</artifactId>
     <name>requests</name>
     <packaging>jar</packaging>
-    <version>2.0.4-SNAPSHOT</version>
+    <version>1.8.7-SNAPSHOT</version>
     <url>https://github.com/xiaxiaocao/requests</url>
     <developers>
         <developer>
