@@ -5,7 +5,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * @author Dong Liu dongliu@wandoujia.com
  */
-public class IllegalEncodingException extends RuntimeException {
+public class IllegalEncodingException extends RequestException {
 
     public static IllegalEncodingException of(UnsupportedEncodingException e) {
         IllegalEncodingException runtimeIOException = new IllegalEncodingException(e.getMessage(),

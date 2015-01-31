@@ -19,7 +19,6 @@ public class Response<T> {
     private T body;
 
     private List<URI> history;
-    private Request request;
 
     Response() {
     }
@@ -66,24 +65,8 @@ public class Response<T> {
         return history;
     }
 
-    /**
-     * return request which produce this response
-     */
-    public Request getRequest() {
-        return this.request;
-    }
-
-    void setRequest(Request request) {
-        this.request = request;
-    }
-
     void setHistory(List<URI> history) {
         this.history = history;
     }
-//    void addHistory(Response<byte[]> resp) {
-//        if (history == null) {
-//            history = new ArrayList<>();
-//        }
-//        history.add(resp);
-//    }
+
 }

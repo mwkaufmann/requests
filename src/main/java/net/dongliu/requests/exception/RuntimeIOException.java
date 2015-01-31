@@ -3,11 +3,11 @@ package net.dongliu.requests.exception;
 import java.io.IOException;
 
 /**
- * the runtime version (unckecked) of IOException
+ * The runtime version (unckecked) of IOException
  *
  * @author Dong Liu dongliu@wandoujia.com
  */
-public class RuntimeIOException extends RuntimeException {
+public class RuntimeIOException extends RequestException {
 
     public static RuntimeIOException of(IOException e) {
         RuntimeIOException runtimeIOException = new RuntimeIOException(e.getMessage(),

@@ -4,6 +4,7 @@ import net.dongliu.requests.struct.*;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -20,6 +21,7 @@ public class Request {
     private final Cookies cookies;
     private final Parameters parameters;
     private final byte[] body;
+    private final String strBody;
     private final Parameters paramBody;
     private final InputStream in;
     private final List<MultiPart> multiParts;
@@ -36,10 +38,11 @@ public class Request {
     private final int socketTimeout;
 
     private final Proxy proxy;
+    private final Charset charset;
 
     Request(Method method, URI url, Parameters parameters, String userAgent, Headers headers,
-            InputStream in, List<MultiPart> multiParts, byte[] body, Parameters paramBody,
-            AuthInfo authInfo, boolean gzip, boolean verify, Cookies cookies,
+            InputStream in, List<MultiPart> multiParts, byte[] body, String strBody, Parameters paramBody,
+            Charset charset, AuthInfo authInfo, boolean gzip, boolean verify, Cookies cookies,
             boolean allowRedirects, int connectTimeout, int socketTimeout, Proxy proxy) {
         this.method = method;
         this.url = url;
@@ -47,8 +50,10 @@ public class Request {
         this.userAgent = userAgent;
         this.multiParts = multiParts;
         this.body = body;
+        this.strBody = strBody;
         this.paramBody = paramBody;
         this.in = in;
+        this.charset = charset;
         this.headers = headers;
         this.authInfo = authInfo;
         this.gzip = gzip;
@@ -126,5 +131,13 @@ public class Request {
 
     public Parameters getParamBody() {
         return paramBody;
+    }
+
+    public String getStrBody() {
+        return strBody;
+    }
+
+    public Charset getCharset() {
+        return charset;
     }
 }

@@ -1,6 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.InvalidUrlException;
+import net.dongliu.requests.exception.RuntimeURISyntaxException;
 import net.dongliu.requests.struct.Method;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -26,56 +26,56 @@ public class Session {
     /**
      * get method
      */
-    public RequestBuilder get(String url) throws InvalidUrlException {
+    public RequestBuilder get(String url) throws RuntimeURISyntaxException {
         return newBuilder(url).method(Method.GET);
     }
 
     /**
      * head method
      */
-    public RequestBuilder head(String url) throws InvalidUrlException {
+    public RequestBuilder head(String url) throws RuntimeURISyntaxException {
         return newBuilder(url).method(Method.HEAD);
     }
 
     /**
      * get url, and return content
      */
-    public RequestBuilder post(String url) throws InvalidUrlException {
+    public RequestBuilder post(String url) throws RuntimeURISyntaxException {
         return newBuilder(url).method(Method.POST);
     }
 
     /**
      * put method
      */
-    public RequestBuilder put(String url) throws InvalidUrlException {
+    public RequestBuilder put(String url) throws RuntimeURISyntaxException {
         return newBuilder(url).method(Method.PUT);
     }
 
     /**
      * delete method
      */
-    public RequestBuilder delete(String url) throws InvalidUrlException {
+    public RequestBuilder delete(String url) throws RuntimeURISyntaxException {
         return newBuilder(url).method(Method.DELETE);
     }
 
     /**
      * options method
      */
-    public RequestBuilder options(String url) throws InvalidUrlException {
+    public RequestBuilder options(String url) throws RuntimeURISyntaxException {
         return newBuilder(url).method(Method.OPTIONS);
     }
 
     /**
      * patch method
      */
-    public RequestBuilder patch(String url) throws InvalidUrlException {
+    public RequestBuilder patch(String url) throws RuntimeURISyntaxException {
         return newBuilder(url).method(Method.PATCH);
     }
 
     /**
      * trace method
      */
-    public RequestBuilder trace(String url) throws InvalidUrlException {
+    public RequestBuilder trace(String url) throws RuntimeURISyntaxException {
         return newBuilder(url).method(Method.TRACE);
     }
 //
@@ -89,7 +89,7 @@ public class Session {
     /**
      * create request builder with url
      */
-    private RequestBuilder newBuilder(String url) throws InvalidUrlException {
+    private RequestBuilder newBuilder(String url) throws RuntimeURISyntaxException {
         return new RequestBuilder().session(this).url(url);
     }
 }

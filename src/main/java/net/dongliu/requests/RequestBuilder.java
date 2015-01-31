@@ -1,7 +1,7 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.InvalidUrlException;
 import net.dongliu.requests.exception.RuntimeIOException;
+import net.dongliu.requests.exception.RuntimeURISyntaxException;
 import net.dongliu.requests.struct.*;
 
 import java.io.File;
@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,12 +21,15 @@ public class RequestBuilder {
     private Method method;
     private URI url;
     private Parameters parameters;
-    private String userAgent = "Requests/1.6.5, Java";
+    private String userAgent = "Requests/1.9.0, Java";
     private Headers headers;
     // send cookie values
     private Cookies cookies;
 
+    private Charset charset = StandardCharsets.UTF_8;
+
     private byte[] body;
+    private String strBody;
     // parameter type body(form-encoded)
     private Parameters paramBody;
     // http multi part post request multiParts
@@ -66,28 +70,12 @@ public class RequestBuilder {
     }
 
     /**
-     * get http response for return text result, use default encoding.
+     * Get http response for return text result.
+     * Decode response body to text with charset get from response header,
+     * use charset(which can be set via charset(Charset charset)) if not exists
      */
     public Response<String> text() throws RuntimeIOException {
-        return client(ResponseProcessor.string);
-    }
-
-    /**
-     * get http response for return text result.
-     *
-     * @param charset the encoding to use if not found in response header
-     */
-    public Response<String> text(Charset charset) throws RuntimeIOException {
         return client(new StringResponseProcessor(charset));
-    }
-
-    /**
-     * get http response for return text result.
-     *
-     * @param charset the encoding to use if not found in response header
-     */
-    public Response<String> text(String charset) throws RuntimeIOException {
-        return text(Charset.forName(charset));
     }
 
     /**
@@ -113,18 +101,18 @@ public class RequestBuilder {
         return client(new FileResponseProcessor(filePath));
     }
 
-    RequestBuilder url(String url) throws InvalidUrlException {
+    RequestBuilder url(String url) throws RuntimeURISyntaxException {
         try {
             this.url = new URI(url);
         } catch (URISyntaxException e) {
-            throw InvalidUrlException.of(e);
+            throw RuntimeURISyntaxException.of(e);
         }
         return this;
     }
 
     Request build() {
         return new Request(method, url, parameters, userAgent, headers, in, multiParts, body,
-                paramBody, authInfo, gzip, verify, cookies, allowRedirects,
+                strBody, paramBody, charset, authInfo, gzip, verify, cookies, allowRedirects,
                 connectTimeout, socketTimeout, proxy);
     }
 
@@ -195,15 +183,6 @@ public class RequestBuilder {
         return this;
     }
 
-    /**
-     * add one key-value param to http data for requests
-     */
-    public RequestBuilder data(String key, Object value) {
-        ensureParamBody();
-        paramBody.add(new Parameter(key, value));
-        return this;
-    }
-
     private void ensureParamBody() {
         if (this.paramBody == null) {
             this.paramBody = new Parameters();
@@ -229,10 +208,28 @@ public class RequestBuilder {
     }
 
     /**
-     * set http data with text
+     * set http data with text.
+     * Will use charset to encode body, default is utf-8, set charset with charset(Charset charset)
      */
-    public RequestBuilder data(String body, Charset charset) {
-        return data(body.getBytes(charset));
+    public RequestBuilder data(String body) {
+        this.strBody = body;
+        return this;
+    }
+
+    /**
+     * Set request charset(and may be used for response body decode), default utf-8
+     */
+    public RequestBuilder charset(Charset charset) {
+        this.charset = charset;
+        return this;
+    }
+
+    /**
+     * Set request charset(and may be used for response body decode), default "UTF-8"
+     */
+    public RequestBuilder charset(String charset) {
+        this.charset = Charset.forName(charset);
+        return this;
     }
 
     RequestBuilder method(Method method) {
@@ -301,7 +298,7 @@ public class RequestBuilder {
     /**
      * set proxy
      */
-    public RequestBuilder proxy(Proxy proxy) throws InvalidUrlException {
+    public RequestBuilder proxy(Proxy proxy) throws RuntimeURISyntaxException {
         this.proxy = proxy;
         return this;
     }
@@ -398,6 +395,20 @@ public class RequestBuilder {
     }
 
     /**
+     * add multi part file, will send multiPart requests.
+     * this should be used with post method
+     *
+     * @param name     the http request field name for this file
+     * @param mimeType the mimeType for file
+     * @param file     the file to be send
+     */
+    public RequestBuilder multiPart(String name, String mimeType, File file) {
+        ensureMultiPart();
+        this.multiParts.add(new MultiPart(name, mimeType, file));
+        return this;
+    }
+
+    /**
      * add multi part field by byte array, will send multiPart requests.
      *
      * @param name  the http request field name for this field
@@ -420,21 +431,6 @@ public class RequestBuilder {
         this.multiParts.add(new MultiPart(name, mimeType, fileName, bytes));
         return this;
     }
-
-    /**
-     * add multi part file, will send multiPart requests.
-     * this should be used with post method
-     *
-     * @param name     the http request field name for this file
-     * @param mimeType the mimeType for file
-     * @param file     the file to be send
-     */
-    public RequestBuilder multiPart(String name, String mimeType, File file) {
-        ensureMultiPart();
-        this.multiParts.add(new MultiPart(name, mimeType, file));
-        return this;
-    }
-
 
     /**
      * add multi part field by inputStream, will send multiPart requests.
@@ -463,8 +459,7 @@ public class RequestBuilder {
     }
 
     /**
-     * add multi part key-value parameter.
-     * this should be used with post method.
+     * Add multi part key-value parameter.
      *
      * @param name  the http request field name
      * @param value the file to be send

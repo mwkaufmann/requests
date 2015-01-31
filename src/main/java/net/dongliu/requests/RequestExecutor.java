@@ -14,12 +14,12 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.config.Registry;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.*;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
@@ -28,7 +28,6 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,7 +121,7 @@ class RequestExecutor<T> {
 
     // build http request
     private HttpRequestBase buildRequest(CredentialsProvider provider, HttpClientContext context) {
-        URI uri = buildFullUrl(request.getUrl(), request.getParameters());
+        URI uri = Utils.fullUrl(request.getUrl(), request.getCharset(), request.getParameters());
         HttpRequestBase httpRequest;
         switch (request.getMethod()) {
             case POST:
@@ -200,9 +199,11 @@ class RequestExecutor<T> {
     }
 
     private HttpRequestBase buildHttpPut(URI uri, Request request) {
-        checkHttpBody(request);
+        Utils.checkHttpBody(request);
         HttpPut httpPut = new HttpPut(uri);
-        if (request.getBody() != null) {
+        if (request.getStrBody() != null) {
+            httpPut.setEntity(new StringEntity(request.getStrBody(), request.getCharset()));
+        } else if (request.getBody() != null) {
             httpPut.setEntity(new ByteArrayEntity(request.getBody()));
         } else if (request.getIn() != null) {
             httpPut.setEntity(new InputStreamEntity(request.getIn()));
@@ -220,7 +221,7 @@ class RequestExecutor<T> {
 
 
     private HttpPost buildHttpPost(URI uri, Request request) {
-        checkHttpBody(request);
+        Utils.checkHttpBody(request);
 
         HttpPost httpPost = new HttpPost(uri);
         if (request.getMultiParts() != null) {
@@ -246,6 +247,8 @@ class RequestExecutor<T> {
 
             }
             httpPost.setEntity(entityBuilder.build());
+        } else if (request.getStrBody() != null) {
+            httpPost.setEntity(new StringEntity(request.getStrBody(), request.getCharset()));
         } else if (request.getBody() != null) {
             httpPost.setEntity(new ByteArrayEntity(request.getBody()));
         } else if (request.getIn() != null) {
@@ -256,7 +259,7 @@ class RequestExecutor<T> {
             for (Parameter param : request.getParamBody()) {
                 paramList.add(new BasicNameValuePair(param.getName(), param.getValue()));
             }
-            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList, Charsets.UTF_8);
+            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList, request.getCharset());
             httpPost.setEntity(entity);
         }
         return httpPost;
@@ -264,9 +267,11 @@ class RequestExecutor<T> {
 
 
     private HttpRequestBase buildHttpPatch(URI uri, Request request) {
-        checkHttpBody(request);
+        Utils.checkHttpBody(request);
         HttpPatch httpPatch = new HttpPatch(uri);
-        if (request.getBody() != null) {
+        if (request.getStrBody() != null) {
+            httpPatch.setEntity(new StringEntity(request.getStrBody(), request.getCharset()));
+        } else if (request.getBody() != null) {
             httpPatch.setEntity(new ByteArrayEntity(request.getBody()));
         } else if (request.getIn() != null) {
             httpPatch.setEntity(new InputStreamEntity(request.getIn()));
@@ -283,43 +288,11 @@ class RequestExecutor<T> {
     }
 
     /**
-     * make sure only one http body was set
-     */
-    private void checkHttpBody(Request request) {
-        int bodyCount = 0;
-        if (request.getBody() != null) bodyCount++;
-        if (request.getIn() != null) bodyCount++;
-        if (request.getParamBody() != null) bodyCount++;
-        if (request.getMultiParts() != null) bodyCount++;
-        if (bodyCount > 1) {
-            //can not set both
-            throw new RuntimeException("More than one http request body have been set");
-        }
-    }
-
-    // build full url with parameters
-    private URI buildFullUrl(URI url, Parameters parameters) {
-        try {
-            if (parameters == null || parameters.isEmpty()) {
-                return url;
-            }
-            URIBuilder urlBuilder = new URIBuilder(url);
-            for (Parameter param : parameters) {
-                urlBuilder.addParameter(param.getName(), param.getValue());
-            }
-            return urlBuilder.build();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
      * do http request with http client
      */
     private Response<T> wrapResponse(CloseableHttpResponse httpResponse,
                                      HttpClientContext context) throws IOException {
         Response<T> response = new Response<>();
-        response.setRequest(request);
         response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
         // get headers
         org.apache.http.Header[] respHeaders = httpResponse.getAllHeaders();

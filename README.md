@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>1.8.6</version>
+    <version>1.9.0</version>
 </dependency>
 ```
 ##Make request
@@ -38,7 +38,7 @@ String body = resp.getBody();
 The text() method here trans http response body as String, there are other method to process http response:
 ```java
 // get response as string, and use provided encoding
-Response<String> resp = Requests.get(url).text("UTF-8");
+Response<String> resp = Requests.get(url).text();
 // get response as bytes
 Response<byte[]> resp1 = Requests.get(url).bytes();
 // save response as file 
@@ -48,6 +48,12 @@ or you can custom http response processor your self:
 ```java
 Response<String> resp = Requests.get(url).handler(new ResponseHandler<String>() {...});
 ```
+##Charset
+Set charset used to encode parameters, post forms, request/response string body:
+```
+Response<String> resp = Requests.get(url).charset(StandardCharsets.UTF_8).text();
+```
+Default charset is utf-8.
 ##Passing Parameters
 Pass parameters in urls using param or params method:
 ```java
@@ -111,7 +117,7 @@ byte[] data = ...;
 resp = Requests.post(url).data(data).text();
 // send string data
 String str = ...;
-resp = Requests.post(url).data(str, "UTF-8").text();
+resp = Requests.post(url).data(str).text();
 // send from inputStream
 InputStream in = ...
 resp = Requests.post(url).data(in).text();

@@ -5,6 +5,7 @@ import net.dongliu.requests.struct.Proxy;
 import org.apache.commons.io.Charsets;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +15,8 @@ public class RequestsTest {
 
     @Test
     public void testGet() throws Exception {
-        Response<String> response = Requests.get("http://www.baidu.com").text(Charsets.UTF_8);
+        Response<String> response = Requests.get("http://www.baidu.com")
+                .charset(StandardCharsets.UTF_8).text();
         assertEquals(200, response.getStatusCode());
 
         Response<String> resp = Requests.get("http://www.baidu.com").text();
