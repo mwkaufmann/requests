@@ -148,9 +148,9 @@ Response<String> resp = Requests.get(url).allowRedirects(false).text();
 There are two timeout parameters you can set, connect timeout, and socket timeout. The timeout value default to 10_1000 milliseconds.
 ```java
 // both connec timeout, and socket timeout
-Response<String> resp = Requests.get(url).timeout(30_1000).text();
+Response<String> resp = Requests.get(url).timeout(30_000).text();
 // set connect timeout and socket timeout
-resp = Requests.get(url).timeout(30_1000, 30_1000).text();
+resp = Requests.get(url).timeout(30_000, 30_000).text();
 ```
 You may not need to know, but Requests also use connect timeout as the timeout value get connection from connection pool if connection pool is used.
 ##Gzip
