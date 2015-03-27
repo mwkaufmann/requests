@@ -31,7 +31,7 @@ public class RequestBuilder {
     private byte[] body;
     private String strBody;
     // parameter type body(form-encoded)
-    private Parameters paramBody;
+    private Parameters formParameters;
     // http multi part post request multiParts
     private List<MultiPart> multiParts;
     // http request body from inputStream
@@ -112,7 +112,7 @@ public class RequestBuilder {
 
     Request build() {
         return new Request(method, url, parameters, userAgent, headers, in, multiParts, body,
-                strBody, paramBody, charset, authInfo, gzip, verify, cookies, allowRedirects,
+                strBody, formParameters, charset, authInfo, gzip, verify, cookies, allowRedirects,
                 connectTimeout, socketTimeout, proxy);
     }
 
@@ -125,7 +125,8 @@ public class RequestBuilder {
     }
 
     /**
-     * add parameters
+     * Add params to url query string.
+     * This is for set parameters in url query str, If want to set post form params use form((Map&lt;String, ?&gt; params) method
      */
     public RequestBuilder params(Map<String, ?> params) {
         ensureParameters();
@@ -136,7 +137,8 @@ public class RequestBuilder {
     }
 
     /**
-     * add params
+     * Add params to url query string.
+     * This is for set parameters in url query str, If want to set post form params use form(Parameter... params) method
      */
     public RequestBuilder params(Parameter... params) {
         ensureParameters();
@@ -147,7 +149,8 @@ public class RequestBuilder {
     }
 
     /**
-     * add one parameter
+     * Add one parameter to url query string.
+     * This is for set parameters in url query str, If want to set post form params use form(String key, Object value) method
      */
     public RequestBuilder param(String key, Object value) {
         ensureParameters();
@@ -162,35 +165,63 @@ public class RequestBuilder {
     }
 
     /**
-     * set http data for requests
+     * Add http form body data, for http post method with form-encoded body.
      */
-    public RequestBuilder data(Map<String, ?> data) {
-        ensureParamBody();
-        for (Map.Entry<String, ?> e : data.entrySet()) {
-            paramBody.add(new Parameter(e.getKey(), e.getValue()));
+    public RequestBuilder form(String key, Object value) {
+        ensureFormParameters();
+        formParameters.add(new Parameter(key, value));
+        return this;
+    }
+
+    /**
+     * Add http form body data, for http post method with form-encoded body.
+     */
+    public RequestBuilder form(Map<String, ?> params) {
+        ensureFormParameters();
+        for (Map.Entry<String, ?> e : params.entrySet()) {
+            formParameters.add(new Parameter(e.getKey(), e.getValue()));
         }
         return this;
     }
 
     /**
-     * set http data for requests
+     * Add http form body data, for http post method with form-encoded body.
      */
-    public RequestBuilder data(Parameter... params) {
-        ensureParamBody();
+    public RequestBuilder form(Parameter... params) {
+        ensureFormParameters();
         for (Parameter param : params) {
-            paramBody.add(param);
+            formParameters.add(param);
         }
         return this;
     }
 
-    private void ensureParamBody() {
-        if (this.paramBody == null) {
-            this.paramBody = new Parameters();
+    /**
+     * Set http form body data, for http post method with form-encoded body.
+     * @deprecated use form() method instead
+     */
+    @Deprecated
+    public RequestBuilder data(Map<String, ?> params) {
+        return form(params);
+    }
+
+    /**
+     * Set http form body data, for http post method with form-encoded body.
+     *
+     * @deprecated use form() method instead
+     */
+    @Deprecated
+    public RequestBuilder data(Parameter... params) {
+        return form(params);
+    }
+
+    private void ensureFormParameters() {
+        if (this.formParameters == null) {
+            this.formParameters = new Parameters();
         }
     }
 
     /**
-     * set http data data for Post/Put requests
+     * Set http body data for Post/Put request
      *
      * @param data the data to post
      */
@@ -200,7 +231,7 @@ public class RequestBuilder {
     }
 
     /**
-     * set http data from inputStream for Post/Put requests
+     * Set http data from inputStream for Post/Put request
      */
     public RequestBuilder data(InputStream in) {
         this.in = in;
@@ -208,8 +239,8 @@ public class RequestBuilder {
     }
 
     /**
-     * set http data with text.
-     * Will use charset to encode body, default is utf-8, set charset with charset(Charset charset)
+     * Set http data with text.
+     * The text string will be encoded, default using utf-8, set charset with charset(Charset charset) method
      */
     public RequestBuilder data(String body) {
         this.strBody = body;

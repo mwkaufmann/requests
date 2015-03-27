@@ -111,14 +111,14 @@ Map<String, Object> formData = new HashMap<>();
 formData.put("k1", "v1");
 formData.put("k2", "v2");
 // send www-form-encoded data. x-www-form-urlencoded header will be added automatically
-Response<String> resp = Requests.post(url).data(formData).text();
-// send byte array data
+Response<String> resp = Requests.post(url).form(formData).text();
+// send byte array data as body
 byte[] data = ...;
 resp = Requests.post(url).data(data).text();
-// send string data
+// send string data as body
 String str = ...;
 resp = Requests.post(url).data(str).text();
-// send from inputStream
+// send data from inputStream
 InputStream in = ...
 resp = Requests.post(url).data(in).text();
 ```
