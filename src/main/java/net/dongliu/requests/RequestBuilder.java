@@ -21,7 +21,7 @@ public class RequestBuilder {
     private Method method;
     private URI url;
     private Parameters parameters;
-    private String userAgent = "Requests/1.9.0, Java";
+    private String userAgent = "Requests/1.9.2, Java";
     private Headers headers;
     // send cookie values
     private Cookies cookies;
@@ -176,7 +176,7 @@ public class RequestBuilder {
     /**
      * Add http form body data, for http post method with form-encoded body.
      */
-    public RequestBuilder form(Map<String, ?> params) {
+    public RequestBuilder forms(Map<String, ?> params) {
         ensureFormParameters();
         for (Map.Entry<String, ?> e : params.entrySet()) {
             formParameters.add(new Parameter(e.getKey(), e.getValue()));
@@ -187,7 +187,7 @@ public class RequestBuilder {
     /**
      * Add http form body data, for http post method with form-encoded body.
      */
-    public RequestBuilder form(Parameter... params) {
+    public RequestBuilder forms(Parameter... params) {
         ensureFormParameters();
         for (Parameter param : params) {
             formParameters.add(param);
@@ -196,22 +196,43 @@ public class RequestBuilder {
     }
 
     /**
-     * Set http form body data, for http post method with form-encoded body.
-     * @deprecated use form() method instead
+     * Add http form body data, for http post method with form-encoded body.
+     *
+     * @deprecated use forms() method instead
      */
     @Deprecated
-    public RequestBuilder data(Map<String, ?> params) {
-        return form(params);
+    public RequestBuilder form(Map<String, ?> params) {
+        return forms(params);
+    }
+
+    /**
+     * Add http form body data, for http post method with form-encoded body.
+     *
+     * @deprecated use forms() method instead
+     */
+    @Deprecated
+    public RequestBuilder form(Parameter... params) {
+        return forms(params);
     }
 
     /**
      * Set http form body data, for http post method with form-encoded body.
      *
-     * @deprecated use form() method instead
+     * @deprecated use forms() method instead
+     */
+    @Deprecated
+    public RequestBuilder data(Map<String, ?> params) {
+        return forms(params);
+    }
+
+    /**
+     * Set http form body data, for http post method with form-encoded body.
+     *
+     * @deprecated use forms() method instead
      */
     @Deprecated
     public RequestBuilder data(Parameter... params) {
-        return form(params);
+        return forms(params);
     }
 
     private void ensureFormParameters() {
