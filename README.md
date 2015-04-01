@@ -69,6 +69,7 @@ Response<String> resp = Requests.get(url)
         .params(new Parameter(...), new Parameter(...))
         .text();
 ```
+If you want to send post form-encoded paramters, use form()/forms() methods
 ##Custom Headers
 Http request headers can be set by header or headers method:
 ```java
