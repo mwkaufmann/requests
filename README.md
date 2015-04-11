@@ -2,7 +2,7 @@
 
 Requests is a http request lib for java inspired by The Python [requests](http://docs.python-requests.org/) Module.
 
-The Httpclient lib is greate, but has too complex API, which confuse beginners. Requests build simple and flexible api, both for common and advanced Usage.
+The Httpclient lib is great, but has too complex API, which confuse beginners. Requests build simple and flexible api, both for common and advanced Usage.
 
 #User Guide
 ##Get Requests
@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>1.9.2</version>
+    <version>1.10.0</version>
 </dependency>
 ```
 ##Make request
@@ -57,47 +57,53 @@ Default charset is utf-8.
 ##Passing Parameters
 Pass parameters in urls using param or params method:
 ```java
+Response<String> resp = Requests.get(url)
+        // add one param
+        .addParam("key1", "value1")
+        .addParam("key1", "value1")
+        .text;
+// set params by map
 Map<String, Object> params = new HashMap<>();
 params.put("k1", "v1");
 params.put("k2", "v2");
-Response<String> resp = Requests.get(url)
-        // add one param
-        .param("key1", "value1")
-        // add multi params by map
-        .params(params)
-        // add multi params
-        .params(new Parameter(...), new Parameter(...))
+Response<String> resp = Requests.get(url).params(params).text();
+// set multi params
+Response<String> resp = Requests.get(url).params(new Parameter(...), new Parameter(...))
         .text();
 ```
 If you want to send post form-encoded paramters, use form()/forms() methods
 ##Custom Headers
 Http request headers can be set by header or headers method:
 ```java
+Response<String> resp = Requests.get(url)
+        // add one header
+        .addHeader("key1", "value1")
+        .addHeader("key2", "value2")
+        .text();
+// set multi headers by map
 Map<String, Object> headers = new HashMap<>();
 headers.put("k1", "v1");
 headers.put("k2", "v2");
-Response<String> resp = Requests.get(url)
-        // add one header
-        .header("key1", "value1")
-        // add multi headers by map
-        .headers(headers)
-        // add multi headers
-        .headers(new Header(...), new Header(...))
+Response<String> resp = Requests.get(url).headers(headers).text();
+// set multi headers
+Response<String> resp = Requests.get(url).headers(new Header(...), new Header(...))
         .text();
 ```
 ##Cookies
 Cookies can be add by::
 ```java
+Response<String> resp = Requests.get(url)
+        // add one cookie
+        .addCookie("key1", "value1")
+        .addCookie("key2", "value2")
+        .text();
 Map<String, Object> cookies = new HashMap<>();
 cookies.put("k1", "v1");
 cookies.put("k2", "v2");
-Response<String> resp = Requests.get(url)
-        // add one cookie
-        .cookie("key1", "value1")
-        // add multi cookies by map
-        .cookies(cookies)
-        // add multi headers
-        .cookies(new Cookie(...), new Cookie(...))
+// set cookies by map
+Response<String> resp = Requests.get(url).cookies(cookies).text();
+// set cookies
+Response<String> resp = Requests.get(url).cookies(new Cookie(...), new Cookie(...))
         .text();
 ```
 ##UserAgent
@@ -106,16 +112,18 @@ A convenient method to set userAgent:
 Response<String> resp = Requests.get(url).userAgent(userAgent).text();
 ```
 ##Request with data
-Http Post, Put, Patch method can send request bodys. Take Post for example:
+Http Post, Put, Patch method can send request body. Take Post for example:
 ```java
+// add post from data
+Response<String> resp = Requests.post(url)
+        .addForm("key1", "value1").addForm("key2", "value2").text();
+// set post form data
+Response<String> resp = Requests.post(url).forms(new Parameter(...), new Parameter(...)).text();
+// set post form data by map
 Map<String, Object> formData = new HashMap<>();
 formData.put("k1", "v1");
 formData.put("k2", "v2");
-// send www-form-encoded data. x-www-form-urlencoded header will be added automatically
-Response<String> resp = Requests.post(url)
-    .form("key", "value")
-    .form(new Parameter("key1", "value1"), new Parameter("key2", "values"))
-    .forms(formData).text();
+Response<String> resp = Requests.post(url).forms(formData).text();
 // send byte array data as body
 byte[] data = ...;
 resp = Requests.post(url).data(data).text();
@@ -132,10 +140,10 @@ One more complicate situation is multiPart post request, this can be done via mu
 InputStream in = ...;
 byte[] bytes = ...;
 Response<String> resp = Requests.post(url)
-        .multiPart("test", "value")
-        .multiPart("byFile", new File("/path/to/file"))
-        .multiPart("byStream", mimeType, in)
-        .multiPart("byBytes", mimeType, bytes)
+        .addMultiPart("test", "value")
+        .addMultiPart("byFile", new File("/path/to/file"))
+        .addMultiPart("byStream", mimeType, in)
+        .addMultiPart("byBytes", mimeType, bytes)
         .text();
 ```
 ###Redirection

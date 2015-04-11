@@ -3,7 +3,7 @@ package net.dongliu.requests.struct;
 import java.util.Date;
 
 /**
- * http cookie
+ * http addCookie
  *
  * @author Dong Liu dongliu@wandoujia.com
  */

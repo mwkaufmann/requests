@@ -1,8 +1,6 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.struct.Parameter;
-import net.dongliu.requests.struct.Proxy;
-import org.apache.commons.io.Charsets;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -38,7 +36,7 @@ public class RequestsTest {
     @Test
     public void testCookie() {
         Response<String> response = Requests.get("http://www.baidu.com")
-                .cookie("test", "value").text();
+                .addCookie("test", "value").text();
         //assertEquals("test=value", response.getRequest().getHeaders().getFirst("Cookie").getValue());
         assertTrue(response.getBody().contains("window"));
         assertNotNull(response.getCookies().getFirst("BAIDUID"));

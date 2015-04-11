@@ -21,9 +21,8 @@ public class RequestBuilder {
     private Method method;
     private URI url;
     private Parameters parameters;
-    private String userAgent = "Requests/1.9.2, Java";
+    private String userAgent = "Requests/1.10.0, Java";
     private Headers headers;
-    // send cookie values
     private Cookies cookies;
 
     private Charset charset = StandardCharsets.UTF_8;
@@ -125,11 +124,11 @@ public class RequestBuilder {
     }
 
     /**
-     * Add params to url query string.
+     * Set params of url query string.
      * This is for set parameters in url query str, If want to set post form params use form((Map&lt;String, ?&gt; params) method
      */
     public RequestBuilder params(Map<String, ?> params) {
-        ensureParameters();
+        this.parameters = new Parameters();
         for (Map.Entry<String, ?> entry : params.entrySet()) {
             this.parameters.add(new Parameter(entry.getKey(), entry.getValue()));
         }
@@ -137,11 +136,11 @@ public class RequestBuilder {
     }
 
     /**
-     * Add params to url query string.
+     * Set params of url query string.
      * This is for set parameters in url query str, If want to set post form params use form(Parameter... params) method
      */
     public RequestBuilder params(Parameter... params) {
-        ensureParameters();
+        this.parameters = new Parameters();
         for (Parameter param : params) {
             this.parameters.add(new Parameter(param.getName(), param.getValue()));
         }
@@ -152,10 +151,21 @@ public class RequestBuilder {
      * Add one parameter to url query string.
      * This is for set parameters in url query str, If want to set post form params use form(String key, Object value) method
      */
-    public RequestBuilder param(String key, Object value) {
+    public RequestBuilder addParam(String key, Object value) {
         ensureParameters();
         this.parameters.add(new Parameter(key, value));
         return this;
+    }
+
+    /**
+     * Add one parameter to url query string.
+     * This is for set parameters in url query str, If want to set post form params use form(String key, Object value) method
+     *
+     * @deprecated use {@link #addParam(String, Object)} method instead
+     */
+    @Deprecated
+    public RequestBuilder param(String key, Object value) {
+        return addParam(key, value);
     }
 
     private void ensureParameters() {
@@ -166,18 +176,28 @@ public class RequestBuilder {
 
     /**
      * Add http form body data, for http post method with form-encoded body.
+     *
+     * @deprecated use {@link #addForm(String, Object)} method
      */
+    @Deprecated
     public RequestBuilder form(String key, Object value) {
+        return this.addForm(key, value);
+    }
+
+    /**
+     * Add http form body data, for http post method with form-encoded body.
+     */
+    public RequestBuilder addForm(String key, Object value) {
         ensureFormParameters();
         formParameters.add(new Parameter(key, value));
         return this;
     }
 
     /**
-     * Add http form body data, for http post method with form-encoded body.
+     * Set http form body data, for http post method with form-encoded body.
      */
     public RequestBuilder forms(Map<String, ?> params) {
-        ensureFormParameters();
+        this.formParameters = new Parameters();
         for (Map.Entry<String, ?> e : params.entrySet()) {
             formParameters.add(new Parameter(e.getKey(), e.getValue()));
         }
@@ -185,10 +205,10 @@ public class RequestBuilder {
     }
 
     /**
-     * Add http form body data, for http post method with form-encoded body.
+     * Set http form body data, for http post method with form-encoded body.
      */
     public RequestBuilder forms(Parameter... params) {
-        ensureFormParameters();
+        this.formParameters = new Parameters();
         for (Parameter param : params) {
             formParameters.add(param);
         }
@@ -196,9 +216,9 @@ public class RequestBuilder {
     }
 
     /**
-     * Add http form body data, for http post method with form-encoded body.
+     * Set http form body data, for http post method with form-encoded body.
      *
-     * @deprecated use forms() method instead
+     * @deprecated use {@link #forms(Map)} method instead
      */
     @Deprecated
     public RequestBuilder form(Map<String, ?> params) {
@@ -206,9 +226,9 @@ public class RequestBuilder {
     }
 
     /**
-     * Add http form body data, for http post method with form-encoded body.
+     * Set http form body data, for http post method with form-encoded body.
      *
-     * @deprecated use forms() method instead
+     * @deprecated use {@link #forms(Parameter...)} method instead
      */
     @Deprecated
     public RequestBuilder form(Parameter... params) {
@@ -218,7 +238,7 @@ public class RequestBuilder {
     /**
      * Set http form body data, for http post method with form-encoded body.
      *
-     * @deprecated use forms() method instead
+     * @deprecated use {@link #forms(Map)} method instead
      */
     @Deprecated
     public RequestBuilder data(Map<String, ?> params) {
@@ -228,7 +248,7 @@ public class RequestBuilder {
     /**
      * Set http form body data, for http post method with form-encoded body.
      *
-     * @deprecated use forms() method instead
+     * @deprecated use {@link #forms(Parameter...)} method instead
      */
     @Deprecated
     public RequestBuilder data(Parameter... params) {
@@ -290,10 +310,10 @@ public class RequestBuilder {
     }
 
     /**
-     * add headers
+     * Set headers
      */
     public RequestBuilder headers(Map<String, ?> params) {
-        ensureHeaders();
+        this.headers = new Headers();
         for (Map.Entry<String, ?> entry : params.entrySet()) {
             this.headers.add(new Header(entry.getKey(), entry.getValue()));
         }
@@ -301,10 +321,10 @@ public class RequestBuilder {
     }
 
     /**
-     * add headers
+     * Set headers
      */
     public RequestBuilder headers(Header... headers) {
-        ensureHeaders();
+        this.headers = new Headers();
         for (Header header : headers) {
             this.headers.add(header);
         }
@@ -312,9 +332,19 @@ public class RequestBuilder {
     }
 
     /**
-     * add one header
+     * Add one header
+     *
+     * @deprecated use {@link #addHeader(String, Object)} method
      */
+    @Deprecated
     public RequestBuilder header(String key, Object value) {
+        return addHeader(key, value);
+    }
+
+    /**
+     * Add one header
+     */
+    public RequestBuilder addHeader(String key, Object value) {
         ensureHeaders();
         this.headers.add(new Header(key, value));
         return this;
@@ -380,10 +410,10 @@ public class RequestBuilder {
     }
 
     /**
-     * add cookies
+     * Set cookies
      */
     public RequestBuilder cookies(Map<String, String> cookies) {
-        ensureCookies();
+        this.cookies = new Cookies();
         for (Map.Entry<String, String> entry : cookies.entrySet()) {
             this.cookies.add(new Cookie(entry.getKey(), entry.getValue()));
         }
@@ -391,10 +421,10 @@ public class RequestBuilder {
     }
 
     /**
-     * add cookies
+     * Set cookies
      */
     public RequestBuilder cookies(Cookie... cookies) {
-        ensureCookies();
+        this.cookies = new Cookies();
         for (Cookie cookie : cookies) {
             this.cookies.add(cookie);
         }
@@ -402,9 +432,19 @@ public class RequestBuilder {
     }
 
     /**
-     * add cookie
+     * Add one cookie
+     *
+     * @deprecated use {@link #addCookie(String, String)} method
      */
+    @Deprecated
     public RequestBuilder cookie(String name, String value) {
+        return addCookie(name, value);
+    }
+
+    /**
+     * Add one cookie
+     */
+    public RequestBuilder addCookie(String name, String value) {
         ensureCookies();
         this.cookies.add(new Cookie(name, value));
         return this;
@@ -439,8 +479,20 @@ public class RequestBuilder {
      *
      * @param name the http request field name for this file
      * @param file the file to be send
+     * @deprecated use {@link #addMultiPart(String, File)} method
      */
+    @Deprecated
     public RequestBuilder multiPart(String name, File file) {
+        return addMultiPart(name, file);
+    }
+
+    /**
+     * add multi part file, will send multiPart requests.
+     *
+     * @param name the http request field name for this file
+     * @param file the file to be send
+     */
+    public RequestBuilder addMultiPart(String name, File file) {
         ensureMultiPart();
         this.multiParts.add(new MultiPart(name, file));
         return this;
@@ -453,8 +505,22 @@ public class RequestBuilder {
      * @param name     the http request field name for this file
      * @param mimeType the mimeType for file
      * @param file     the file to be send
+     * @deprecated use {@link #addMultiPart(String, String, File)} method
      */
+    @Deprecated
     public RequestBuilder multiPart(String name, String mimeType, File file) {
+        return addMultiPart(name, mimeType, file);
+    }
+
+    /**
+     * add multi part file, will send multiPart requests.
+     * this should be used with post method
+     *
+     * @param name     the http request field name for this file
+     * @param mimeType the mimeType for file
+     * @param file     the file to be send
+     */
+    public RequestBuilder addMultiPart(String name, String mimeType, File file) {
         ensureMultiPart();
         this.multiParts.add(new MultiPart(name, mimeType, file));
         return this;
@@ -465,8 +531,20 @@ public class RequestBuilder {
      *
      * @param name  the http request field name for this field
      * @param bytes the multipart request content
+     * @deprecated use {@link #addMultiPart(String, String, byte[])} method
      */
+    @Deprecated
     public RequestBuilder multiPart(String name, String mimeType, byte[] bytes) {
+        return addMultiPart(name, mimeType, bytes);
+    }
+
+    /**
+     * add multi part field by byte array, will send multiPart requests.
+     *
+     * @param name  the http request field name for this field
+     * @param bytes the multipart request content
+     */
+    public RequestBuilder addMultiPart(String name, String mimeType, byte[] bytes) {
         multiPart(name, mimeType, null, bytes);
         return this;
     }
@@ -477,8 +555,21 @@ public class RequestBuilder {
      * @param name     the http request field name for this field
      * @param fileName the file name. can be null
      * @param bytes    the multipart request content
+     * @deprecated use {@link #addMultiPart(String, String, String, byte[])} method
      */
+    @Deprecated
     public RequestBuilder multiPart(String name, String mimeType, String fileName, byte[] bytes) {
+        return addMultiPart(name, mimeType, fileName, bytes);
+    }
+
+    /**
+     * add multi part field by byte array, will send multiPart requests.
+     *
+     * @param name     the http request field name for this field
+     * @param fileName the file name. can be null
+     * @param bytes    the multipart request content
+     */
+    public RequestBuilder addMultiPart(String name, String mimeType, String fileName, byte[] bytes) {
         ensureMultiPart();
         this.multiParts.add(new MultiPart(name, mimeType, fileName, bytes));
         return this;
@@ -490,8 +581,21 @@ public class RequestBuilder {
      * @param name     the http request field name for this field
      * @param mimeType the mimeType for file
      * @param in       the inputStream for the content
+     * @deprecated use {@link #addMultiPart(String, String, InputStream)} method
      */
+    @Deprecated
     public RequestBuilder multiPart(String name, String mimeType, InputStream in) {
+        return addMultiPart(name, mimeType, in);
+    }
+
+    /**
+     * add multi part field by inputStream, will send multiPart requests.
+     *
+     * @param name     the http request field name for this field
+     * @param mimeType the mimeType for file
+     * @param in       the inputStream for the content
+     */
+    public RequestBuilder addMultiPart(String name, String mimeType, InputStream in) {
         multiPart(name, mimeType, null, in);
         return this;
     }
@@ -515,8 +619,20 @@ public class RequestBuilder {
      *
      * @param name  the http request field name
      * @param value the file to be send
+     * @deprecated use {@link #addMultiPart(String, File)} method
      */
+    @Deprecated
     public RequestBuilder multiPart(String name, String value) {
+        return addMultiPart(name, value);
+    }
+
+    /**
+     * Add multi part key-value parameter.
+     *
+     * @param name  the http request field name
+     * @param value the file to be send
+     */
+    public RequestBuilder addMultiPart(String name, String value) {
         ensureMultiPart();
         this.multiParts.add(new MultiPart(name, value));
         return this;
