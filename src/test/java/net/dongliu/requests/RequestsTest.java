@@ -62,7 +62,7 @@ public class RequestsTest {
     public void testRedirect() {
         Response<String> resp = Requests.get("http://www.dongliu.net/").text();
         assertEquals(200, resp.getStatusCode());
-        assertEquals("www.dongliu.net", resp.getHistory().get(0).getHost());
+        assertEquals("dongliu.net", resp.getHistory().get(0).getHost());
     }
 
     @Test
