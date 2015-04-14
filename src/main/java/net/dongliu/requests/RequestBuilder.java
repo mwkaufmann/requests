@@ -26,6 +26,7 @@ public class RequestBuilder {
     private Cookies cookies;
 
     private Charset charset = StandardCharsets.UTF_8;
+    private Charset responseCharset = StandardCharsets.UTF_8;
 
     private byte[] body;
     private String strBody;
@@ -71,10 +72,10 @@ public class RequestBuilder {
     /**
      * Get http response for return text result.
      * Decode response body to text with charset get from response header,
-     * use charset(which can be set via charset(Charset charset)) if not exists
+     * use {@link #responseCharset(Charset)} to set charset if needed.
      */
     public Response<String> text() throws RuntimeIOException {
-        return client(new StringResponseProcessor(charset));
+        return client(new StringResponseProcessor(responseCharset));
     }
 
     /**
@@ -289,7 +290,7 @@ public class RequestBuilder {
     }
 
     /**
-     * Set request charset(and may be used for response body decode), default utf-8
+     * Set charset used to encode request, default utf-8.
      */
     public RequestBuilder charset(Charset charset) {
         this.charset = charset;
@@ -297,11 +298,27 @@ public class RequestBuilder {
     }
 
     /**
-     * Set request charset(and may be used for response body decode), default "UTF-8"
+     * Set charset used to encode request, default utf-8.
      */
     public RequestBuilder charset(String charset) {
-        this.charset = Charset.forName(charset);
+        return charset(Charset.forName(charset));
+    }
+
+    /**
+     * Set charset for decoding response.
+     * Note that usually you do not need to set this because we can get charset from response header.
+     */
+    public RequestBuilder responseCharset(Charset charset) {
+        this.responseCharset = charset;
         return this;
+    }
+
+    /**
+     * Set charset for decoding response.
+     * Note that usually you do not need to set this because we can get charset from response header.
+     */
+    public RequestBuilder responseCharset(String charset) {
+        return responseCharset(Charset.forName(charset));
     }
 
     RequestBuilder method(Method method) {

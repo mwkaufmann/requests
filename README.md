@@ -49,11 +49,18 @@ or you can custom http response processor your self:
 Response<String> resp = Requests.get(url).handler(new ResponseHandler<String>() {...});
 ```
 ##Charset
-Set charset used to encode parameters, post forms, request/response string body:
+Set charset used to encode parameters, post forms or request string body:
 ```
 Response<String> resp = Requests.get(url).charset(StandardCharsets.UTF_8).text();
 ```
 Default charset is utf-8.
+
+HTTP response decoding will use charset got from response headers,
+ if something is wrong(charset header not exists), you can set http response code with responseCharset:
+```
+Response<String> resp = Requests.get(url).charset(StandardCharsets.UTF_8)
+        .responseCharset(StandardCharsets.UTF_8).text();
+```
 ##Passing Parameters
 Pass parameters in urls using param or params method:
 ```java
