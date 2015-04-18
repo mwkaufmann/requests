@@ -1,8 +1,13 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.struct.Parameter;
+import net.dongliu.requests.mock.MockServer;
+import net.dongliu.requests.struct.Proxy;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,78 +16,93 @@ import static org.junit.Assert.*;
 
 public class RequestsTest {
 
+    private static MockServer server = new MockServer();
+
+    @BeforeClass
+    public static void init() {
+        server.start();
+    }
+
+    @AfterClass
+    public static void destroy() {
+        server.stop();
+    }
+
     @Test
     public void testGet() throws Exception {
-        Response<String> response = Requests.get("http://www.baidu.com")
+        Response<String> resp = Requests.get("http://127.0.0.1:8080")
                 .charset(StandardCharsets.UTF_8).text();
-        assertEquals(200, response.getStatusCode());
-
-        Response<String> resp = Requests.get("http://www.baidu.com").text();
         assertEquals(200, resp.getStatusCode());
 
+        resp = Requests.get("http://127.0.0.1:8080").text();
+        assertEquals(200, resp.getStatusCode());
+
+        // get with params
         Map<String, String> map = new HashMap<>();
         map.put("wd", "test");
-        resp = Requests.get("http://www.baidu.com/s").params(map).text();
+        resp = Requests.get("http://127.0.0.1:8080").params(map).text();
         assertEquals(200, resp.getStatusCode());
+        assertTrue(resp.getBody().contains("wd=test"));
     }
 
     @Test
     public void testPost() {
-        Response<String> response = Requests.post("http://www.baidu.com/")
-                .data(new Parameter("test", "value"))
+        // form encoded post
+        Response<String> resp = Requests.post("http://127.0.0.1:8080/post")
+                .addForm("wd", "test")
                 .text();
+        assertTrue(resp.getBody().contains("wd=test"));
     }
 
     @Test
     public void testCookie() {
-        Response<String> response = Requests.get("http://www.baidu.com")
+        Response<String> response = Requests.get("http://127.0.0.1:8080/cookie")
                 .addCookie("test", "value").text();
-        //assertEquals("test=value", response.getRequest().getHeaders().getFirst("Cookie").getValue());
-        assertTrue(response.getBody().contains("window"));
-        assertNotNull(response.getCookies().getFirst("BAIDUID"));
+        assertNotNull(response.getCookies().getFirst("test"));
     }
 
     @Test
     public void testBasicAuth() {
-//        Response<String> response = Requests.string()
-//                .url("http://xxx")
-//                .auth("xx", "xx")
-//                .get();
-//        assertEquals(200, response.getStatusCode());
+        Response<String> response = Requests.get("http://127.0.0.1:8080/basicAuth")
+                .auth("test", "password")
+                .text();
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void testRedirect() {
+        Response<String> resp = Requests.get("http://127.0.0.1:8080/redirect").text();
+        assertEquals(200, resp.getStatusCode());
+        assertEquals("/", resp.getHistory().get(0).getPath());
     }
 
     @Test
     public void testHttps() {
-        Response<String> resp = Requests.get("https://kyfw.12306.cn/otn/")
+        Response<String> resp = Requests.get("https://127.0.0.1:8443/otn/")
                 .verify(false).text();
         assertEquals(200, resp.getStatusCode());
     }
 
     @Test
-    public void testRedirect() {
-        Response<String> resp = Requests.get("http://www.dongliu.net/").text();
-        assertEquals(200, resp.getStatusCode());
-        assertEquals("dongliu.net", resp.getHistory().get(0).getHost());
-    }
-
-    @Test
+    @Ignore("launch a proxy first to run this test")
     public void testProxy() {
-//        Response<String> resp = Requests.get("http://www.baidu.com/")
-//                .proxy(Proxy.httpProxy("127.0.0.1", 8000))
-//                .text();
-//        assertEquals(200, resp.getStatusCode());
-//        Response<String> resp1 = Requests.get("http://www.baidu.com/")
-//                .proxy(Proxy.socketProxy("127.0.0.1", 1080))
-//                .text();
-//        assertEquals(200, resp1.getStatusCode());
+        Response<String> resp = Requests.get("http://127.0.0.1:8080/")
+                .proxy(Proxy.httpProxy("127.0.0.1", 8000))
+                .text();
+        assertEquals(200, resp.getStatusCode());
+        Response<String> resp1 = Requests.get("http://127.0.0.1:8080/")
+                .proxy(Proxy.socketProxy("127.0.0.1", 1080))
+                .text();
+        assertEquals(200, resp1.getStatusCode());
     }
 
     @Test
     public void testMultiPart() {
-//        Response<String> response = Requests.post("http://10.0.11.48:5000/upload")
-//                .multiPart("file", "/Users/dongliu/code/java/requests/src/test/java/net/dongliu/requests/RequestsTest.java")
-//                .text();
-//        System.out.println(response.getStatusCode());
-//        System.out.println(response.getBody());
+        Response<String> response = Requests.post("http://127.0.0.1:8080/upload")
+                .addMultiPart("file", "application/octem-stream", this.getClass().getResourceAsStream("/keystore"))
+                .text();
+        assertEquals(200, response.getStatusCode());
+        assertTrue(response.getBody().contains("file"));
+        assertTrue(response.getBody().contains("application/octem-stream"));
     }
 }

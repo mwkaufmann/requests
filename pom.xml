@@ -18,8 +18,8 @@
     <developers>
         <developer>
             <id>xiaxiaocao</id>
-            <name>Dong Liu</name>
-            <email>dongliu@live.cn</email>
+            <name>Liu Dong</name>
+            <email>im@dongliu.net</email>
         </developer>
     </developers>
 
@@ -75,6 +75,20 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>9.2.10.v20150310</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>9.2.10.v20150310</version>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
 
     <build>

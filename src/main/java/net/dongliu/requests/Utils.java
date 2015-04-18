@@ -22,9 +22,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 /**
+ * Util methods
+ *
  * @author Dong Liu dongliu@wandoujia.com
  */
-public class Utils {
+class Utils {
     static Registry<ConnectionSocketFactory> getConnectionSocketFactoryRegistry(
             Proxy proxy, boolean verify) {
         SSLContext sslContext;
