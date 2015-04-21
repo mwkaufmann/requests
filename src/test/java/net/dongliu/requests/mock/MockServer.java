@@ -5,8 +5,6 @@ import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import java.io.File;
-
 /**
  * @author Liu Dong {@literal <im@dongliu.net>}
  */
@@ -48,7 +46,7 @@ public class MockServer {
         handler.addServletWithMapping(MockGetServlet.class, "/*");
         handler.addServletWithMapping(MockPostServlet.class, "/post");
         handler.addServletWithMapping(MockBasicAuthenticationServlet.class, "/basicAuth");
-        handler.addServletWithMapping(MockMultiPartServlet.class, "/upload");
+        handler.addServletWithMapping(MockPartServlet.class, "/upload");
 
         // Start things up!
         try {
