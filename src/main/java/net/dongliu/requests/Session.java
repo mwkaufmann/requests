@@ -1,6 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.RuntimeURISyntaxException;
+import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.Method;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -26,56 +26,56 @@ public class Session {
     /**
      * get method
      */
-    public RequestBuilder get(String url) throws RuntimeURISyntaxException {
+    public RequestBuilder get(String url) throws RequestException {
         return newBuilder(url).method(Method.GET);
     }
 
     /**
      * head method
      */
-    public RequestBuilder head(String url) throws RuntimeURISyntaxException {
+    public RequestBuilder head(String url) throws RequestException {
         return newBuilder(url).method(Method.HEAD);
     }
 
     /**
      * get url, and return content
      */
-    public RequestBuilder post(String url) throws RuntimeURISyntaxException {
+    public RequestBuilder post(String url) throws RequestException {
         return newBuilder(url).method(Method.POST);
     }
 
     /**
      * put method
      */
-    public RequestBuilder put(String url) throws RuntimeURISyntaxException {
+    public RequestBuilder put(String url) throws RequestException {
         return newBuilder(url).method(Method.PUT);
     }
 
     /**
      * delete method
      */
-    public RequestBuilder delete(String url) throws RuntimeURISyntaxException {
+    public RequestBuilder delete(String url) throws RequestException {
         return newBuilder(url).method(Method.DELETE);
     }
 
     /**
      * options method
      */
-    public RequestBuilder options(String url) throws RuntimeURISyntaxException {
+    public RequestBuilder options(String url) throws RequestException {
         return newBuilder(url).method(Method.OPTIONS);
     }
 
     /**
      * patch method
      */
-    public RequestBuilder patch(String url) throws RuntimeURISyntaxException {
+    public RequestBuilder patch(String url) throws RequestException {
         return newBuilder(url).method(Method.PATCH);
     }
 
     /**
      * trace method
      */
-    public RequestBuilder trace(String url) throws RuntimeURISyntaxException {
+    public RequestBuilder trace(String url) throws RequestException {
         return newBuilder(url).method(Method.TRACE);
     }
 //
@@ -89,7 +89,7 @@ public class Session {
     /**
      * create request builder with url
      */
-    private RequestBuilder newBuilder(String url) throws RuntimeURISyntaxException {
+    private RequestBuilder newBuilder(String url) throws RequestException {
         return new RequestBuilder().session(this).url(url);
     }
 }

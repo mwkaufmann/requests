@@ -1,10 +1,10 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.RuntimeIOException;
-import net.dongliu.requests.exception.RuntimeURISyntaxException;
+import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -58,14 +58,18 @@ public class RequestBuilder {
     /**
      * get http response for return result with Type T.
      */
-    <T> Response<T> client(ResponseProcessor<T> processor) throws RuntimeIOException {
-        return new RequestExecutor<>(build(), processor, session, connectionPool).execute();
+    <T> Response<T> client(ResponseProcessor<T> processor) throws RequestException {
+        try {
+            return new RequestExecutor<>(build(), processor, session, connectionPool).execute();
+        } catch (IOException e) {
+            throw new RequestException(e);
+        }
     }
 
     /**
      * set custom handler to handle http response
      */
-    public <T> Response<T> handler(ResponseHandler<T> handler) throws RuntimeIOException {
+    public <T> Response<T> handler(ResponseHandler<T> handler) throws RequestException {
         return client(new ResponseHandlerAdapter<T>(handler));
     }
 
@@ -74,14 +78,14 @@ public class RequestBuilder {
      * Decode response body to text with charset get from response header,
      * use {@link #responseCharset(Charset)} to set charset if needed.
      */
-    public Response<String> text() throws RuntimeIOException {
+    public Response<String> text() throws RequestException {
         return client(new StringResponseProcessor(responseCharset));
     }
 
     /**
      * get http response for return byte array result.
      */
-    public Response<byte[]> bytes() throws RuntimeIOException {
+    public Response<byte[]> bytes() throws RequestException {
         return client(ResponseProcessor.bytes);
     }
 
@@ -89,7 +93,7 @@ public class RequestBuilder {
      * get http response for write response body to file.
      * only save to file when return status is 200, otherwise return response with null body.
      */
-    public Response<File> file(File file) throws RuntimeIOException {
+    public Response<File> file(File file) throws RequestException {
         return client(new FileResponseProcessor(file));
     }
 
@@ -97,15 +101,15 @@ public class RequestBuilder {
      * get http response for write response body to file.
      * only save to file when return status is 200, otherwise return response with null body.
      */
-    public Response<File> file(String filePath) throws RuntimeIOException {
+    public Response<File> file(String filePath) throws RequestException {
         return client(new FileResponseProcessor(filePath));
     }
 
-    RequestBuilder url(String url) throws RuntimeURISyntaxException {
+    RequestBuilder url(String url) throws RequestException {
         try {
             this.url = new URI(url);
         } catch (URISyntaxException e) {
-            throw RuntimeURISyntaxException.of(e);
+            throw new RequestException(e);
         }
         return this;
     }
@@ -397,7 +401,7 @@ public class RequestBuilder {
     /**
      * set proxy
      */
-    public RequestBuilder proxy(Proxy proxy) throws RuntimeURISyntaxException {
+    public RequestBuilder proxy(Proxy proxy) {
         this.proxy = proxy;
         return this;
     }

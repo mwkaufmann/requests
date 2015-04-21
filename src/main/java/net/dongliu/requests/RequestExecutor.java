@@ -1,6 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.RuntimeIOException;
 import net.dongliu.requests.struct.*;
 import org.apache.commons.io.Charsets;
 import org.apache.http.HttpEntity;
@@ -55,7 +54,7 @@ class RequestExecutor<T> {
     /**
      * execute request, get http response, and convert response with processor
      */
-    Response<T> execute() throws RuntimeIOException {
+    Response<T> execute() throws IOException {
         CredentialsProvider provider = new BasicCredentialsProvider();
         HttpClientContext context;
         if (session != null) {
@@ -71,11 +70,7 @@ class RequestExecutor<T> {
             // do http request with http client
             try (CloseableHttpResponse httpResponse = client.execute(httpRequest, context)) {
                 return wrapResponse(httpResponse, context);
-            } catch (IOException e) {
-                throw RuntimeIOException.of(e);
             }
-        } catch (IOException e) {
-            throw RuntimeIOException.of(e);
         }
     }
 

@@ -1,6 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.RuntimeURISyntaxException;
+import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.Method;
 
 /**
@@ -13,56 +13,56 @@ public class Requests {
     /**
      * get method
      */
-    public static RequestBuilder get(String url) throws RuntimeURISyntaxException {
+    public static RequestBuilder get(String url) throws RequestException {
         return newBuilder(url).method(Method.GET);
     }
 
     /**
      * head method
      */
-    public static RequestBuilder head(String url) throws RuntimeURISyntaxException {
+    public static RequestBuilder head(String url) throws RequestException {
         return newBuilder(url).method(Method.HEAD);
     }
 
     /**
      * get url, and return content
      */
-    public static RequestBuilder post(String url) throws RuntimeURISyntaxException {
+    public static RequestBuilder post(String url) throws RequestException {
         return newBuilder(url).method(Method.POST);
     }
 
     /**
      * put method
      */
-    public static RequestBuilder put(String url) throws RuntimeURISyntaxException {
+    public static RequestBuilder put(String url) throws RequestException {
         return newBuilder(url).method(Method.PUT);
     }
 
     /**
      * delete method
      */
-    public static RequestBuilder delete(String url) throws RuntimeURISyntaxException {
+    public static RequestBuilder delete(String url) throws RequestException {
         return newBuilder(url).method(Method.DELETE);
     }
 
     /**
      * options method
      */
-    public static RequestBuilder options(String url) throws RuntimeURISyntaxException {
+    public static RequestBuilder options(String url) throws RequestException {
         return newBuilder(url).method(Method.OPTIONS);
     }
 
     /**
      * patch method
      */
-    public static RequestBuilder patch(String url) throws RuntimeURISyntaxException {
+    public static RequestBuilder patch(String url) throws RequestException {
         return newBuilder(url).method(Method.PATCH);
     }
 
     /**
      * trace method
      */
-    public static RequestBuilder trace(String url) throws RuntimeURISyntaxException {
+    public static RequestBuilder trace(String url) throws RequestException {
         return newBuilder(url).method(Method.TRACE);
     }
 //
@@ -76,7 +76,7 @@ public class Requests {
     /**
      * create request builder with url
      */
-    private static RequestBuilder newBuilder(String url) throws RuntimeURISyntaxException {
+    private static RequestBuilder newBuilder(String url) throws RequestException {
         return new RequestBuilder().url(url);
     }
 

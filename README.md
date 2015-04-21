@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>1.10.1</version>
+    <version>1.10.2</version>
 </dependency>
 ```
 ##Make request
@@ -206,7 +206,7 @@ Proxy.socketProxy("127.0.0.1", 5678)
 Proxy.httpProxy("127.0.0.1", 8080, userName, password)
 ```
 ##Exceptions
-Requests wrapped checked exceptions into runtime exception, RuntimeIOException, InvalidUrlException, IllegalEncodingException. Catch this if you mind.
+Requests wrapped all checked exceptions into one runtime exception: RequestException. Catch this if you mind.Unchecked Exceptions are leaved as it is.
 ## Session
 Session keep cookies and basic auto cache and other http context for you, useful when need login or other situations.Session have exactly the same usage as Requests.
 ```java
