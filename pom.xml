@@ -13,7 +13,7 @@
     <artifactId>requests</artifactId>
     <name>requests</name>
     <packaging>jar</packaging>
-    <version>1.10.2</version>
+    <version>1.10.3-SNAPSHOT</version>
     <url>https://github.com/xiaxiaocao/requests</url>
     <developers>
         <developer>
@@ -35,7 +35,7 @@
         <connection>scm:git:git@github.com:xiaxiaocao/requests.git</connection>
         <url>https://github.com/xiaxiaocao/requests</url>
         <developerConnection>scm:git:git@github.com:xiaxiaocao/requests.git</developerConnection>
-        <tag>requests-1.10.2</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencies>
