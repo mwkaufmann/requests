@@ -4,7 +4,6 @@ import org.eclipse.jetty.server.Request;
 
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,7 +15,7 @@ import java.util.Collection;
 /**
  * @author Liu Dong {@literal <im@dongliu.net>}
  */
-public class MockMultiPartServlet extends HttpServlet {
+public class MockPartServlet extends HttpServlet {
 
     private static final MultipartConfigElement MULTI_PART_CONFIG = new MultipartConfigElement(System.getProperty("java.io.tmpdir"));
 
