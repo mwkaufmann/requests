@@ -1,5 +1,6 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.Host;
 import net.dongliu.requests.struct.Pair;
 import net.dongliu.requests.struct.Proxy;
@@ -51,6 +52,69 @@ public class ConnectionPool implements Closeable {
 
     HttpClientConnectionManager wrappedConnectionManager() {
         return new ConnectionManagerWrapper(manager);
+    }
+
+    /**
+     * get method
+     */
+    public RequestBuilder get(String url) throws RequestException {
+        return Requests.get(url).connectionPool(this);
+    }
+
+    /**
+     * head method
+     */
+    public RequestBuilder head(String url) throws RequestException {
+        return Requests.head(url).connectionPool(this);
+    }
+
+    /**
+     * get url, and return content
+     */
+    public RequestBuilder post(String url) throws RequestException {
+        return Requests.post(url).connectionPool(this);
+    }
+
+    /**
+     * put method
+     */
+    public RequestBuilder put(String url) throws RequestException {
+        return Requests.put(url).connectionPool(this);
+    }
+
+    /**
+     * delete method
+     */
+    public RequestBuilder delete(String url) throws RequestException {
+        return Requests.delete(url).connectionPool(this);
+    }
+
+    /**
+     * options method
+     */
+    public RequestBuilder options(String url) throws RequestException {
+        return Requests.options(url).connectionPool(this);
+    }
+
+    /**
+     * patch method
+     */
+    public RequestBuilder patch(String url) throws RequestException {
+        return Requests.patch(url).connectionPool(this);
+    }
+
+    /**
+     * create a session. session can do request as Requests do, and keep cookies to maintain a http session
+     */
+    public Session session() {
+        return new Session(this);
+    }
+
+    /**
+     * trace method
+     */
+    public RequestBuilder trace(String url) throws RequestException {
+        return Requests.trace(url).connectionPool(this);
     }
 
     public static class ConnectionPoolBuilder {

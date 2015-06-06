@@ -77,8 +77,7 @@ class RequestExecutor<T> {
     /**
      * build http client
      */
-    private CloseableHttpClient buildHttpClient(CredentialsProvider provider,
-                                                HttpClientContext context) {
+    private CloseableHttpClient buildHttpClient(CredentialsProvider provider, HttpClientContext context) {
         HttpClientBuilder clientBuilder = HttpClients.custom().setUserAgent(request.getUserAgent());
 
         if (connectionPool != null) {

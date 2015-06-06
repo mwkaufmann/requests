@@ -84,7 +84,7 @@ public class Requests {
      * create a session. session can do request as Requests do, and keep cookies to maintain a http session
      */
     public static Session session() {
-        return new Session();
+        return new Session(null);
     }
 
 }

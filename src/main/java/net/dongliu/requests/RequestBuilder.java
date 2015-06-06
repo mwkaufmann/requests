@@ -21,7 +21,7 @@ public class RequestBuilder {
     private Method method;
     private URI url;
     private Parameters parameters;
-    private String userAgent = "Requests/1.10.0, Java";
+    private String userAgent = "Requests/1.11.0, Java " + System.getProperty("java.version");
     private Headers headers;
     private Cookies cookies;
 
@@ -671,8 +671,9 @@ public class RequestBuilder {
     }
 
     /**
-     * set connection pool. used to reuse http connections.
+     * Set connection pool. used to reuse http connections.
      */
+    @Deprecated
     public RequestBuilder connectionPool(ConnectionPool connectionPool) {
         this.connectionPool = connectionPool;
         return this;

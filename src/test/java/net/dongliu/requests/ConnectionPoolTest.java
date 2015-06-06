@@ -26,23 +26,28 @@ public class ConnectionPoolTest {
 
     @Test
     public void testMultiThread() throws IOException {
-        ConnectionPool connectionPoll = ConnectionPool.custom().build();
-        for (int i = 0; i < 100; i++) {
-            Response<String> response = Requests.get("http://127.0.0.1:8080/")
-                    .connectionPool(connectionPoll)
-                    .text();
-            assertEquals(200, response.getStatusCode());
+        try(ConnectionPool connectionPool = ConnectionPool.custom().build()) {
+            for (int i = 0; i < 100; i++) {
+                Response<String> response = connectionPool.get("http://127.0.0.1:8080/").text();
+                assertEquals(200, response.getStatusCode());
+            }
         }
-        connectionPoll.close();
     }
 
     @Test
     public void testPooledHttps() throws IOException {
-        ConnectionPool connectionPoll = ConnectionPool.custom().verify(false).build();
-        Response<String> response = Requests.get("https://127.0.0.1:8443/otn/")
-                .connectionPool(connectionPoll)
-                .text();
-        assertEquals(200, response.getStatusCode());
-        connectionPoll.close();
+        try (ConnectionPool connectionPool = ConnectionPool.custom().verify(false).build()) {
+            Response<String> response = connectionPool.get("https://127.0.0.1:8443/otn/").text();
+            assertEquals(200, response.getStatusCode());
+        }
+    }
+
+    @Test
+    public void testSession() throws Exception {
+        try (ConnectionPool connectionPool = ConnectionPool.custom().verify(false).build()) {
+            Session session = connectionPool.session();
+            Response<String> response = session.get("https://127.0.0.1:8443/otn/").text();
+            assertEquals(200, response.getStatusCode());
+        }
     }
 }

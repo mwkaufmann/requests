@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>1.10.2</version>
+    <version>1.11.0</version>
 </dependency>
 ```
 ##Make request
@@ -125,7 +125,8 @@ Http Post, Put, Patch method can send request body. Take Post for example:
 Response<String> resp = Requests.post(url)
         .addForm("key1", "value1").addForm("key2", "value2").text();
 // set post form data
-Response<String> resp = Requests.post(url).forms(new Parameter(...), new Parameter(...)).text();
+Response<String> resp = Requests.post(url).forms(new Parameter(...), new Parameter(...))
+        .text();
 // set post form data by map
 Map<String, Object> formData = new HashMap<>();
 formData.put("k1", "v1");
@@ -222,9 +223,18 @@ ConnectionPool connectionPool = ConnectionPool.custom().verify(false)
        .maxTotal(100)
        //.proxy(...)
        .build();
-Response<String> resp1 = Requests.get(url1).connectionPool(connectionPool).text();
-Response<String> resp2 = Requests.get(url2).connectionPool(connectionPool).text();
-connectionPool.close();
+try {
+    Response<String> resp1 = connectionPool.get(url1).text();
+    Response<String> resp2 = connectionPool.get(url2).text();
+
+    // get session
+    Session session = connectionPool.session();
+    Response<String> response = session.get(url3).text();
+
+} finally {
+    // close
+    connectionPool.close();
+}
 ```
 Note:
 * you need to close connection pool manually when do not need it any more.
