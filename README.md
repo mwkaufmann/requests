@@ -97,7 +97,7 @@ Response<String> resp = Requests.get(url).headers(new Header(...), new Header(..
         .text();
 ```
 ##Cookies
-Cookies can be add by::
+Cookies can be add by:
 ```java
 Response<String> resp = Requests.get(url)
         // add one cookie
@@ -216,26 +216,29 @@ Response<String> resp1 = session.get(url1).text();
 Response<String> resp2 = session.get(url2).text();
 ```
 ##Connection Pool
-Request(and Session) can share one connection pool to reuse http connections.
+Request(and Session) can share one connection pool to reuse http connections, via PooledClient.
 ```java
-ConnectionPool connectionPool = ConnectionPool.custom().verify(false)
+PooledClient client = PooledClient.custom().verify(false)
        .maxPerRoute(20)
        .maxTotal(100)
-       //.proxy(...)
+       .proxy(...)
+       .verify(false)
+       .userAgent(...)
        .build();
 try {
-    Response<String> resp1 = connectionPool.get(url1).text();
-    Response<String> resp2 = connectionPool.get(url2).text();
+    Response<String> resp1 = client.get(url1).text();
+    Response<String> resp2 = client.get(url2).text();
 
     // get session
-    Session session = connectionPool.session();
+    Session session = client.session();
     Response<String> response = session.get(url3).text();
 
 } finally {
     // close
-    connectionPool.close();
+    client.close();
 }
 ```
 Note:
-* you need to close connection pool manually when do not need it any more.
-* if connection pool is used, you should set verify and proxy use ConnectionPoolBuilder, the connection pool's (verify, proxy) settings will override requests' settings.
+* You should make sure PooledClient be closed when do not need it any more.
+* If connection pool is used, you should set verify and proxy use ConnectionPoolBuilder, the connection pool's (verify, proxy) settings will override requests' settings.
+* Settings: userAgent, gzip, allowRedirects should be set at client level, request level settings will not work due to implementation restrict now.

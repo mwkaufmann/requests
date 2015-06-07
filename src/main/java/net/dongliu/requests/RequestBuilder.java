@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * http requests builder
@@ -21,7 +22,7 @@ public class RequestBuilder {
     private Method method;
     private URI url;
     private Parameters parameters;
-    private String userAgent = "Requests/1.11.0, Java " + System.getProperty("java.version");
+    private String userAgent = Utils.defaultUserAgent;
     private Headers headers;
     private Cookies cookies;
 
@@ -50,7 +51,7 @@ public class RequestBuilder {
     private Proxy proxy;
 
     private Session session;
-    private ConnectionPool connectionPool;
+    private PooledClient pooledClient;
 
     RequestBuilder() {
     }
@@ -60,7 +61,7 @@ public class RequestBuilder {
      */
     <T> Response<T> client(ResponseProcessor<T> processor) throws RequestException {
         try {
-            return new RequestExecutor<>(build(), processor, session, connectionPool).execute();
+            return new RequestExecutor<>(build(), processor, session, pooledClient).execute();
         } catch (IOException e) {
             throw new RequestException(e);
         }
@@ -124,6 +125,7 @@ public class RequestBuilder {
      * set userAgent
      */
     public RequestBuilder userAgent(String userAgent) {
+        Objects.requireNonNull(userAgent);
         this.userAgent = userAgent;
         return this;
     }
@@ -673,9 +675,8 @@ public class RequestBuilder {
     /**
      * Set connection pool. used to reuse http connections.
      */
-    @Deprecated
-    public RequestBuilder connectionPool(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
+    RequestBuilder connectionPool(PooledClient pooledClient) {
+        this.pooledClient = pooledClient;
         return this;
     }
 }

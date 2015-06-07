@@ -3,14 +3,13 @@ package net.dongliu.requests;
 import net.dongliu.requests.mock.MockServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class ConnectionPoolTest {
+public class PooledClientTest {
 
     private static MockServer server = new MockServer();
 
@@ -26,9 +25,9 @@ public class ConnectionPoolTest {
 
     @Test
     public void testMultiThread() throws IOException {
-        try(ConnectionPool connectionPool = ConnectionPool.custom().build()) {
+        try(PooledClient pooledClient = PooledClient.custom().build()) {
             for (int i = 0; i < 100; i++) {
-                Response<String> response = connectionPool.get("http://127.0.0.1:8080/").text();
+                Response<String> response = pooledClient.get("http://127.0.0.1:8080/").text();
                 assertEquals(200, response.getStatusCode());
             }
         }
@@ -36,16 +35,16 @@ public class ConnectionPoolTest {
 
     @Test
     public void testPooledHttps() throws IOException {
-        try (ConnectionPool connectionPool = ConnectionPool.custom().verify(false).build()) {
-            Response<String> response = connectionPool.get("https://127.0.0.1:8443/otn/").text();
+        try (PooledClient pooledClient = PooledClient.custom().verify(false).build()) {
+            Response<String> response = pooledClient.get("https://127.0.0.1:8443/otn/").text();
             assertEquals(200, response.getStatusCode());
         }
     }
 
     @Test
     public void testSession() throws Exception {
-        try (ConnectionPool connectionPool = ConnectionPool.custom().verify(false).build()) {
-            Session session = connectionPool.session();
+        try (PooledClient pooledClient = PooledClient.custom().verify(false).build()) {
+            Session session = pooledClient.session();
             Response<String> response = session.get("https://127.0.0.1:8443/otn/").text();
             assertEquals(200, response.getStatusCode());
         }

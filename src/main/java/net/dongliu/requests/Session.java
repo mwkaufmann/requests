@@ -13,10 +13,10 @@ import org.apache.http.impl.client.BasicCookieStore;
 public class Session {
     private final HttpClientContext context;
     // null if do not set connectionPool
-    private final ConnectionPool connectionPool;
+    private final PooledClient pooledClient;
 
-    Session(ConnectionPool connectionPool) {
-        this.connectionPool = connectionPool;
+    Session(PooledClient pooledClient) {
+        this.pooledClient = pooledClient;
         context = HttpClientContext.create();
         BasicCookieStore cookieStore = new BasicCookieStore();
         context.setCookieStore(cookieStore);
@@ -94,8 +94,8 @@ public class Session {
      */
     private RequestBuilder newBuilder(String url) throws RequestException {
         RequestBuilder builder = new RequestBuilder().session(this).url(url);
-        if (connectionPool != null) {
-            builder.connectionPool(connectionPool);
+        if (pooledClient != null) {
+            builder.connectionPool(pooledClient);
         }
         return builder;
     }

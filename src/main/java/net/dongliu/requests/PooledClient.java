@@ -6,52 +6,52 @@ import net.dongliu.requests.struct.Pair;
 import net.dongliu.requests.struct.Proxy;
 import org.apache.http.HttpHost;
 import org.apache.http.config.Registry;
-import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
- * http connection pool. use this to reuse http connection across http requests.
+ * Pooled http client use connection pool, for reusing http connection across http requests.
  * This class is thread-safe, can service connection requests from multiple execution threads.
  *
  * @author Dong Liu dongliu@wandoujia.com
  */
-public class ConnectionPool implements Closeable {
+public class PooledClient implements Closeable {
 
-    private final PoolingHttpClientConnectionManager manager;
+    // the wrapped http client
+    private final CloseableHttpClient client;
 
-    public ConnectionPool(PoolingHttpClientConnectionManager manager, Proxy proxy) {
-        this.manager = manager;
+    public PooledClient(CloseableHttpClient client, Proxy proxy) {
+        this.client = client;
         this.proxy = proxy;
     }
 
     /**
      * create new ConnectionPool Builder.
      */
-    public static ConnectionPoolBuilder custom() {
-        return new ConnectionPoolBuilder();
+    public static PooledClientBuilder custom() {
+        return new PooledClientBuilder();
     }
 
     private final Proxy proxy;
 
     @Override
     public void close() throws IOException {
-        manager.close();
+        client.close();
     }
 
     Proxy getProxy() {
         return proxy;
-    }
-
-    HttpClientConnectionManager wrappedConnectionManager() {
-        return new ConnectionManagerWrapper(manager);
     }
 
     /**
@@ -110,6 +110,10 @@ public class ConnectionPool implements Closeable {
         return new Session(this);
     }
 
+    CloseableHttpClient getHttpClient() {
+        return client;
+    }
+
     /**
      * trace method
      */
@@ -117,7 +121,7 @@ public class ConnectionPool implements Closeable {
         return Requests.trace(url).connectionPool(this);
     }
 
-    public static class ConnectionPoolBuilder {
+    public static class PooledClientBuilder {
         // how long http connection keep, in milliseconds. default -1, get from server response
         private long timeToLive = -1;
         // the max total http connection count
@@ -126,14 +130,21 @@ public class ConnectionPool implements Closeable {
         private int maxPerRoute = 2;
         // set max count for specified host
         private List<Pair<Host, Integer>> perRouteCount;
-        // if verify http certificate
-        private boolean verify = true;
+
         private Proxy proxy;
 
-        ConnectionPoolBuilder() {
+        // settings for client level, can not set/override in request level
+        // if verify http certificate
+        private boolean verify = true;
+        // if enable gzip response
+        private boolean gzip = true;
+        private boolean allowRedirects = true;
+        private String userAgent = Utils.defaultUserAgent;
+
+        PooledClientBuilder() {
         }
 
-        public ConnectionPool build() {
+        public PooledClient build() {
             Registry<ConnectionSocketFactory> r = Utils.getConnectionSocketFactoryRegistry(proxy,
                     verify);
             PoolingHttpClientConnectionManager manager = new PoolingHttpClientConnectionManager(r,
@@ -149,14 +160,29 @@ public class ConnectionPool implements Closeable {
                             pair.getValue());
                 }
             }
-            return new ConnectionPool(manager, proxy);
+
+            HttpClientBuilder clientBuilder = HttpClients.custom().setUserAgent(userAgent);
+
+            clientBuilder.setConnectionManager(manager);
+
+            // disable gzip
+            if (!gzip) {
+                clientBuilder.disableContentCompression();
+            }
+
+            // get response
+            if (!allowRedirects) {
+                clientBuilder.disableRedirectHandling();
+            }
+
+            return new PooledClient(clientBuilder.build(), proxy);
         }
 
 
         /**
          * how long http connection keep, in milliseconds. default -1, get from server response
          */
-        public ConnectionPoolBuilder timeToLive(long timeToLive) {
+        public PooledClientBuilder timeToLive(long timeToLive) {
             this.timeToLive = timeToLive;
             return this;
         }
@@ -164,7 +190,7 @@ public class ConnectionPool implements Closeable {
         /**
          * the max total http connection count. default 20
          */
-        public ConnectionPoolBuilder maxTotal(int maxTotal) {
+        public PooledClientBuilder maxTotal(int maxTotal) {
             this.maxTotal = maxTotal;
             return this;
         }
@@ -172,7 +198,7 @@ public class ConnectionPool implements Closeable {
         /**
          * set default max connection count for each host, default 2
          */
-        public ConnectionPoolBuilder maxPerRoute(int maxPerRoute) {
+        public PooledClientBuilder maxPerRoute(int maxPerRoute) {
             this.maxPerRoute = maxPerRoute;
             return this;
         }
@@ -180,17 +206,42 @@ public class ConnectionPool implements Closeable {
         /**
          * set specified max connection count for the host, default 2
          */
-        public ConnectionPoolBuilder maxPerRoute(Host host, int maxPerRoute) {
+        public PooledClientBuilder maxPerRoute(Host host, int maxPerRoute) {
             ensurePerRouteCount();
             this.perRouteCount.add(new Pair<>(host, maxPerRoute));
             return this;
         }
 
         /**
+         * set userAgent
+         */
+        public PooledClientBuilder userAgent(String userAgent) {
+            Objects.requireNonNull(userAgent);
+            this.userAgent = userAgent;
+            return this;
+        }
+
+        /**
          * if verify http certificate, default true
          */
-        public ConnectionPoolBuilder verify(boolean verify) {
+        public PooledClientBuilder verify(boolean verify) {
             this.verify = verify;
+            return this;
+        }
+
+        /**
+         * if follow redirect
+         */
+        public PooledClientBuilder allowRedirects(boolean allowRedirects) {
+            this.allowRedirects = allowRedirects;
+            return this;
+        }
+
+        /**
+         * if send gzip requests. default true
+         */
+        public PooledClientBuilder gzip(boolean gzip) {
+            this.gzip = gzip;
             return this;
         }
 
@@ -200,7 +251,7 @@ public class ConnectionPool implements Closeable {
             }
         }
 
-        private ConnectionPoolBuilder proxy(Proxy proxy) {
+        private PooledClientBuilder proxy(Proxy proxy) {
             this.proxy = proxy;
             return this;
         }

@@ -27,6 +27,9 @@ import java.security.SecureRandom;
  * @author Dong Liu dongliu@wandoujia.com
  */
 class Utils {
+
+    static String defaultUserAgent = "Requests/1.11.0, Java " + System.getProperty("java.version");
+
     static Registry<ConnectionSocketFactory> getConnectionSocketFactoryRegistry(
             Proxy proxy, boolean verify) {
         SSLContext sslContext;

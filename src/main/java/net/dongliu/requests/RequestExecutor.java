@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * execute request and get response result.
+ * Execute request and get response result.
  *
  * @param <T> the response body type
  * @author Dong Liu dongliu@wandoujia.com
@@ -41,14 +41,13 @@ class RequestExecutor<T> {
     private final ResponseProcessor<T> processor;
 
     private final Session session;
-    private final ConnectionPool connectionPool;
+    private final PooledClient pooledClient;
 
-    RequestExecutor(Request request, ResponseProcessor<T> processor, Session session,
-                    ConnectionPool connectionPool) {
+    RequestExecutor(Request request, ResponseProcessor<T> processor, Session session, PooledClient pooledClient) {
         this.request = request;
         this.processor = processor;
         this.session = session;
-        this.connectionPool = connectionPool;
+        this.pooledClient = pooledClient;
     }
 
     /**
@@ -66,10 +65,29 @@ class RequestExecutor<T> {
         }
 
         HttpRequestBase httpRequest = buildRequest(provider, context);
-        try (CloseableHttpClient client = buildHttpClient(provider, context)) {
+        // basic auth
+        if (request.getAuthInfo() != null) {
+            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
+                    request.getAuthInfo().getUserName(), request.getAuthInfo().getPassword());
+            provider.setCredentials(
+                    new AuthScope(request.getUrl().getHost(), request.getUrl().getPort()), credentials);
+        }
+
+        context.setAttribute(HttpClientContext.CREDS_PROVIDER, provider);
+        CloseableHttpClient client = null;
+        try {
+            client = buildHttpClient();
             // do http request with http client
             try (CloseableHttpResponse httpResponse = client.execute(httpRequest, context)) {
                 return wrapResponse(httpResponse, context);
+            }
+        } finally {
+            if (pooledClient == null && client != null) {
+                // we create new single client for this request
+                try {
+                    client.close();
+                } catch (IOException ignore) {
+                }
             }
         }
     }
@@ -77,28 +95,16 @@ class RequestExecutor<T> {
     /**
      * build http client
      */
-    private CloseableHttpClient buildHttpClient(CredentialsProvider provider, HttpClientContext context) {
+    private CloseableHttpClient buildHttpClient() {
+        if (pooledClient != null) {
+            return pooledClient.getHttpClient();
+        }
         HttpClientBuilder clientBuilder = HttpClients.custom().setUserAgent(request.getUserAgent());
 
-        if (connectionPool != null) {
-            clientBuilder.setConnectionManager(connectionPool.wrappedConnectionManager());
-        } else {
-            Registry<ConnectionSocketFactory> reg = Utils.getConnectionSocketFactoryRegistry(
-                    request.getProxy(), request.isVerify());
-            BasicHttpClientConnectionManager manager = new BasicHttpClientConnectionManager(reg);
-            clientBuilder.setConnectionManager(manager);
-        }
-
-        // basic auth
-        if (request.getAuthInfo() != null) {
-            UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
-                    request.getAuthInfo().getUserName(), request.getAuthInfo().getPassword());
-            provider.setCredentials(
-                    new AuthScope(request.getUrl().getHost(), request.getUrl().getPort()),
-                    credentials);
-        }
-
-        clientBuilder.setDefaultCredentialsProvider(provider);
+        Registry<ConnectionSocketFactory> reg = Utils.getConnectionSocketFactoryRegistry(
+                request.getProxy(), request.isVerify());
+        BasicHttpClientConnectionManager manager = new BasicHttpClientConnectionManager(reg);
+        clientBuilder.setConnectionManager(manager);
 
         // disable gzip
         if (!request.isGzip()) {
@@ -156,7 +162,7 @@ class RequestExecutor<T> {
                 .setCookieSpec(CookieSpecs.BROWSER_COMPATIBILITY);
 
         //proxy. connection proxy settings override request proxy
-        Proxy proxy = connectionPool == null ? request.getProxy() : connectionPool.getProxy();
+        Proxy proxy = pooledClient == null ? request.getProxy() : pooledClient.getProxy();
         if (proxy != null && (proxy.getScheme() == Proxy.Scheme.http
                 || proxy.getScheme() == Proxy.Scheme.https)) {
             //http or https proxy
