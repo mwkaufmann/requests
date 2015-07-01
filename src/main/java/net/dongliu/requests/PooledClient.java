@@ -1,5 +1,12 @@
 package net.dongliu.requests;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
 import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.Host;
 import net.dongliu.requests.struct.Pair;
@@ -11,14 +18,8 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Pooled http client use connection pool, for reusing http connection across http requests.
@@ -139,6 +140,7 @@ public class PooledClient implements Closeable {
         // if enable gzip response
         private boolean gzip = true;
         private boolean allowRedirects = true;
+        private boolean allowPostRedirects = true;
         private String userAgent = Utils.defaultUserAgent;
 
         PooledClientBuilder() {
@@ -174,7 +176,11 @@ public class PooledClient implements Closeable {
             if (!allowRedirects) {
                 clientBuilder.disableRedirectHandling();
             }
-
+	
+	        if (allowPostRedirects) {
+		        clientBuilder.setRedirectStrategy(new LaxRedirectStrategy());
+	        }
+            
             return new PooledClient(clientBuilder.build(), proxy);
         }
 
@@ -244,6 +250,14 @@ public class PooledClient implements Closeable {
             this.gzip = gzip;
             return this;
         }
+	
+	    /**
+	     * if follow post redirect
+	     */
+	    public PooledClientBuilder allowPostRedirects(boolean allowPostRedirects) {
+		    this.allowPostRedirects = allowPostRedirects;
+		    return this;
+	    }
 
         private void ensurePerRouteCount() {
             if (this.perRouteCount == null) {
