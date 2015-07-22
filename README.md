@@ -1,6 +1,6 @@
 #Requests
 
-Requests is a http request lib for java inspired by The Python [requests](http://docs.python-requests.org/) Module.
+Requests is a http request lib for java inspired by The Python [requests](http://docs.python-requests.org/) Module, using HttpClient as backend and with fluent api.
 
 The Httpclient lib is great, but has too complex API, which confuse beginners. Requests build simple and flexible api, both for common and advanced Usage.
 
@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>1.11.0</version>
+    <version>1.11.1</version>
 </dependency>
 ```
 ##Make request

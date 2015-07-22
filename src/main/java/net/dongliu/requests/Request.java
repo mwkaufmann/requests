@@ -33,6 +33,7 @@ public class Request {
     // if verify certificate of https site
     private final boolean verify;
     private final boolean allowRedirects;
+    private final boolean allowPostRedirects;
 
     private final int connectTimeout;
     private final int socketTimeout;
@@ -43,7 +44,7 @@ public class Request {
     Request(Method method, URI url, Parameters parameters, String userAgent, Headers headers,
             InputStream in, List<MultiPart> multiParts, byte[] body, String strBody, Parameters paramBody,
             Charset charset, AuthInfo authInfo, boolean gzip, boolean verify, Cookies cookies,
-            boolean allowRedirects, int connectTimeout, int socketTimeout, Proxy proxy) {
+            boolean allowRedirects, boolean allowPostRedirects, int connectTimeout, int socketTimeout, Proxy proxy) {
         this.method = method;
         this.url = url;
         this.parameters = parameters;
@@ -60,6 +61,7 @@ public class Request {
         this.verify = verify;
         this.cookies = cookies;
         this.allowRedirects = allowRedirects;
+        this.allowPostRedirects = allowPostRedirects;
         this.connectTimeout = connectTimeout;
         this.socketTimeout = socketTimeout;
         this.proxy = proxy;
@@ -111,6 +113,10 @@ public class Request {
 
     public boolean isAllowRedirects() {
         return allowRedirects;
+    }
+
+    public boolean isAllowPostRedirects() {
+        return allowPostRedirects;
     }
 
     public int getConnectTimeout() {

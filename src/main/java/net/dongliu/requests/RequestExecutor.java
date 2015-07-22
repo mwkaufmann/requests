@@ -116,6 +116,10 @@ class RequestExecutor<T> {
             clientBuilder.disableRedirectHandling();
         }
 
+        if (request.isAllowPostRedirects()) {
+            clientBuilder.setRedirectStrategy(new AllRedirectStrategy());
+        }
+
         return clientBuilder.build();
     }
 

@@ -45,6 +45,7 @@ public class RequestBuilder {
     // if check ssl certificate
     private boolean verify = true;
     private boolean allowRedirects = true;
+    private boolean allowPostRedirects = false;
     //private CredentialsProvider provider;
     private AuthInfo authInfo;
     private String[] cert;
@@ -117,7 +118,7 @@ public class RequestBuilder {
 
     Request build() {
         return new Request(method, url, parameters, userAgent, headers, in, multiParts, body,
-                strBody, formParameters, charset, authInfo, gzip, verify, cookies, allowRedirects,
+                strBody, formParameters, charset, authInfo, gzip, verify, cookies, allowRedirects, allowPostRedirects,
                 connectTimeout, socketTimeout, proxy);
     }
 
@@ -480,10 +481,19 @@ public class RequestBuilder {
     }
 
     /**
-     * if follow redirect
+     * If follow get/head redirect, default true.
+     * This method not set following redirect for post/put/delete method, use {@code allowPostRedirects} if you want this
      */
     public RequestBuilder allowRedirects(boolean allowRedirects) {
         this.allowRedirects = allowRedirects;
+        return this;
+    }
+
+    /**
+     * If follow POST/PUT/DELETE redirect, default false. This method work for post method.
+     */
+    public RequestBuilder allowPostRedirects(boolean allowPostRedirects) {
+        this.allowPostRedirects = allowPostRedirects;
         return this;
     }
 
