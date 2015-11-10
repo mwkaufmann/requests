@@ -132,7 +132,7 @@ public class RequestBuilder {
     }
 
     /**
-     * Set params of url query string.
+     * Set params of url query string. Will overwrite old cookie values
      * This is for set parameters in url query str, If want to set post form params use form((Map&lt;String, ?&gt; params) method
      */
     public RequestBuilder params(Map<String, ?> params) {
@@ -144,7 +144,7 @@ public class RequestBuilder {
     }
 
     /**
-     * Set params of url query string.
+     * Set params of url query string. Will overwrite old param values
      * This is for set parameters in url query str, If want to set post form params use form(Parameter... params) method
      */
     public RequestBuilder params(Parameter... params) {
@@ -156,7 +156,31 @@ public class RequestBuilder {
     }
 
     /**
-     * Add one parameter to url query string.
+     * Add params of url query string.
+     * This is for add parameters in url query str, If want to set post form params use form((Map&lt;String, ?&gt; params) method
+     */
+    public RequestBuilder addParams(Map<String, ?> params) {
+        ensureParameters();
+        for (Map.Entry<String, ?> entry : params.entrySet()) {
+            this.parameters.add(new Parameter(entry.getKey(), entry.getValue()));
+        }
+        return this;
+    }
+
+    /**
+     * Add params of url query string.
+     * This is for add parameters in url query str, If want to set post form params use form(Parameter... params) method
+     */
+    public RequestBuilder addParams(Parameter... params) {
+        ensureParameters();
+        for (Parameter param : params) {
+            this.parameters.add(new Parameter(param.getName(), param.getValue()));
+        }
+        return this;
+    }
+
+    /**
+     * Add one parameter to url query string. Will overwrite old param values
      * This is for set parameters in url query str, If want to set post form params use form(String key, Object value) method
      */
     public RequestBuilder addParam(String key, Object value) {
@@ -181,7 +205,7 @@ public class RequestBuilder {
     }
 
     /**
-     * Set http form body data, for http post method with form-encoded body.
+     * Set http form body data, for http post method with form-encoded body.  Will overwrite old param values
      */
     public RequestBuilder forms(Map<String, ?> params) {
         this.formParameters = new Parameters();
@@ -196,6 +220,28 @@ public class RequestBuilder {
      */
     public RequestBuilder forms(Parameter... params) {
         this.formParameters = new Parameters();
+        for (Parameter param : params) {
+            formParameters.add(param);
+        }
+        return this;
+    }
+
+    /**
+     * Add http form params, for http post method with form-encoded body.
+     */
+    public RequestBuilder addForms(Map<String, ?> params) {
+        ensureFormParameters();
+        for (Map.Entry<String, ?> e : params.entrySet()) {
+            this.formParameters.add(new Parameter(e.getKey(), e.getValue()));
+        }
+        return this;
+    }
+
+    /**
+     * Add http form params, for http post method with form-encoded body.
+     */
+    public RequestBuilder addForms(Parameter... params) {
+        ensureFormParameters();
         for (Parameter param : params) {
             formParameters.add(param);
         }
@@ -273,7 +319,7 @@ public class RequestBuilder {
     }
 
     /**
-     * Set headers
+     * Set headers. Will overwrite old header values
      */
     public RequestBuilder headers(Map<String, ?> params) {
         this.headers = new Headers();
@@ -284,10 +330,32 @@ public class RequestBuilder {
     }
 
     /**
-     * Set headers
+     * Set headers. Will overwrite old header values
      */
     public RequestBuilder headers(Header... headers) {
         this.headers = new Headers();
+        for (Header header : headers) {
+            this.headers.add(header);
+        }
+        return this;
+    }
+
+    /**
+     * Add headers.
+     */
+    public RequestBuilder addHeaders(Map<String, ?> params) {
+        ensureHeaders();
+        for (Map.Entry<String, ?> entry : params.entrySet()) {
+            this.headers.add(new Header(entry.getKey(), entry.getValue()));
+        }
+        return this;
+    }
+
+    /**
+     * Add headers.
+     */
+    public RequestBuilder addHeaders(Header... headers) {
+        ensureHeaders();
         for (Header header : headers) {
             this.headers.add(header);
         }
@@ -363,7 +431,7 @@ public class RequestBuilder {
     }
 
     /**
-     * Set cookies
+     * Set cookies. Will overwrite old cookie values
      */
     public RequestBuilder cookies(Map<String, String> cookies) {
         this.cookies = new Cookies();
@@ -374,10 +442,33 @@ public class RequestBuilder {
     }
 
     /**
-     * Set cookies
+     * Set cookies. Will overwrite old cookie values
      */
     public RequestBuilder cookies(Cookie... cookies) {
         this.cookies = new Cookies();
+        for (Cookie cookie : cookies) {
+            this.cookies.add(cookie);
+        }
+        return this;
+    }
+
+
+    /**
+     * Add cookies.
+     */
+    public RequestBuilder AddCookies(Map<String, String> cookies) {
+        ensureCookies();
+        for (Map.Entry<String, String> entry : cookies.entrySet()) {
+            this.cookies.add(new Cookie(entry.getKey(), entry.getValue()));
+        }
+        return this;
+    }
+
+    /**
+     * Add cookies.
+     */
+    public RequestBuilder AddCookies(Cookie... cookies) {
+        ensureCookies();
         for (Cookie cookie : cookies) {
             this.cookies.add(cookie);
         }
@@ -424,6 +515,17 @@ public class RequestBuilder {
         throw new UnsupportedOperationException();
 //        this.cert = cert;
 //        return this;
+    }
+
+    /**
+     * add multi part file, will send multiPart requests.
+     *
+     * @param file the file to be send
+     */
+    public RequestBuilder addMultiPart(File file) {
+        ensureMultiPart();
+        this.multiParts.add(new MultiPart(file.getName(), file));
+        return this;
     }
 
     /**
@@ -484,7 +586,7 @@ public class RequestBuilder {
      * @param in       the inputStream for the content
      */
     public RequestBuilder addMultiPart(String name, String mimeType, InputStream in) {
-        multiPart(name, mimeType, null, in);
+        addMultiPart(name, mimeType, null, in);
         return this;
     }
 
@@ -496,7 +598,7 @@ public class RequestBuilder {
      * @param fileName the file name. can be null
      * @param in       the inputStream for the content
      */
-    public RequestBuilder multiPart(String name, String mimeType, String fileName, InputStream in) {
+    public RequestBuilder addMultiPart(String name, String mimeType, String fileName, InputStream in) {
         ensureMultiPart();
         this.multiParts.add(new MultiPart(name, mimeType, fileName, in));
         return this;

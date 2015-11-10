@@ -13,7 +13,7 @@
     <artifactId>requests</artifactId>
     <name>requests</name>
     <packaging>jar</packaging>
-    <version>1.12.0</version>
+    <version>1.12.1</version>
     <url>https://github.com/xiaxiaocao/requests</url>
 
     <distributionManagement>
@@ -33,16 +33,16 @@
 
     <licenses>
         <license>
-            <name>The BSD 2-Clause License</name>
-            <url>https://github.com/xiaxiaocao/requests/blob/master/LICENSE.txt</url>
+            <name>The BSD 3-Clause License</name>
+            <url>https://github.com/CaoQianLi/requests/blob/master/LICENSE.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
 
     <scm>
-        <connection>scm:git:git@github.com:xiaxiaocao/requests.git</connection>
-        <url>https://github.com/xiaxiaocao/requests</url>
-        <developerConnection>scm:git:git@github.com:xiaxiaocao/requests.git</developerConnection>
+        <connection>scm:git:git@github.com:CaoQianLi/requests.git</connection>
+        <url>https://github.com/CaoQianLi/requests</url>
+        <developerConnection>scm:git:git@github.com:CaoQianLi/requests.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
