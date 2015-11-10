@@ -1,7 +1,6 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.struct.*;
-import org.apache.commons.io.Charsets;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -27,6 +26,7 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -217,7 +217,7 @@ class RequestExecutor<T> {
             for (Parameter param : request.getParamBody()) {
                 paramList.add(new BasicNameValuePair(param.getName(), param.getValue()));
             }
-            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList, Charsets.UTF_8);
+            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList, StandardCharsets.UTF_8);
             httpPut.setEntity(entity);
         }
         return httpPut;
@@ -285,7 +285,7 @@ class RequestExecutor<T> {
             for (Parameter param : request.getParamBody()) {
                 paramList.add(new BasicNameValuePair(param.getName(), param.getValue()));
             }
-            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList, Charsets.UTF_8);
+            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList, StandardCharsets.UTF_8);
             httpPatch.setEntity(entity);
         }
         return httpPatch;

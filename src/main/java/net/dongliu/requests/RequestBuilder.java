@@ -165,31 +165,10 @@ public class RequestBuilder {
         return this;
     }
 
-    /**
-     * Add one parameter to url query string.
-     * This is for set parameters in url query str, If want to set post form params use form(String key, Object value) method
-     *
-     * @deprecated use {@link #addParam(String, Object)} method instead
-     */
-    @Deprecated
-    public RequestBuilder param(String key, Object value) {
-        return addParam(key, value);
-    }
-
     private void ensureParameters() {
         if (this.parameters == null) {
             this.parameters = new Parameters();
         }
-    }
-
-    /**
-     * Add http form body data, for http post method with form-encoded body.
-     *
-     * @deprecated use {@link #addForm(String, Object)} method
-     */
-    @Deprecated
-    public RequestBuilder form(String key, Object value) {
-        return this.addForm(key, value);
     }
 
     /**
@@ -221,46 +200,6 @@ public class RequestBuilder {
             formParameters.add(param);
         }
         return this;
-    }
-
-    /**
-     * Set http form body data, for http post method with form-encoded body.
-     *
-     * @deprecated use {@link #forms(Map)} method instead
-     */
-    @Deprecated
-    public RequestBuilder form(Map<String, ?> params) {
-        return forms(params);
-    }
-
-    /**
-     * Set http form body data, for http post method with form-encoded body.
-     *
-     * @deprecated use {@link #forms(Parameter...)} method instead
-     */
-    @Deprecated
-    public RequestBuilder form(Parameter... params) {
-        return forms(params);
-    }
-
-    /**
-     * Set http form body data, for http post method with form-encoded body.
-     *
-     * @deprecated use {@link #forms(Map)} method instead
-     */
-    @Deprecated
-    public RequestBuilder data(Map<String, ?> params) {
-        return forms(params);
-    }
-
-    /**
-     * Set http form body data, for http post method with form-encoded body.
-     *
-     * @deprecated use {@link #forms(Parameter...)} method instead
-     */
-    @Deprecated
-    public RequestBuilder data(Parameter... params) {
-        return forms(params);
     }
 
     private void ensureFormParameters() {
@@ -357,16 +296,6 @@ public class RequestBuilder {
 
     /**
      * Add one header
-     *
-     * @deprecated use {@link #addHeader(String, Object)} method
-     */
-    @Deprecated
-    public RequestBuilder header(String key, Object value) {
-        return addHeader(key, value);
-    }
-
-    /**
-     * Add one header
      */
     public RequestBuilder addHeader(String key, Object value) {
         ensureHeaders();
@@ -457,16 +386,6 @@ public class RequestBuilder {
 
     /**
      * Add one cookie
-     *
-     * @deprecated use {@link #addCookie(String, String)} method
-     */
-    @Deprecated
-    public RequestBuilder cookie(String name, String value) {
-        return addCookie(name, value);
-    }
-
-    /**
-     * Add one cookie
      */
     public RequestBuilder addCookie(String name, String value) {
         ensureCookies();
@@ -512,37 +431,11 @@ public class RequestBuilder {
      *
      * @param name the http request field name for this file
      * @param file the file to be send
-     * @deprecated use {@link #addMultiPart(String, File)} method
-     */
-    @Deprecated
-    public RequestBuilder multiPart(String name, File file) {
-        return addMultiPart(name, file);
-    }
-
-    /**
-     * add multi part file, will send multiPart requests.
-     *
-     * @param name the http request field name for this file
-     * @param file the file to be send
      */
     public RequestBuilder addMultiPart(String name, File file) {
         ensureMultiPart();
         this.multiParts.add(new MultiPart(name, file));
         return this;
-    }
-
-    /**
-     * add multi part file, will send multiPart requests.
-     * this should be used with post method
-     *
-     * @param name     the http request field name for this file
-     * @param mimeType the mimeType for file
-     * @param file     the file to be send
-     * @deprecated use {@link #addMultiPart(String, String, File)} method
-     */
-    @Deprecated
-    public RequestBuilder multiPart(String name, String mimeType, File file) {
-        return addMultiPart(name, mimeType, file);
     }
 
     /**
@@ -564,35 +457,10 @@ public class RequestBuilder {
      *
      * @param name  the http request field name for this field
      * @param bytes the multipart request content
-     * @deprecated use {@link #addMultiPart(String, String, byte[])} method
-     */
-    @Deprecated
-    public RequestBuilder multiPart(String name, String mimeType, byte[] bytes) {
-        return addMultiPart(name, mimeType, bytes);
-    }
-
-    /**
-     * add multi part field by byte array, will send multiPart requests.
-     *
-     * @param name  the http request field name for this field
-     * @param bytes the multipart request content
      */
     public RequestBuilder addMultiPart(String name, String mimeType, byte[] bytes) {
-        multiPart(name, mimeType, null, bytes);
+        addMultiPart(name, mimeType, null, bytes);
         return this;
-    }
-
-    /**
-     * add multi part field by byte array, will send multiPart requests.
-     *
-     * @param name     the http request field name for this field
-     * @param fileName the file name. can be null
-     * @param bytes    the multipart request content
-     * @deprecated use {@link #addMultiPart(String, String, String, byte[])} method
-     */
-    @Deprecated
-    public RequestBuilder multiPart(String name, String mimeType, String fileName, byte[] bytes) {
-        return addMultiPart(name, mimeType, fileName, bytes);
     }
 
     /**
@@ -606,19 +474,6 @@ public class RequestBuilder {
         ensureMultiPart();
         this.multiParts.add(new MultiPart(name, mimeType, fileName, bytes));
         return this;
-    }
-
-    /**
-     * add multi part field by inputStream, will send multiPart requests.
-     *
-     * @param name     the http request field name for this field
-     * @param mimeType the mimeType for file
-     * @param in       the inputStream for the content
-     * @deprecated use {@link #addMultiPart(String, String, InputStream)} method
-     */
-    @Deprecated
-    public RequestBuilder multiPart(String name, String mimeType, InputStream in) {
-        return addMultiPart(name, mimeType, in);
     }
 
     /**
@@ -652,18 +507,6 @@ public class RequestBuilder {
      *
      * @param name  the http request field name
      * @param value the file to be send
-     * @deprecated use {@link #addMultiPart(String, File)} method
-     */
-    @Deprecated
-    public RequestBuilder multiPart(String name, String value) {
-        return addMultiPart(name, value);
-    }
-
-    /**
-     * Add multi part key-value parameter.
-     *
-     * @param name  the http request field name
-     * @param value the file to be send
      */
     public RequestBuilder addMultiPart(String name, String value) {
         ensureMultiPart();
@@ -685,7 +528,7 @@ public class RequestBuilder {
     /**
      * Set connection pool. used to reuse http connections.
      */
-    RequestBuilder connectionPool(PooledClient pooledClient) {
+    RequestBuilder executedBy(PooledClient pooledClient) {
         this.pooledClient = pooledClient;
         return this;
     }
