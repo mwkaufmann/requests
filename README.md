@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>1.11.1</version>
+    <version>1.12.1</version>
 </dependency>
 ```
 ##Make request
