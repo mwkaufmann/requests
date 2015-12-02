@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>1.12.1</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 ##Make request
@@ -37,8 +37,10 @@ String body = resp.getBody();
 ```
 The text() method here trans http response body as String, there are other method to process http response:
 ```java
-// get response as string, and use provided encoding
+// get response as string, use encoding get from response header
 Response<String> resp = Requests.get(url).text();
+// get response as string, and use provided encoding
+Response<String> resp = Requests.get(url).text(StandardCharsets.UTF-8);
 // get response as bytes
 Response<byte[]> resp1 = Requests.get(url).bytes();
 // save response as file 
@@ -48,19 +50,13 @@ or you can custom http response processor your self:
 ```java
 Response<String> resp = Requests.get(url).handler(new ResponseHandler<String>() {...});
 ```
-##Charset
+##Request Charset
 Set charset used to encode parameters, post forms or request string body:
 ```
 Response<String> resp = Requests.get(url).charset(StandardCharsets.UTF_8).text();
 ```
 Default charset is utf-8.
 
-HTTP response decoding will use charset got from response headers,
- if something is wrong(charset header not exists), you can set http response code with responseCharset:
-```
-Response<String> resp = Requests.get(url).charset(StandardCharsets.UTF_8)
-        .responseCharset(StandardCharsets.UTF_8).text();
-```
 ##Passing Parameters
 Pass parameters in urls using param or params method:
 ```java
@@ -68,7 +64,7 @@ Response<String> resp = Requests.get(url)
         // add one param
         .addParam("key1", "value1")
         .addParam("key1", "value1")
-        .text;
+        .text();
 // set params by map
 Map<String, Object> params = new HashMap<>();
 params.put("k1", "v1");

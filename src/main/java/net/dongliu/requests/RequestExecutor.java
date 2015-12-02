@@ -26,7 +26,6 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +33,7 @@ import java.util.List;
  * Execute request and get response result.
  *
  * @param <T> the response body type
- * @author Dong Liu dongliu@wandoujia.com
+ * @author Dong Liu dongliu@live.cn
  */
 class RequestExecutor<T> {
     private final Request request;
@@ -161,7 +160,7 @@ class RequestExecutor<T> {
         RequestConfig.Builder configBuilder = RequestConfig.custom()
                 .setConnectTimeout(request.getConnectTimeout())
                 .setSocketTimeout(request.getSocketTimeout())
-                        // we use connect timeout for connection request timeout
+                // we use connect timeout for connection request timeout
                 .setConnectionRequestTimeout(request.getConnectTimeout())
                 .setCookieSpec(CookieSpecs.BROWSER_COMPATIBILITY);
 
@@ -203,34 +202,27 @@ class RequestExecutor<T> {
     }
 
     private HttpRequestBase buildHttpPut(URI uri, Request request) {
-        Utils.checkHttpBody(request);
         HttpPut httpPut = new HttpPut(uri);
-        if (request.getStrBody() != null) {
-            httpPut.setEntity(new StringEntity(request.getStrBody(), request.getCharset()));
-        } else if (request.getBody() != null) {
-            httpPut.setEntity(new ByteArrayEntity(request.getBody()));
-        } else if (request.getIn() != null) {
-            httpPut.setEntity(new InputStreamEntity(request.getIn()));
-        } else if (request.getParamBody() != null) {
-            // use www-form-urlencoded to send params
-            List<BasicNameValuePair> paramList = new ArrayList<>(request.getParamBody().size());
-            for (Parameter param : request.getParamBody()) {
-                paramList.add(new BasicNameValuePair(param.getName(), param.getValue()));
+        HttpBody body = request.getHttpBody();
+        if (request.getHttpBody() != null) {
+            if (body instanceof StringHttpBody) {
+                httpPut.setEntity(new StringEntity(((StringHttpBody) body).getBody(), request.getCharset()));
+            } else if (body instanceof BytesHttpBody) {
+                httpPut.setEntity(new ByteArrayEntity(((BytesHttpBody) body).getBody()));
+            } else if (body instanceof InputHttpBody) {
+                httpPut.setEntity(new InputStreamEntity(((InputHttpBody) body).getBody()));
             }
-            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList, StandardCharsets.UTF_8);
-            httpPut.setEntity(entity);
         }
         return httpPut;
     }
 
 
     private HttpPost buildHttpPost(URI uri, Request request) {
-        Utils.checkHttpBody(request);
-
         HttpPost httpPost = new HttpPost(uri);
-        if (request.getMultiParts() != null) {
+        HttpBody body = request.getHttpBody();
+        if (body instanceof MultiPartHttpBody) {
             MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
-            for (MultiPart f : request.getMultiParts()) {
+            for (MultiPart f : ((MultiPartHttpBody) body).getBody()) {
                 switch (f.getType()) {
                     case TEXT:
                         entityBuilder.addTextBody(f.getName(), f.getValue());
@@ -251,16 +243,17 @@ class RequestExecutor<T> {
 
             }
             httpPost.setEntity(entityBuilder.build());
-        } else if (request.getStrBody() != null) {
-            httpPost.setEntity(new StringEntity(request.getStrBody(), request.getCharset()));
-        } else if (request.getBody() != null) {
-            httpPost.setEntity(new ByteArrayEntity(request.getBody()));
-        } else if (request.getIn() != null) {
-            httpPost.setEntity(new InputStreamEntity(request.getIn()));
-        } else if (request.getParamBody() != null) {
+        } else if (body instanceof StringHttpBody) {
+            httpPost.setEntity(new StringEntity(((StringHttpBody) body).getBody(), request.getCharset()));
+        } else if (body instanceof BytesHttpBody) {
+            httpPost.setEntity(new ByteArrayEntity(((BytesHttpBody) body).getBody()));
+        } else if (body instanceof InputHttpBody) {
+            httpPost.setEntity(new InputStreamEntity(((InputHttpBody) body).getBody()));
+        } else if (body instanceof FormHttpBody) {
             // use www-form-urlencoded to send params
-            List<BasicNameValuePair> paramList = new ArrayList<>(request.getParamBody().size());
-            for (Parameter param : request.getParamBody()) {
+            List<Parameter> forms = ((FormHttpBody) body).getBody();
+            List<BasicNameValuePair> paramList = new ArrayList<>(forms.size());
+            for (Parameter param : forms) {
                 paramList.add(new BasicNameValuePair(param.getName(), param.getValue()));
             }
             UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList, request.getCharset());
@@ -271,22 +264,16 @@ class RequestExecutor<T> {
 
 
     private HttpRequestBase buildHttpPatch(URI uri, Request request) {
-        Utils.checkHttpBody(request);
         HttpPatch httpPatch = new HttpPatch(uri);
-        if (request.getStrBody() != null) {
-            httpPatch.setEntity(new StringEntity(request.getStrBody(), request.getCharset()));
-        } else if (request.getBody() != null) {
-            httpPatch.setEntity(new ByteArrayEntity(request.getBody()));
-        } else if (request.getIn() != null) {
-            httpPatch.setEntity(new InputStreamEntity(request.getIn()));
-        } else if (request.getParamBody() != null) {
-            // use www-form-urlencoded to send params
-            List<BasicNameValuePair> paramList = new ArrayList<>(request.getParamBody().size());
-            for (Parameter param : request.getParamBody()) {
-                paramList.add(new BasicNameValuePair(param.getName(), param.getValue()));
+        HttpBody body = request.getHttpBody();
+        if (request.getHttpBody() != null) {
+            if (body instanceof StringHttpBody) {
+                httpPatch.setEntity(new StringEntity(((StringHttpBody) body).getBody(), request.getCharset()));
+            } else if (body instanceof BytesHttpBody) {
+                httpPatch.setEntity(new ByteArrayEntity(((BytesHttpBody) body).getBody()));
+            } else if (body instanceof InputHttpBody) {
+                httpPatch.setEntity(new InputStreamEntity(((InputHttpBody) body).getBody()));
             }
-            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(paramList, StandardCharsets.UTF_8);
-            httpPatch.setEntity(entity);
         }
         return httpPatch;
     }

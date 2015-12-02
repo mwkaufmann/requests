@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * Pooled http client use connection pool, for reusing http connection across http requests.
  * This class is thread-safe, can service connection requests from multiple execution threads.
  *
- * @author Dong Liu dongliu@wandoujia.com
+ * @author Dong Liu dongliu@live.cn
  */
 public class PooledClient implements Closeable {
 
@@ -57,49 +57,49 @@ public class PooledClient implements Closeable {
     /**
      * get method
      */
-    public RequestBuilder get(String url) throws RequestException {
+    public BaseRequestBuilder get(String url) throws RequestException {
         return Requests.get(url).executedBy(this);
     }
 
     /**
      * head method
      */
-    public RequestBuilder head(String url) throws RequestException {
+    public BaseRequestBuilder head(String url) throws RequestException {
         return Requests.head(url).executedBy(this);
     }
 
     /**
      * get url, and return content
      */
-    public RequestBuilder post(String url) throws RequestException {
+    public PostRequestBuilder post(String url) throws RequestException {
         return Requests.post(url).executedBy(this);
     }
 
     /**
      * put method
      */
-    public RequestBuilder put(String url) throws RequestException {
+    public BodyRequestBuilder put(String url) throws RequestException {
         return Requests.put(url).executedBy(this);
     }
 
     /**
      * delete method
      */
-    public RequestBuilder delete(String url) throws RequestException {
+    public BaseRequestBuilder delete(String url) throws RequestException {
         return Requests.delete(url).executedBy(this);
     }
 
     /**
      * options method
      */
-    public RequestBuilder options(String url) throws RequestException {
+    public BaseRequestBuilder options(String url) throws RequestException {
         return Requests.options(url).executedBy(this);
     }
 
     /**
      * patch method
      */
-    public RequestBuilder patch(String url) throws RequestException {
+    public BodyRequestBuilder patch(String url) throws RequestException {
         return Requests.patch(url).executedBy(this);
     }
 
@@ -117,7 +117,7 @@ public class PooledClient implements Closeable {
     /**
      * trace method
      */
-    public RequestBuilder trace(String url) throws RequestException {
+    public BaseRequestBuilder trace(String url) throws RequestException {
         return Requests.trace(url).executedBy(this);
     }
 

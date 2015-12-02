@@ -13,57 +13,57 @@ public class Requests {
     /**
      * get method
      */
-    public static RequestBuilder get(String url) throws RequestException {
-        return newBuilder(url).method(Method.GET);
+    public static BaseRequestBuilder get(String url) throws RequestException {
+        return new BaseRequestBuilder().url(url).method(Method.GET);
     }
 
     /**
      * head method
      */
-    public static RequestBuilder head(String url) throws RequestException {
-        return newBuilder(url).method(Method.HEAD);
+    public static BaseRequestBuilder head(String url) throws RequestException {
+        return new BaseRequestBuilder().url(url).method(Method.HEAD);
     }
 
     /**
      * get url, and return content
      */
-    public static RequestBuilder post(String url) throws RequestException {
-        return newBuilder(url).method(Method.POST);
+    public static PostRequestBuilder post(String url) throws RequestException {
+        return new PostRequestBuilder().url(url).method(Method.POST);
     }
 
     /**
      * put method
      */
-    public static RequestBuilder put(String url) throws RequestException {
-        return newBuilder(url).method(Method.PUT);
+    public static BodyRequestBuilder put(String url) throws RequestException {
+        return new BodyRequestBuilder().url(url).method(Method.PUT);
     }
 
     /**
      * delete method
      */
-    public static RequestBuilder delete(String url) throws RequestException {
-        return newBuilder(url).method(Method.DELETE);
+    public static BaseRequestBuilder delete(String url) throws RequestException {
+        return new BaseRequestBuilder().url(url).method(Method.DELETE);
     }
 
     /**
      * options method
      */
-    public static RequestBuilder options(String url) throws RequestException {
-        return newBuilder(url).method(Method.OPTIONS);
+    public static BaseRequestBuilder options(String url) throws RequestException {
+        return new BaseRequestBuilder().url(url).method(Method.OPTIONS);
     }
 
     /**
      * patch method
      */
-    public static RequestBuilder patch(String url) throws RequestException {
-        return newBuilder(url).method(Method.PATCH);
+    public static BodyRequestBuilder patch(String url) throws RequestException {
+        return new BodyRequestBuilder().url(url).method(Method.PATCH);
     }
 
     /**
      * trace method
      */
-    public static RequestBuilder trace(String url) throws RequestException {
-        return newBuilder(url).method(Method.TRACE);
+    public static BaseRequestBuilder trace(String url) throws RequestException {
+        return new BaseRequestBuilder().url(url).method(Method.TRACE);
     }
 //
 //    /**
@@ -72,13 +72,6 @@ public class Requests {
 //    public static RequestBuilder connect(String url) throws InvalidUrlException {
 //        return newBuilder(url).method(Method.CONNECT);
 //    }
-
-    /**
-     * create request builder with url
-     */
-    private static RequestBuilder newBuilder(String url) throws RequestException {
-        return new RequestBuilder().url(url);
-    }
 
     /**
      * create a session. session can do request as Requests do, and keep cookies to maintain a http session

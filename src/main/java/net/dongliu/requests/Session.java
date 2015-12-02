@@ -1,14 +1,13 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.exception.RequestException;
-import net.dongliu.requests.struct.Method;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 
 /**
  * one http session, share cookies, basic auth across http request.
  *
- * @author Dong Liu dongliu@wandoujia.com
+ * @author Dong Liu dongliu@live.cn
  */
 public class Session {
     private final HttpClientContext context;
@@ -29,74 +28,57 @@ public class Session {
     /**
      * get method
      */
-    public RequestBuilder get(String url) throws RequestException {
-        return newBuilder(url).method(Method.GET);
+    public BaseRequestBuilder get(String url) throws RequestException {
+        return Requests.get(url).session(this).executedBy(pooledClient);
     }
 
     /**
      * head method
      */
-    public RequestBuilder head(String url) throws RequestException {
-        return newBuilder(url).method(Method.HEAD);
+    public BaseRequestBuilder head(String url) throws RequestException {
+        return Requests.head(url).session(this).executedBy(pooledClient);
     }
 
     /**
      * get url, and return content
      */
-    public RequestBuilder post(String url) throws RequestException {
-        return newBuilder(url).method(Method.POST);
+    public PostRequestBuilder post(String url) throws RequestException {
+        return Requests.post(url).session(this).executedBy(pooledClient);
     }
 
     /**
      * put method
      */
-    public RequestBuilder put(String url) throws RequestException {
-        return newBuilder(url).method(Method.PUT);
+    public BodyRequestBuilder put(String url) throws RequestException {
+        return Requests.put(url).session(this).executedBy(pooledClient);
     }
 
     /**
      * delete method
      */
-    public RequestBuilder delete(String url) throws RequestException {
-        return newBuilder(url).method(Method.DELETE);
+    public BaseRequestBuilder delete(String url) throws RequestException {
+        return Requests.delete(url).session(this).executedBy(pooledClient);
     }
 
     /**
      * options method
      */
-    public RequestBuilder options(String url) throws RequestException {
-        return newBuilder(url).method(Method.OPTIONS);
+    public BaseRequestBuilder options(String url) throws RequestException {
+        return Requests.options(url).session(this).executedBy(pooledClient);
     }
 
     /**
      * patch method
      */
-    public RequestBuilder patch(String url) throws RequestException {
-        return newBuilder(url).method(Method.PATCH);
+    public BodyRequestBuilder patch(String url) throws RequestException {
+        return Requests.patch(url).session(this).executedBy(pooledClient);
     }
 
     /**
      * trace method
      */
-    public RequestBuilder trace(String url) throws RequestException {
-        return newBuilder(url).method(Method.TRACE);
+    public BaseRequestBuilder trace(String url) throws RequestException {
+        return Requests.trace(url).session(this).executedBy(pooledClient);
     }
-//
-//    /**
-//     * connect
-//     */
-//    public static RequestBuilder connect(String url) throws InvalidUrlException {
-//        return newBuilder(url).method(Method.CONNECT);
-//    }
 
-    /**
-     * create request builder with url
-     */
-    private RequestBuilder newBuilder(String url) throws RequestException {
-        RequestBuilder builder = new RequestBuilder().session(this).url(url);
-        if (pooledClient != null) {
-            builder.executedBy(pooledClient);
-        }
-        return builder;
-    }
 }

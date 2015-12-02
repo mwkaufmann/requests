@@ -81,6 +81,7 @@ public class RequestsTest {
         Response<String> resp = Requests.get("https://127.0.0.1:8443/otn/")
                 .verify(false).text();
         assertEquals(200, resp.getStatusCode());
+        System.out.println(resp.getHeaders());
     }
 
     @Test

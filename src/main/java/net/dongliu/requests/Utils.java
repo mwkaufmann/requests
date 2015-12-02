@@ -2,7 +2,6 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.encode.URIBuilder;
 import net.dongliu.requests.struct.Parameter;
-import net.dongliu.requests.struct.Parameters;
 import net.dongliu.requests.struct.Proxy;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -20,15 +19,16 @@ import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.List;
 
 /**
  * Util methods
  *
- * @author Dong Liu dongliu@wandoujia.com
+ * @author Dong Liu dongliu@live.cn
  */
 class Utils {
 
-    static String defaultUserAgent = "Requests/1.11.0, Java " + System.getProperty("java.version");
+    static String defaultUserAgent = "Requests/2.0.0, Java " + System.getProperty("java.version");
 
     static Registry<ConnectionSocketFactory> getConnectionSocketFactoryRegistry(
             Proxy proxy, boolean verify) {
@@ -57,7 +57,7 @@ class Utils {
     }
 
     // build full url with parameters
-    static URI fullUrl(URI url, Charset charset, Parameters parameters) {
+    static URI fullUrl(URI url, Charset charset, List<Parameter> parameters) {
         try {
             if (parameters == null || parameters.isEmpty()) {
                 return url;
@@ -72,19 +72,5 @@ class Utils {
         }
     }
 
-    /**
-     * make sure only one http body was set
-     */
-    static void checkHttpBody(Request request) {
-        int bodyCount = 0;
-        if (request.getStrBody() != null) bodyCount++;
-        if (request.getBody() != null) bodyCount++;
-        if (request.getIn() != null) bodyCount++;
-        if (request.getParamBody() != null) bodyCount++;
-        if (request.getMultiParts() != null) bodyCount++;
-        if (bodyCount > 1) {
-            //can not set both
-            throw new RuntimeException("More than one http request body have been set");
-        }
-    }
+
 }
