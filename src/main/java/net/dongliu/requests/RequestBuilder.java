@@ -51,7 +51,9 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         }
 
         // use new client to run this request and then close
-        try (Client newClient = Client.custom().verify(request.isVerify())
+        try (Client newClient = Client.custom().type(Client.CLIENT_TYPE_BASIC)
+                .userAgent(userAgent)
+                .verify(request.isVerify())
                 .allowRedirects(request.isAllowRedirects())
                 .compress(request.isCompress())
                 .proxy(proxy)
