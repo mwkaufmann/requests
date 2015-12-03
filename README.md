@@ -2,7 +2,7 @@
 
 Requests is a http request lib for java inspired by The Python [requests](http://docs.python-requests.org/) Module, using HttpClient as backend and with fluent api.
 
-The Httpclient lib is great, but has too complex API, which confuse beginners. Requests build simple and flexible api, both for common and advanced Usage.
+The HttpClient lib is great, but has too complex API, which confuse beginners. Requests build simple and flexible api, both for common and advanced Usage.
 
 #User Guide
 ##Get Requests
@@ -214,7 +214,7 @@ Response<String> resp2 = session.get(url2).text();
 ##Connection Pool
 Request(and Session) can share one connection pool to reuse http connections, via PooledClient.
 ```java
-PooledClient client = PooledClient.custom().verify(false)
+Client client = Client.custom().verify(false)
        .maxPerRoute(20)
        .maxTotal(100)
        .proxy(...)
