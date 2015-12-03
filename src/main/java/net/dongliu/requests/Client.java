@@ -1,8 +1,9 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.encode.URIBuilder;
+import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.*;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
@@ -12,47 +13,134 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.config.Registry;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.*;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Execute request and get response result.
+ * Pooled http client use connection pool, for reusing http connection across http requests.
+ * This class is thread-safe, can service connection requests from multiple execution threads.
  *
- * @param <T> the response body type
  * @author Dong Liu dongliu@live.cn
  */
-class RequestExecutor<T> {
-    private final Request request;
-    private final ResponseProcessor<T> processor;
+public class Client implements Closeable {
 
-    private final Session session;
-    private final PooledClient pooledClient;
+    public static final int CLIENT_TYPE_POOLED = 1;
+    public static final int CLIENT_TYPE_BASIC = 2;
 
-    RequestExecutor(Request request, ResponseProcessor<T> processor, Session session, PooledClient pooledClient) {
-        this.request = request;
-        this.processor = processor;
-        this.session = session;
-        this.pooledClient = pooledClient;
+    // the wrapped http client
+    private final CloseableHttpClient client;
+
+    public Client(CloseableHttpClient client, Proxy proxy) {
+        this.client = client;
+        this.proxy = proxy;
     }
+
+    /**
+     * create new ConnectionPool Builder.
+     */
+    public static ClientBuilder custom() {
+        return new ClientBuilder();
+    }
+
+    private final Proxy proxy;
+
+    @Override
+    public void close() throws IOException {
+        client.close();
+    }
+
+    Proxy getProxy() {
+        return proxy;
+    }
+
+    /**
+     * get method
+     */
+    public BaseRequestBuilder get(String url) throws RequestException {
+        return Requests.get(url).executedBy(this);
+    }
+
+    /**
+     * head method
+     */
+    public BaseRequestBuilder head(String url) throws RequestException {
+        return Requests.head(url).executedBy(this);
+    }
+
+    /**
+     * get url, and return content
+     */
+    public PostRequestBuilder post(String url) throws RequestException {
+        return Requests.post(url).executedBy(this);
+    }
+
+    /**
+     * put method
+     */
+    public BodyRequestBuilder put(String url) throws RequestException {
+        return Requests.put(url).executedBy(this);
+    }
+
+    /**
+     * delete method
+     */
+    public BaseRequestBuilder delete(String url) throws RequestException {
+        return Requests.delete(url).executedBy(this);
+    }
+
+    /**
+     * options method
+     */
+    public BaseRequestBuilder options(String url) throws RequestException {
+        return Requests.options(url).executedBy(this);
+    }
+
+    /**
+     * patch method
+     */
+    public BodyRequestBuilder patch(String url) throws RequestException {
+        return Requests.patch(url).executedBy(this);
+    }
+
+    /**
+     * create a session. session can do request as Requests do, and keep cookies to maintain a http session
+     */
+    public Session session() {
+        return new Session(this);
+    }
+
+    CloseableHttpClient getHttpClient() {
+        return client;
+    }
+
+    /**
+     * trace method
+     */
+    public BaseRequestBuilder trace(String url) throws RequestException {
+        return Requests.trace(url).executedBy(this);
+    }
+
 
     /**
      * execute request, get http response, and convert response with processor
      */
-    Response<T> execute() throws IOException {
+    <T> Response<T> execute(Request request, ResponseProcessor<T> processor, Session session) throws RequestException {
         CredentialsProvider provider = new BasicCredentialsProvider();
         HttpClientContext context;
         if (session != null) {
@@ -63,68 +151,26 @@ class RequestExecutor<T> {
             context.setCookieStore(cookieStore);
         }
 
-        HttpRequestBase httpRequest = buildRequest(provider, context);
+        HttpRequestBase httpRequest = buildRequest(request, context);
         // basic auth
         if (request.getAuthInfo() != null) {
             UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
                     request.getAuthInfo().getUserName(), request.getAuthInfo().getPassword());
-            provider.setCredentials(
-                    new AuthScope(request.getUrl().getHost(), request.getUrl().getPort()), credentials);
+            provider.setCredentials(new AuthScope(request.getUrl().getHost(), request.getUrl().getPort()), credentials);
         }
 
         context.setAttribute(HttpClientContext.CREDS_PROVIDER, provider);
-        CloseableHttpClient client = null;
-        try {
-            client = buildHttpClient();
-            // do http request with http client
-            try (CloseableHttpResponse httpResponse = client.execute(httpRequest, context)) {
-                return wrapResponse(httpResponse, context);
-            }
-        } finally {
-            if (pooledClient == null && client != null) {
-                // we create new single client for this request
-                try {
-                    client.close();
-                } catch (IOException ignore) {
-                }
-            }
+        // do http request with http client
+        try (CloseableHttpResponse httpResponse = client.execute(httpRequest, context)) {
+            return wrapResponse(httpResponse, context, processor);
+        } catch (IOException e) {
+            throw new RequestException(e);
         }
-    }
-
-    /**
-     * build http client
-     */
-    private CloseableHttpClient buildHttpClient() {
-        if (pooledClient != null) {
-            return pooledClient.getHttpClient();
-        }
-        HttpClientBuilder clientBuilder = HttpClients.custom().setUserAgent(request.getUserAgent());
-
-        Registry<ConnectionSocketFactory> reg = Utils.getConnectionSocketFactoryRegistry(
-                request.getProxy(), request.isVerify());
-        BasicHttpClientConnectionManager manager = new BasicHttpClientConnectionManager(reg);
-        clientBuilder.setConnectionManager(manager);
-
-        // disable gzip
-        if (!request.isGzip()) {
-            clientBuilder.disableContentCompression();
-        }
-
-        // get response
-        if (!request.isAllowRedirects()) {
-            clientBuilder.disableRedirectHandling();
-        }
-
-        if (request.isAllowPostRedirects()) {
-            clientBuilder.setRedirectStrategy(new AllRedirectStrategy());
-        }
-
-        return clientBuilder.build();
     }
 
     // build http request
-    private HttpRequestBase buildRequest(CredentialsProvider provider, HttpClientContext context) {
-        URI uri = Utils.fullUrl(request.getUrl(), request.getCharset(), request.getParameters());
+    private HttpRequestBase buildRequest(Request request, HttpClientContext context) {
+        URI uri = joinFullUrl(request.getUrl(), request.getCharset(), request.getParameters());
         HttpRequestBase httpRequest;
         switch (request.getMethod()) {
             case POST:
@@ -162,21 +208,8 @@ class RequestExecutor<T> {
                 .setSocketTimeout(request.getSocketTimeout())
                 // we use connect timeout for connection request timeout
                 .setConnectionRequestTimeout(request.getConnectTimeout())
-                .setCookieSpec(CookieSpecs.BROWSER_COMPATIBILITY);
+                .setCookieSpec(CookieSpecs.DEFAULT);
 
-        //proxy. connection proxy settings override request proxy
-        Proxy proxy = pooledClient == null ? request.getProxy() : pooledClient.getProxy();
-        if (proxy != null && (proxy.getScheme() == Proxy.Scheme.http
-                || proxy.getScheme() == Proxy.Scheme.https)) {
-            //http or https proxy
-            if (proxy.getAuthInfo() != null) {
-                provider.setCredentials(new AuthScope(proxy.getHost(), proxy.getPort()),
-                        new UsernamePasswordCredentials(proxy.getUserName(), proxy.getPassword()));
-            }
-            HttpHost httpHost = new HttpHost(proxy.getHost(), proxy.getPort(),
-                    proxy.getScheme().name());
-            configBuilder.setProxy(httpHost);
-        }
         httpRequest.setConfig(configBuilder.build());
 
         // set cookie
@@ -278,11 +311,26 @@ class RequestExecutor<T> {
         return httpPatch;
     }
 
+    private URI joinFullUrl(URI url, Charset charset, List<Parameter> parameters) {
+        try {
+            if (parameters == null || parameters.isEmpty()) {
+                return url;
+            }
+            URIBuilder urlBuilder = new URIBuilder(url).setCharset(charset);
+            for (Parameter param : parameters) {
+                urlBuilder.addParameter(param.getName(), param.getValue());
+            }
+            return urlBuilder.build();
+        } catch (URISyntaxException e) {
+            throw new RequestException(e);
+        }
+    }
+
     /**
      * do http request with http client
      */
-    private Response<T> wrapResponse(CloseableHttpResponse httpResponse,
-                                     HttpClientContext context) throws IOException {
+    private <T> Response<T> wrapResponse(CloseableHttpResponse httpResponse, HttpClientContext context,
+                                         ResponseProcessor<T> processor) throws IOException {
         Response<T> response = new Response<>();
         response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
         // get headers

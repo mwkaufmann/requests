@@ -48,7 +48,7 @@ Response<File> resp2 = Requests.get(url).file("/path/to/save/file");
 ```
 or you can custom http response processor your self:
 ```java
-Response<String> resp = Requests.get(url).handler(new ResponseHandler<String>() {...});
+Response<String> resp = Requests.get(url).handle(new ResponseHandler<String>() {...});
 ```
 ##Request Charset
 Set charset used to encode parameters, post forms or request string body:
@@ -172,7 +172,7 @@ You may not need to know, but Requests also use connect timeout as the timeout v
 ##Gzip
 Requests send Accept-Encoding: gzip, deflate, and handle gzipped response in default. You can disable this by:
 ```java
-Response<String> resp = Requests.get(url).gzip(false).text();
+Response<String> resp = Requests.get(url).compress(false).text();
 ```
 ##Https Verification
 Some https sites do not have trusted http certificate, Exception will be throwed when request. You can disable https certificate verify by:
@@ -237,4 +237,4 @@ try {
 Note:
 * You should make sure PooledClient be closed when do not need it any more.
 * If connection pool is used, you should set verify and proxy use ConnectionPoolBuilder, the connection pool's (verify, proxy) settings will override requests' settings.
-* Settings: userAgent, gzip, allowRedirects should be set at client level, request level settings will not work due to implementation restrict now.
+* Settings: userAgent, compress, allowRedirects should be set at client level, request level settings will not work due to implementation restrict now.

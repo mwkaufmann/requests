@@ -6,8 +6,7 @@ package net.dongliu.requests;
 public class BaseRequestBuilder extends RequestBuilder<BaseRequestBuilder> {
     @Override
     Request build() {
-        return new Request(method, url, parameters, userAgent, headers, null, charset, authInfo, gzip, verify, cookies,
-                allowRedirects, allowPostRedirects,
-                connectTimeout, socketTimeout, proxy);
+        return new Request(method, url, parameters, userAgent, headers, null, charset, authInfo, compress, verify, cookies,
+                allowRedirects, connectTimeout, socketTimeout, proxy);
     }
 }

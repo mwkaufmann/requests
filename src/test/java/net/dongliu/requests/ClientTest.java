@@ -9,7 +9,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class PooledClientTest {
+public class ClientTest {
 
     private static MockServer server = new MockServer();
 
@@ -25,9 +25,9 @@ public class PooledClientTest {
 
     @Test
     public void testMultiThread() throws IOException {
-        try(PooledClient pooledClient = PooledClient.custom().build()) {
+        try(Client client = Client.custom().build()) {
             for (int i = 0; i < 100; i++) {
-                Response<String> response = pooledClient.get("http://127.0.0.1:8080/").text();
+                Response<String> response = client.get("http://127.0.0.1:8080/").text();
                 assertEquals(200, response.getStatusCode());
             }
         }
@@ -35,16 +35,16 @@ public class PooledClientTest {
 
     @Test
     public void testPooledHttps() throws IOException {
-        try (PooledClient pooledClient = PooledClient.custom().verify(false).build()) {
-            Response<String> response = pooledClient.get("https://127.0.0.1:8443/otn/").text();
+        try (Client client = Client.custom().verify(false).build()) {
+            Response<String> response = client.get("https://127.0.0.1:8443/otn/").text();
             assertEquals(200, response.getStatusCode());
         }
     }
 
     @Test
     public void testSession() throws Exception {
-        try (PooledClient pooledClient = PooledClient.custom().verify(false).build()) {
-            Session session = pooledClient.session();
+        try (Client client = Client.custom().verify(false).build()) {
+            Session session = client.session();
             Response<String> response = session.get("https://127.0.0.1:8443/otn/").text();
             assertEquals(200, response.getStatusCode());
         }

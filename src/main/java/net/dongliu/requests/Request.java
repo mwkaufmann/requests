@@ -22,12 +22,11 @@ public class Request {
     private HttpBody httpBody;
 
     private final AuthInfo authInfo;
-    // if enable gzip response
-    private final boolean gzip;
+    // if enable compress response
+    private final boolean compress;
     // if verify certificate of https site
     private final boolean verify;
     private final boolean allowRedirects;
-    private final boolean allowPostRedirects;
 
     private final int connectTimeout;
     private final int socketTimeout;
@@ -37,8 +36,8 @@ public class Request {
 
     Request(Method method, URI url, List<Parameter> parameters, String userAgent, List<Header> headers,
             HttpBody httpBody,
-            Charset charset, AuthInfo authInfo, boolean gzip, boolean verify, List<Cookie> cookies,
-            boolean allowRedirects, boolean allowPostRedirects, int connectTimeout, int socketTimeout, Proxy proxy) {
+            Charset charset, AuthInfo authInfo, boolean compress, boolean verify, List<Cookie> cookies,
+            boolean allowRedirects, int connectTimeout, int socketTimeout, Proxy proxy) {
         this.method = method;
         this.url = url;
         this.parameters = parameters;
@@ -47,11 +46,10 @@ public class Request {
         this.charset = charset;
         this.headers = headers;
         this.authInfo = authInfo;
-        this.gzip = gzip;
+        this.compress = compress;
         this.verify = verify;
         this.cookies = cookies;
         this.allowRedirects = allowRedirects;
-        this.allowPostRedirects = allowPostRedirects;
         this.connectTimeout = connectTimeout;
         this.socketTimeout = socketTimeout;
         this.proxy = proxy;
@@ -85,8 +83,8 @@ public class Request {
         return authInfo;
     }
 
-    public boolean isGzip() {
-        return gzip;
+    public boolean isCompress() {
+        return compress;
     }
 
     public boolean isVerify() {
@@ -95,10 +93,6 @@ public class Request {
 
     public boolean isAllowRedirects() {
         return allowRedirects;
-    }
-
-    public boolean isAllowPostRedirects() {
-        return allowPostRedirects;
     }
 
     public int getConnectTimeout() {

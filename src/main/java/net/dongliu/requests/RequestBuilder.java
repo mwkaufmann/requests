@@ -9,10 +9,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Liu Dong
@@ -30,25 +27,37 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     protected int connectTimeout = 10_000;
     protected int socketTimeout = 10_000;
 
-    protected boolean gzip = true;
+    protected boolean compress = true;
     // if check ssl certificate
     protected boolean verify = true;
     protected boolean allowRedirects = true;
-    protected boolean allowPostRedirects = false;
     //protected CredentialsProvider provider;
     protected AuthInfo authInfo;
     protected String[] cert;
     protected Proxy proxy;
 
     protected Session session;
-    protected PooledClient pooledClient;
+    protected Client client;
 
     /**
      * get http response for return result with Type T.
      */
-    <R> Response<R> client(ResponseProcessor<R> processor) throws RequestException {
-        try {
-            return new RequestExecutor<>(build(), processor, session, pooledClient).execute();
+    <R> Response<R> execute(ResponseProcessor<R> processor) throws RequestException {
+
+        Request request = build();
+        // use custom client
+        if (client != null) {
+            return client.execute(request, processor, session);
+        }
+
+        // use new client to run this request and then close
+        try (Client newClient = Client.custom().verify(request.isVerify())
+                .allowRedirects(request.isAllowRedirects())
+                .compress(request.isCompress())
+                .proxy(proxy)
+                .type(Client.CLIENT_TYPE_BASIC)
+                .build()) {
+            return newClient.execute(request, processor, session);
         } catch (IOException e) {
             throw new RequestException(e);
         }
@@ -57,8 +66,8 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     /**
      * set custom handler to handle http response
      */
-    public <R> Response<R> handler(ResponseHandler<R> handler) throws RequestException {
-        return client(new ResponseHandlerAdapter<R>(handler));
+    public <R> Response<R> handle(ResponseHandler<R> handler) throws RequestException {
+        return execute(new ResponseHandlerAdapter<>(handler));
     }
 
     /**
@@ -66,7 +75,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      * Decode response body to text with charset provided
      */
     public Response<String> text(Charset responseCharset) throws RequestException {
-        return client(new StringResponseProcessor(responseCharset));
+        return execute(new StringResponseProcessor(responseCharset));
     }
 
     /**
@@ -74,14 +83,14 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      * Decode response body to text with charset get from response header
      */
     public Response<String> text() throws RequestException {
-        return client(new StringResponseProcessor(null));
+        return execute(new StringResponseProcessor(null));
     }
 
     /**
      * get http response for return byte array result.
      */
     public Response<byte[]> bytes() throws RequestException {
-        return client(ResponseProcessor.bytes);
+        return execute(ResponseProcessor.bytes);
     }
 
     /**
@@ -89,7 +98,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      * only save to file when return status is 200, otherwise return response with null body.
      */
     public Response<File> file(File file) throws RequestException {
-        return client(new FileResponseProcessor(file));
+        return execute(new FileResponseProcessor(file));
     }
 
     /**
@@ -97,7 +106,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      * only save to file when return status is 200, otherwise return response with null body.
      */
     public Response<File> file(String filePath) throws RequestException {
-        return client(new FileResponseProcessor(filePath));
+        return execute(new FileResponseProcessor(filePath));
     }
 
     T url(String url) throws RequestException {
@@ -145,23 +154,11 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     }
 
     /**
-     * Add params of url query string.
-     * This is for add parameters in url query str, If want to set post form params use form((Map&lt;String, ?&gt; params) method
+     * Set params of url query string. Will overwrite old param values
+     * This is for set parameters in url query str, If want to set post form params use form(Parameter... params) method
      */
-    public T addParams(Map<String, ?> params) {
-        ensureParameters();
-        for (Map.Entry<String, ?> entry : params.entrySet()) {
-            this.parameters.add(new Parameter(entry.getKey(), entry.getValue()));
-        }
-        return (T) this;
-    }
-
-    /**
-     * Add params of url query string.
-     * This is for add parameters in url query str, If want to set post form params use form(Parameter... params) method
-     */
-    public T addParams(Parameter... params) {
-        ensureParameters();
+    public T params(Collection<Parameter> params) {
+        this.parameters = new ArrayList<>(params.size());
         for (Parameter param : params) {
             this.parameters.add(new Parameter(param.getName(), param.getValue()));
         }
@@ -227,21 +224,10 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     }
 
     /**
-     * Add headers.
+     * Set headers. Will overwrite old header values
      */
-    public T addHeaders(Map<String, ?> params) {
-        ensureHeaders();
-        for (Map.Entry<String, ?> entry : params.entrySet()) {
-            this.headers.add(new Header(entry.getKey(), entry.getValue()));
-        }
-        return (T) this;
-    }
-
-    /**
-     * Add headers.
-     */
-    public T addHeaders(Header... headers) {
-        ensureHeaders();
+    public T headers(List<Header> headers) {
+        this.headers = new ArrayList<>();
         for (Header header : headers) {
             this.headers.add(header);
         }
@@ -293,10 +279,10 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     }
 
     /**
-     * if send gzip requests. default true
+     * if send compress requests. default true
      */
-    public T gzip(boolean gzip) {
-        this.gzip = gzip;
+    public T compress(boolean compress) {
+        this.compress = compress;
         return (T) this;
     }
 
@@ -338,23 +324,11 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         return (T) this;
     }
 
-
     /**
-     * Add cookies.
+     * Set cookies. Will overwrite old cookie values
      */
-    public T AddCookies(Map<String, String> cookies) {
-        ensureCookies();
-        for (Map.Entry<String, String> entry : cookies.entrySet()) {
-            this.cookies.add(new Cookie(entry.getKey(), entry.getValue()));
-        }
-        return (T) this;
-    }
-
-    /**
-     * Add cookies.
-     */
-    public T AddCookies(Cookie... cookies) {
-        ensureCookies();
+    public T cookies(Collection<Cookie> cookies) {
+        this.cookies = new ArrayList<>(cookies.size());
         for (Cookie cookie : cookies) {
             this.cookies.add(cookie);
         }
@@ -386,14 +360,6 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     }
 
     /**
-     * If follow POST/PUT/DELETE redirect, default false. This method work for post method.
-     */
-    public T allowPostRedirects(boolean allowPostRedirects) {
-        this.allowPostRedirects = allowPostRedirects;
-        return (T) this;
-    }
-
-    /**
      * set cert path
      * TODO: custom cert
      */
@@ -412,8 +378,8 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     /**
      * Set connection pool. used to reuse http connections.
      */
-    T executedBy(PooledClient pooledClient) {
-        this.pooledClient = pooledClient;
+    T executedBy(Client client) {
+        this.client = client;
         return (T) this;
     }
 }

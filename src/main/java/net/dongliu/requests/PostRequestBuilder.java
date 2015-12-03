@@ -7,10 +7,7 @@ import net.dongliu.requests.struct.Parameter;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Liu Dong
@@ -20,8 +17,7 @@ public class PostRequestBuilder extends AbstractBodyRequestBuilder<PostRequestBu
     @Override
     Request build() {
         return new Request(method, url, parameters, userAgent, headers, httpBody,
-                charset, authInfo, gzip, verify,
-                cookies, allowRedirects, allowPostRedirects,
+                charset, authInfo, compress, verify, cookies, allowRedirects,
                 connectTimeout, socketTimeout, proxy);
     }
 
@@ -54,6 +50,17 @@ public class PostRequestBuilder extends AbstractBodyRequestBuilder<PostRequestBu
         checkHttpBody(FormHttpBody.class);
         List<Parameter> params = new ArrayList<>();
         Collections.addAll(params, parameters);
+        this.httpBody = new FormHttpBody(params);
+        return this;
+    }
+
+    /**
+     * Set http form body data, for http post method with form-encoded body.
+     */
+    public PostRequestBuilder forms(Collection<Parameter> parameters) {
+        checkHttpBody(FormHttpBody.class);
+        List<Parameter> params = new ArrayList<>();
+        params.addAll(parameters);
         this.httpBody = new FormHttpBody(params);
         return this;
     }

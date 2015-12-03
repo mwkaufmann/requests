@@ -1,7 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.encode.URIBuilder;
-import net.dongliu.requests.struct.Parameter;
 import net.dongliu.requests.struct.Proxy;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
@@ -13,13 +11,9 @@ import org.apache.http.conn.ssl.SSLContexts;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.List;
 
 /**
  * Util methods
@@ -55,22 +49,5 @@ class Utils {
                 .register("https", sslsf)
                 .build();
     }
-
-    // build full url with parameters
-    static URI fullUrl(URI url, Charset charset, List<Parameter> parameters) {
-        try {
-            if (parameters == null || parameters.isEmpty()) {
-                return url;
-            }
-            URIBuilder urlBuilder = new URIBuilder(url).setCharset(charset);
-            for (Parameter param : parameters) {
-                urlBuilder.addParameter(param.getName(), param.getValue());
-            }
-            return urlBuilder.build();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
 }
