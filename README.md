@@ -9,9 +9,9 @@ The HttpClient lib is great, but has too complex API, which confuse beginners. R
 Requests is now in maven central repo.
 ```xml
 <dependency>
-    <groupId>net.dongliu</groupId>
-    <artifactId>requests</artifactId>
-    <version>2.0.0</version>
+	<groupId>net.dongliu</groupId>
+	<artifactId>requests</artifactId>
+	<version>2.0.1</version>
 </dependency>
 ```
 ##Make request
