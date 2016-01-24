@@ -105,7 +105,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     public T params(Map<String, ?> params) {
         this.parameters = new ArrayList<>(params.size());
         for (Map.Entry<String, ?> entry : params.entrySet()) {
-            this.parameters.add(new Parameter(entry.getKey(), entry.getValue()));
+            this.parameters.add(Parameter.of(entry.getKey(), entry.getValue()));
         }
         return self();
     }
@@ -140,7 +140,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      */
     public T addParam(String key, Object value) {
         ensureParameters();
-        this.parameters.add(new Parameter(key, value));
+        this.parameters.add(Parameter.of(key, value));
         return self();
     }
 
@@ -176,7 +176,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     public T headers(Map<String, ?> params) {
         this.headers = new ArrayList<>();
         for (Map.Entry<String, ?> entry : params.entrySet()) {
-            this.headers.add(new Header(entry.getKey(), entry.getValue()));
+            this.headers.add(Header.of(entry.getKey(), entry.getValue()));
         }
         return self();
     }
@@ -206,7 +206,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      */
     public T addHeader(String key, Object value) {
         ensureHeaders();
-        this.headers.add(new Header(key, value));
+        this.headers.add(Header.of(key, value));
         return self();
     }
 

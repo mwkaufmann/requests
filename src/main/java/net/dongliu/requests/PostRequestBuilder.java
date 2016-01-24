@@ -19,8 +19,7 @@ public class PostRequestBuilder extends AbstractBodyRequestBuilder<PostRequestBu
 
     @Override
     Request buildRequest() {
-        return new Request(method, url, parameters, headers, httpBody,
-                charset, authInfo, cookies);
+        return new Request(method, url, parameters, headers, httpBody, charset, authInfo, cookies);
     }
 
     @Override
@@ -33,7 +32,7 @@ public class PostRequestBuilder extends AbstractBodyRequestBuilder<PostRequestBu
      */
     public PostRequestBuilder addForm(String key, Object value) {
         List<Parameter> params = ensureFormParameters();
-        params.add(new Parameter(key, value));
+        params.add(Parameter.of(key, value));
         return this;
     }
 
@@ -44,7 +43,7 @@ public class PostRequestBuilder extends AbstractBodyRequestBuilder<PostRequestBu
         checkHttpBody(FormHttpBody.class);
         List<Parameter> params = new ArrayList<>();
         for (Map.Entry<String, ?> e : map.entrySet()) {
-            params.add(new Parameter(e.getKey(), e.getValue()));
+            params.add(Parameter.of(e.getKey(), e.getValue()));
         }
         this.httpBody = new FormHttpBody(params);
         return this;

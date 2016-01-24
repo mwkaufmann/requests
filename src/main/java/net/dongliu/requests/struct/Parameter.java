@@ -7,8 +7,11 @@ package net.dongliu.requests.struct;
  */
 public class Parameter extends Pair<String, String> {
 
-    public Parameter(String name, Object value) {
-        super(name, String.valueOf(value));
+    public Parameter(String name, String value) {
+        super(name, value);
     }
 
+    public static Parameter of(String name, Object value) {
+        return new Parameter(name, value.toString());
+    }
 }
