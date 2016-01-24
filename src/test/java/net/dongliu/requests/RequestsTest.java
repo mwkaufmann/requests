@@ -1,13 +1,11 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.mock.MockServer;
-import net.dongliu.requests.struct.Proxy;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -74,27 +72,6 @@ public class RequestsTest {
         Response<String> resp = Requests.get("http://127.0.0.1:8080/redirect").text();
         assertEquals(200, resp.getStatusCode());
         assertEquals("/", resp.getHistory().get(0).getPath());
-    }
-
-    @Test
-    public void testHttps() {
-        Response<String> resp = Requests.get("https://127.0.0.1:8443/otn/")
-                .verify(false).text();
-        assertEquals(200, resp.getStatusCode());
-        System.out.println(resp.getHeaders());
-    }
-
-    @Test
-    @Ignore("launch a proxy first to run this test")
-    public void testProxy() {
-        Response<String> resp = Requests.get("http://127.0.0.1:8080/")
-                .proxy(Proxy.httpProxy("127.0.0.1", 8000))
-                .text();
-        assertEquals(200, resp.getStatusCode());
-        Response<String> resp1 = Requests.get("http://127.0.0.1:8080/")
-                .proxy(Proxy.socketProxy("127.0.0.1", 1080))
-                .text();
-        assertEquals(200, resp1.getStatusCode());
     }
 
     @Test

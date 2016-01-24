@@ -15,6 +15,9 @@ public abstract class AbstractBodyRequestBuilder<T extends AbstractBodyRequestBu
 
     protected HttpBody httpBody;
 
+    protected AbstractBodyRequestBuilder() {
+    }
+
     /**
      * Set http body data for Post/Put request
      *
@@ -23,7 +26,7 @@ public abstract class AbstractBodyRequestBuilder<T extends AbstractBodyRequestBu
     public T data(byte[] data) {
         checkHttpBody(BytesHttpBody.class);
         this.httpBody = new BytesHttpBody(data);
-        return (T) this;
+        return self();
     }
 
     /**
@@ -32,7 +35,7 @@ public abstract class AbstractBodyRequestBuilder<T extends AbstractBodyRequestBu
     public T data(InputStream in) {
         checkHttpBody(InputHttpBody.class);
         this.httpBody = new InputHttpBody(in);
-        return (T) this;
+        return self();
     }
 
     /**
@@ -42,7 +45,7 @@ public abstract class AbstractBodyRequestBuilder<T extends AbstractBodyRequestBu
     public T data(String body) {
         checkHttpBody(StringHttpBody.class);
         this.httpBody = new StringHttpBody(body);
-        return (T) this;
+        return self();
     }
 
     protected <R extends HttpBody> void checkHttpBody(Class<R> cls) {

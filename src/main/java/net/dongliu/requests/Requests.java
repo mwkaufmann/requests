@@ -1,10 +1,9 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.exception.RequestException;
-import net.dongliu.requests.struct.Method;
 
 /**
- * construct and execute http requests
+ * Convenient utils method for to process common http request
  *
  * @author Dong Liu
  */
@@ -13,71 +12,60 @@ public class Requests {
     /**
      * get method
      */
-    public static BaseRequestBuilder get(String url) throws RequestException {
-        return new BaseRequestBuilder().url(url).method(Method.GET);
+    public static HeadOnlyRequestBuilder get(String url) throws RequestException {
+        return client().get(url);
     }
 
     /**
      * head method
      */
-    public static BaseRequestBuilder head(String url) throws RequestException {
-        return new BaseRequestBuilder().url(url).method(Method.HEAD);
+    public static HeadOnlyRequestBuilder head(String url) throws RequestException {
+        return client().head(url);
     }
 
     /**
      * get url, and return content
      */
     public static PostRequestBuilder post(String url) throws RequestException {
-        return new PostRequestBuilder().url(url).method(Method.POST);
+        return client().post(url);
     }
 
     /**
      * put method
      */
     public static BodyRequestBuilder put(String url) throws RequestException {
-        return new BodyRequestBuilder().url(url).method(Method.PUT);
+        return client().put(url);
     }
 
     /**
      * delete method
      */
-    public static BaseRequestBuilder delete(String url) throws RequestException {
-        return new BaseRequestBuilder().url(url).method(Method.DELETE);
+    public static HeadOnlyRequestBuilder delete(String url) throws RequestException {
+        return client().delete(url);
     }
 
     /**
      * options method
      */
-    public static BaseRequestBuilder options(String url) throws RequestException {
-        return new BaseRequestBuilder().url(url).method(Method.OPTIONS);
+    public static HeadOnlyRequestBuilder options(String url) throws RequestException {
+        return client().options(url);
     }
 
     /**
      * patch method
      */
     public static BodyRequestBuilder patch(String url) throws RequestException {
-        return new BodyRequestBuilder().url(url).method(Method.PATCH);
+        return client().patch(url);
     }
 
     /**
      * trace method
      */
-    public static BaseRequestBuilder trace(String url) throws RequestException {
-        return new BaseRequestBuilder().url(url).method(Method.TRACE);
-    }
-//
-//    /**
-//     * connect
-//     */
-//    public static RequestBuilder connect(String url) throws InvalidUrlException {
-//        return newBuilder(url).method(Method.CONNECT);
-//    }
-
-    /**
-     * create a session. session can do request as Requests do, and keep cookies to maintain a http session
-     */
-    public static Session session() {
-        return new Session(null);
+    public static HeadOnlyRequestBuilder trace(String url) throws RequestException {
+        return client().trace(url);
     }
 
+    private static Client client() {
+        return Client.single().closeOnRequstFinished(true).buildClient();
+    }
 }

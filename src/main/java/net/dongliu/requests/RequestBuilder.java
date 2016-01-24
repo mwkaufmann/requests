@@ -4,7 +4,6 @@ import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.*;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -15,54 +14,26 @@ import java.util.*;
  * @author Liu Dong
  */
 public abstract class RequestBuilder<T extends RequestBuilder<T>> {
+    private Client client;
     protected Method method;
     protected URI url;
     protected List<Parameter> parameters;
-    protected String userAgent = Utils.defaultUserAgent;
     protected List<Header> headers;
     protected List<Cookie> cookies;
 
     protected Charset charset = StandardCharsets.UTF_8;
 
-    protected int connectTimeout = 10_000;
-    protected int socketTimeout = 10_000;
-
-    protected boolean compress = true;
-    // if check ssl certificate
-    protected boolean verify = true;
-    protected boolean allowRedirects = true;
     //protected CredentialsProvider provider;
     protected AuthInfo authInfo;
-    protected String[] cert;
-    protected Proxy proxy;
-
     protected Session session;
-    protected Client client;
 
     /**
      * get http response for return result with Type T.
      */
     <R> Response<R> execute(ResponseProcessor<R> processor) throws RequestException {
-
-        Request request = build();
+        Request request = buildRequest();
         // use custom client
-        if (client != null) {
-            return client.execute(request, processor, session);
-        }
-
-        // use new client to run this request and then close
-        try (Client newClient = Client.custom().type(Client.CLIENT_TYPE_BASIC)
-                .userAgent(userAgent)
-                .verify(request.isVerify())
-                .allowRedirects(request.isAllowRedirects())
-                .compress(request.isCompress())
-                .proxy(proxy)
-                .type(Client.CLIENT_TYPE_BASIC)
-                .build()) {
-            return newClient.execute(request, processor, session);
-        } catch (IOException e) {
-            throw new RequestException(e);
-        }
+        return client.execute(request, processor, session);
     }
 
     /**
@@ -111,25 +82,21 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         return execute(new FileResponseProcessor(filePath));
     }
 
+    T client(Client client) {
+        this.client = client;
+        return self();
+    }
+
     T url(String url) throws RequestException {
         try {
             this.url = new URI(url);
         } catch (URISyntaxException e) {
             throw new RequestException(e);
         }
-        return (T) this;
+        return self();
     }
 
-    abstract Request build();
-
-    /**
-     * set userAgent
-     */
-    public T userAgent(String userAgent) {
-        Objects.requireNonNull(userAgent);
-        this.userAgent = userAgent;
-        return (T) this;
-    }
+    abstract Request buildRequest();
 
     /**
      * Set params of url query string. Will overwrite old cookie values
@@ -140,7 +107,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         for (Map.Entry<String, ?> entry : params.entrySet()) {
             this.parameters.add(new Parameter(entry.getKey(), entry.getValue()));
         }
-        return (T) this;
+        return self();
     }
 
     /**
@@ -152,7 +119,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         for (Parameter param : params) {
             this.parameters.add(new Parameter(param.getName(), param.getValue()));
         }
-        return (T) this;
+        return self();
     }
 
     /**
@@ -164,7 +131,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         for (Parameter param : params) {
             this.parameters.add(new Parameter(param.getName(), param.getValue()));
         }
-        return (T) this;
+        return self();
     }
 
     /**
@@ -174,7 +141,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     public T addParam(String key, Object value) {
         ensureParameters();
         this.parameters.add(new Parameter(key, value));
-        return (T) this;
+        return self();
     }
 
     private void ensureParameters() {
@@ -188,7 +155,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      */
     public T charset(Charset charset) {
         this.charset = charset;
-        return (T) this;
+        return self();
     }
 
     /**
@@ -200,7 +167,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
 
     T method(Method method) {
         this.method = method;
-        return (T) this;
+        return self();
     }
 
     /**
@@ -211,7 +178,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         for (Map.Entry<String, ?> entry : params.entrySet()) {
             this.headers.add(new Header(entry.getKey(), entry.getValue()));
         }
-        return (T) this;
+        return self();
     }
 
     /**
@@ -219,10 +186,8 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      */
     public T headers(Header... headers) {
         this.headers = new ArrayList<>();
-        for (Header header : headers) {
-            this.headers.add(header);
-        }
-        return (T) this;
+        Collections.addAll(this.headers, headers);
+        return self();
     }
 
     /**
@@ -233,7 +198,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         for (Header header : headers) {
             this.headers.add(header);
         }
-        return (T) this;
+        return self();
     }
 
     /**
@@ -242,7 +207,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     public T addHeader(String key, Object value) {
         ensureHeaders();
         this.headers.add(new Header(key, value));
-        return (T) this;
+        return self();
     }
 
     private void ensureHeaders() {
@@ -252,56 +217,11 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     }
 
     /**
-     * set socket connect and read timeout in milliseconds. default is 10_000.
-     * A timeout value of zero is interpreted as an infinite timeout.
-     * A negative value is interpreted as undefined (system default).
-     */
-    public T timeout(int timeout) {
-        this.socketTimeout = this.connectTimeout = timeout;
-        return (T) this;
-    }
-
-    /**
-     * set socket connect and read timeout in milliseconds. default is 10_000.
-     * A timeout value of zero is interpreted as an infinite timeout.
-     * A negative value is interpreted as undefined (system default).
-     */
-    public T timeout(int connectTimeout, int socketTimeout) {
-        this.connectTimeout = connectTimeout;
-        this.socketTimeout = socketTimeout;
-        return (T) this;
-    }
-
-    /**
-     * set proxy
-     */
-    public T proxy(Proxy proxy) {
-        this.proxy = proxy;
-        return (T) this;
-    }
-
-    /**
-     * if send compress requests. default true
-     */
-    public T compress(boolean compress) {
-        this.compress = compress;
-        return (T) this;
-    }
-
-    /**
-     * set false to disable ssl check for https requests
-     */
-    public T verify(boolean verify) {
-        this.verify = verify;
-        return (T) this;
-    }
-
-    /**
      * set http basic auth info
      */
     public T auth(String userName, String password) {
         authInfo = new AuthInfo(userName, password);
-        return (T) this;
+        return self();
     }
 
     /**
@@ -312,7 +232,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         for (Map.Entry<String, String> entry : cookies.entrySet()) {
             this.cookies.add(new Cookie(entry.getKey(), entry.getValue()));
         }
-        return (T) this;
+        return self();
     }
 
     /**
@@ -320,10 +240,8 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      */
     public T cookies(Cookie... cookies) {
         this.cookies = new ArrayList<>(cookies.length);
-        for (Cookie cookie : cookies) {
-            this.cookies.add(cookie);
-        }
-        return (T) this;
+        Collections.addAll(this.cookies, cookies);
+        return self();
     }
 
     /**
@@ -334,7 +252,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         for (Cookie cookie : cookies) {
             this.cookies.add(cookie);
         }
-        return (T) this;
+        return self();
     }
 
     /**
@@ -343,7 +261,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
     public T addCookie(String name, String value) {
         ensureCookies();
         this.cookies.add(new Cookie(name, value));
-        return (T) this;
+        return self();
     }
 
     private void ensureCookies() {
@@ -352,36 +270,10 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         }
     }
 
-    /**
-     * If follow get/head redirect, default true.
-     * This method not set following redirect for post/put/delete method, use {@code allowPostRedirects} if you want this
-     */
-    public T allowRedirects(boolean allowRedirects) {
-        this.allowRedirects = allowRedirects;
-        return (T) this;
-    }
-
-    /**
-     * set cert path
-     * TODO: custom cert
-     */
-    public T cert(String... cert) {
-        throw new UnsupportedOperationException();
-//        this.cert = cert;
-//        return this;
-    }
-
-
     T session(Session session) {
         this.session = session;
-        return (T) this;
+        return self();
     }
 
-    /**
-     * Set connection pool. used to reuse http connections.
-     */
-    T executedBy(Client client) {
-        this.client = client;
-        return (T) this;
-    }
+    protected abstract T self();
 }

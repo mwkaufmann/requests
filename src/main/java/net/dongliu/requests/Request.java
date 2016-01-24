@@ -15,44 +15,24 @@ public class Request {
 
     private final Method method;
     private final URI url;
-    private final String userAgent;
     private final List<Header> headers;
     private final List<Cookie> cookies;
     private final List<Parameter> parameters;
     private HttpBody httpBody;
 
     private final AuthInfo authInfo;
-    // if enable compress response
-    private final boolean compress;
-    // if verify certificate of https site
-    private final boolean verify;
-    private final boolean allowRedirects;
-
-    private final int connectTimeout;
-    private final int socketTimeout;
-
-    private final Proxy proxy;
     private final Charset charset;
 
-    Request(Method method, URI url, List<Parameter> parameters, String userAgent, List<Header> headers,
-            HttpBody httpBody,
-            Charset charset, AuthInfo authInfo, boolean compress, boolean verify, List<Cookie> cookies,
-            boolean allowRedirects, int connectTimeout, int socketTimeout, Proxy proxy) {
+    Request(Method method, URI url, List<Parameter> parameters, List<Header> headers,
+            HttpBody httpBody, Charset charset, AuthInfo authInfo, List<Cookie> cookies) {
         this.method = method;
         this.url = url;
         this.parameters = parameters;
-        this.userAgent = userAgent;
         this.httpBody = httpBody;
         this.charset = charset;
         this.headers = headers;
         this.authInfo = authInfo;
-        this.compress = compress;
-        this.verify = verify;
         this.cookies = cookies;
-        this.allowRedirects = allowRedirects;
-        this.connectTimeout = connectTimeout;
-        this.socketTimeout = socketTimeout;
-        this.proxy = proxy;
     }
 
     public Method getMethod() {
@@ -61,10 +41,6 @@ public class Request {
 
     public URI getUrl() {
         return url;
-    }
-
-    public String getUserAgent() {
-        return userAgent;
     }
 
     public List<Header> getHeaders() {
@@ -81,30 +57,6 @@ public class Request {
 
     public AuthInfo getAuthInfo() {
         return authInfo;
-    }
-
-    public boolean isCompress() {
-        return compress;
-    }
-
-    public boolean isVerify() {
-        return verify;
-    }
-
-    public boolean isAllowRedirects() {
-        return allowRedirects;
-    }
-
-    public int getConnectTimeout() {
-        return connectTimeout;
-    }
-
-    public int getSocketTimeout() {
-        return socketTimeout;
-    }
-
-    public Proxy getProxy() {
-        return proxy;
     }
 
     public HttpBody getHttpBody() {

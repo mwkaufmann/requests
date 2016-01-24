@@ -5,7 +5,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class SessionTest {
 
@@ -23,8 +23,10 @@ public class SessionTest {
 
     @Test
     public void testSession() {
-        Session session = Requests.session();
-        Response<String> response = session.get("http://127.0.0.1:8080").text();
-        assertEquals(200, response.getStatusCode());
+        try (Client client = Client.single().buildClient()) {
+            Session session = client.session();
+            Response<String> response = session.get("http://127.0.0.1:8080").text();
+            assertEquals(200, response.getStatusCode());
+        }
     }
 }

@@ -4,9 +4,16 @@ package net.dongliu.requests;
  * @author Liu Dong
  */
 public class BodyRequestBuilder extends AbstractBodyRequestBuilder<BodyRequestBuilder> {
+    protected BodyRequestBuilder() {
+    }
+
     @Override
-    Request build() {
-        return new Request(method, url, parameters, userAgent, headers, httpBody, charset, authInfo, compress, verify,
-                cookies, allowRedirects, connectTimeout, socketTimeout, proxy);
+    Request buildRequest() {
+        return new Request(method, url, parameters, headers, httpBody, charset, authInfo, cookies);
+    }
+
+    @Override
+    protected BodyRequestBuilder self() {
+        return this;
     }
 }

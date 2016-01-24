@@ -1,38 +1,36 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.struct.Host;
-import net.dongliu.requests.struct.Pair;
 import net.dongliu.requests.struct.Proxy;
-import org.apache.http.HttpHost;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
-import java.util.ArrayList;
-import java.util.List;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Liu Dong
  */
-public class ClientBuilder {
+public abstract class ClientBuilder<T extends ClientBuilder<T>> {
 
-    private int type = Client.CLIENT_TYPE_POOLED;
+    final static String defaultUserAgent = "Requests/2.1.0, Java " + System.getProperty("java.version");
+    final static int defaultTimeout = 10_000;
 
     // how long http connection keep, in milliseconds. default -1, get from server response
-    private long timeToLive = -1;
-    // the max total http connection count
-    private int maxTotal = 20;
-    // the max connection count for each host
-    private int maxPerRoute = 5;
-    // set max count for specified host
-    private List<Pair<Host, Integer>> perRouteCount;
+    protected long timeToLive = -1;
 
     private Proxy proxy;
     // settings for client level, can not set/override in request level
@@ -42,38 +40,30 @@ public class ClientBuilder {
     // if enable compress response
     private boolean compress = true;
     private boolean allowRedirects = true;
-    private String userAgent = Utils.defaultUserAgent;
+    private String userAgent = defaultUserAgent;
+
+    private int connectTimeout = defaultTimeout;
+    private int socketTimeout = defaultTimeout;
+
+    private boolean closeOnRequstFinished = false;
 
     ClientBuilder() {
     }
 
-    public Client build() {
-        Registry<ConnectionSocketFactory> registry = Utils.getConnectionSocketFactoryRegistry(proxy, verify);
-
-        HttpClientConnectionManager connectionManager;
-        if (type == Client.CLIENT_TYPE_POOLED) {
-            PoolingHttpClientConnectionManager manager = new PoolingHttpClientConnectionManager(registry,
-                    null, null, null, timeToLive, TimeUnit.MILLISECONDS);
-
-            manager.setMaxTotal(maxTotal);
-            manager.setDefaultMaxPerRoute(maxPerRoute);
-            if (perRouteCount != null) {
-                for (Pair<Host, Integer> pair : perRouteCount) {
-                    Host host = pair.getName();
-                    manager.setMaxPerRoute(new HttpRoute(new HttpHost(host.getDomain(), host.getPort())),
-                            pair.getValue());
-                }
-            }
-            connectionManager = manager;
-        } else if (type == Client.CLIENT_TYPE_BASIC) {
-            connectionManager = new BasicHttpClientConnectionManager(registry);
-        } else {
-            throw new IllegalArgumentException("Unknown client type:" + type);
-        }
-
+    Client buildClient() {
+        Registry<ConnectionSocketFactory> registry = getConnectionSocketFactoryRegistry(proxy, verify);
+        HttpClientConnectionManager connectionManager = buildManager(registry);
 
         HttpClientBuilder clientBuilder = HttpClients.custom().setUserAgent(userAgent);
         clientBuilder.setConnectionManager(connectionManager);
+
+        RequestConfig.Builder configBuilder = RequestConfig.custom()
+                .setConnectTimeout(connectTimeout)
+                .setSocketTimeout(socketTimeout)
+                // we use connect timeout for connection request timeout
+                .setConnectionRequestTimeout(connectTimeout)
+                .setCookieSpec(CookieSpecs.DEFAULT);
+        clientBuilder.setDefaultRequestConfig(configBuilder.build());
 
         // disable compress
         if (!compress) {
@@ -86,89 +76,121 @@ public class ClientBuilder {
             clientBuilder.disableRedirectHandling();
         }
 
-        return new Client(clientBuilder.build(), proxy);
+        return new Client(clientBuilder.build(), closeOnRequstFinished);
+    }
+
+
+    protected Registry<ConnectionSocketFactory> getConnectionSocketFactoryRegistry(Proxy proxy, boolean verify) {
+        SSLContext sslContext;
+
+        // trust all http certificate
+        if (!verify) {
+            try {
+                sslContext = SSLContexts.custom().useTLS().build();
+                sslContext.init(new KeyManager[0], new TrustManager[]{new AllTrustManager()},
+                        new SecureRandom());
+            } catch (NoSuchAlgorithmException | KeyManagementException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            sslContext = SSLContexts.createSystemDefault();
+        }
+
+        SSLConnectionSocketFactory sslsf = new CustomSSLConnectionSocketFactory(sslContext,
+                proxy, verify);
+        PlainConnectionSocketFactory psf = new CustomConnectionSocketFactory(proxy);
+        return RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", psf)
+                .register("https", sslsf)
+                .build();
     }
 
     /**
      * how long http connection keep, in milliseconds. default -1, get from server response
      */
-    public ClientBuilder timeToLive(long timeToLive) {
+    public T timeToLive(long timeToLive) {
         this.timeToLive = timeToLive;
-        return this;
-    }
-
-    /**
-     * the max total http connection count. default 20
-     */
-    public ClientBuilder maxTotal(int maxTotal) {
-        this.maxTotal = maxTotal;
-        return this;
-    }
-
-    /**
-     * set default max connection count for each host, default 2
-     */
-    public ClientBuilder maxPerRoute(int maxPerRoute) {
-        this.maxPerRoute = maxPerRoute;
-        return this;
-    }
-
-    /**
-     * set specified max connection count for the host, default 2
-     */
-    public ClientBuilder maxPerRoute(Host host, int maxPerRoute) {
-        ensurePerRouteCount();
-        this.perRouteCount.add(new Pair<>(host, maxPerRoute));
-        return this;
+        return self();
     }
 
     /**
      * set userAgent
      */
-    public ClientBuilder userAgent(String userAgent) {
+    public T userAgent(String userAgent) {
         Objects.requireNonNull(userAgent);
         this.userAgent = userAgent;
-        return this;
+        return self();
     }
 
     /**
      * if verify http certificate, default true
      */
-    public ClientBuilder verify(boolean verify) {
+    public T verify(boolean verify) {
         this.verify = verify;
-        return this;
+        return self();
     }
 
     /**
      * If follow get/head redirect, default true.
      * This method not set following redirect for post/put/delete method, use {@code allowPostRedirects} if you want this
      */
-    public ClientBuilder allowRedirects(boolean allowRedirects) {
+    public T allowRedirects(boolean allowRedirects) {
         this.allowRedirects = allowRedirects;
-        return this;
+        return self();
     }
 
     /**
      * if send compress requests. default true
      */
-    public ClientBuilder compress(boolean compress) {
+    public T compress(boolean compress) {
         this.compress = compress;
-        return this;
+        return self();
     }
 
-    private void ensurePerRouteCount() {
-        if (this.perRouteCount == null) {
-            this.perRouteCount = new ArrayList<>();
-        }
-    }
-
-    public ClientBuilder type(int type) {
-        this.type = type;
-        return this;
-    }
-
-    public ClientBuilder proxy(Proxy proxy) {
+    /**
+     * Set connection proxy
+     */
+    public T proxy(Proxy proxy) {
         this.proxy = proxy;
-        return this;
+        return self();
     }
+
+
+    /**
+     * Set socket timeout and connect timeout in millis, default 10_000
+     */
+    public T timeout(int timeout) {
+        this.connectTimeout = this.socketTimeout = timeout;
+        return self();
+    }
+
+    /**
+     * Set socket timeout in millis, default 10_000
+     */
+    public T socketTimeout(int timeout) {
+        this.socketTimeout = timeout;
+        return self();
+    }
+
+    /**
+     * Set connect timeout in millis, default 10_000
+     */
+    public T connectTimeout(int timeout) {
+        this.connectTimeout = timeout;
+        return self();
+    }
+
+    /**
+     * Auto close client when finished one request. default false.
+     * Only for internal use
+     */
+    T closeOnRequstFinished(boolean closeOnRequstFinished) {
+        this.closeOnRequstFinished = closeOnRequstFinished;
+        return self();
+    }
+
+    protected abstract T self();
+
+    protected abstract HttpClientConnectionManager buildManager(Registry<ConnectionSocketFactory> registry);
+
 }
