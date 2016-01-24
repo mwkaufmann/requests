@@ -1,8 +1,10 @@
 Requests is a http request lib for java, using HttpClient as backend and with fluent api.
 
-* [Get Requests](get-requests)
+* [Maven Setting](#maven-setting)
+* [Requests](#requests)
+ * [Simple http request](#simple-http-request) 
 
-#Get Requests
+#Maven Setting
 Requests is now in maven central repo.
 ```xml
 <dependency>
@@ -12,9 +14,9 @@ Requests is now in maven central repo.
 </dependency>
 ```
 
-# Use Requests
+# Requests
 A Requests class is provided to make plain, simple http requests
-##Make request
+##Simple http request
 Simple example that do http get request:
 ```java
 String url = ...;
