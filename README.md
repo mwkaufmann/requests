@@ -2,7 +2,21 @@ Requests is a http request lib for java, using HttpClient as backend and with fl
 
 * [Maven Setting](#maven-setting)
 * [Requests](#requests)
- * [Simple http request](#simple-http-request) 
+ * [Simple http request](#simple-http-request)
+ * [Request Charset](#request-charset)
+ * [Passing Parameters](#passing-parameters)
+ * [Custom Headers](#custom-headers)
+ * [Cookies](#cookies)
+ * [Request with data](#request-with-data)
+ * [Basic Auth](#basic-auth)
+* [Client](#client)
+ * [Redirection](#redirection)
+ * [Timeout](#timeout)
+ * [Response compress](#response-compress)
+ * [Https Verification](#https-verification)
+ * [Proxy](#proxy)
+ * [Session](#session)
+* [Exceptions](#exceptions)
 
 #Maven Setting
 Requests is now in maven central repo.
@@ -193,7 +207,7 @@ Client client = Client.single().timeout(30_000).build();
 Client client = Client.single().socketTimeout(20_000).connectTimeout(30_000).build();
 ```
 You may not need to know, but Requests also use connect timeout as the timeout value get connection from connection pool if connection pool is used.
-##Gzip
+##Response compress
 Requests send Accept-Encoding: gzip, deflate, and handle gzipped response in default. You can disable this by:
 ```java
 Client client = Client.single().compress(false).build();
