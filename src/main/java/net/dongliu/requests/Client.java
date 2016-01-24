@@ -8,8 +8,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -31,6 +29,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Pooled http client use connection pool, for reusing http connection across http requests.
@@ -40,82 +39,99 @@ import java.util.List;
  */
 public class Client implements Closeable {
 
-    public static final int CLIENT_TYPE_POOLED = 1;
-    public static final int CLIENT_TYPE_BASIC = 2;
-
     // the wrapped http client
     private final CloseableHttpClient client;
+    // close client when request finished
+    private final boolean closeOnRequestFinished;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
-    public Client(CloseableHttpClient client, Proxy proxy) {
+    public Client(CloseableHttpClient client, boolean closeOnRequestFinished) {
         this.client = client;
-        this.proxy = proxy;
+        this.closeOnRequestFinished = closeOnRequestFinished;
     }
 
     /**
-     * create new ConnectionPool Builder.
+     * create new Connection-Pooled thread safe client Builder.
      */
-    public static ClientBuilder custom() {
-        return new ClientBuilder();
+    public static PooledClientBuilder pooled() {
+        return new PooledClientBuilder();
     }
 
-    private final Proxy proxy;
+    /**
+     * create un-thread-safe single connection client builder
+     */
+    public static SingleClientBuilder single() {
+        return new SingleClientBuilder();
+    }
 
     @Override
-    public void close() throws IOException {
-        client.close();
+    public void close() {
+        if (closed.compareAndSet(false, true)) {
+            try {
+                client.close();
+            } catch (IOException ignore) {
+            }
+        }
     }
 
-    Proxy getProxy() {
-        return proxy;
+    boolean getClosed() {
+        return closed.get();
     }
 
     /**
      * get method
      */
-    public BaseRequestBuilder get(String url) throws RequestException {
-        return Requests.get(url).executedBy(this);
+    public HeadOnlyRequestBuilder get(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(this).method(Method.GET).url(url);
     }
 
     /**
      * head method
      */
-    public BaseRequestBuilder head(String url) throws RequestException {
-        return Requests.head(url).executedBy(this);
+    public HeadOnlyRequestBuilder head(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(this).method(Method.HEAD).url(url);
     }
 
     /**
      * get url, and return content
      */
     public PostRequestBuilder post(String url) throws RequestException {
-        return Requests.post(url).executedBy(this);
+        return new PostRequestBuilder().client(this).method(Method.POST).url(url);
     }
 
     /**
      * put method
      */
     public BodyRequestBuilder put(String url) throws RequestException {
-        return Requests.put(url).executedBy(this);
+        return new BodyRequestBuilder().client(this).method(Method.PUT).url(url);
     }
 
     /**
      * delete method
      */
-    public BaseRequestBuilder delete(String url) throws RequestException {
-        return Requests.delete(url).executedBy(this);
+    public HeadOnlyRequestBuilder delete(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(this).method(Method.DELETE).url(url);
     }
 
     /**
      * options method
      */
-    public BaseRequestBuilder options(String url) throws RequestException {
-        return Requests.options(url).executedBy(this);
+    public HeadOnlyRequestBuilder options(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(this).method(Method.OPTIONS).url(url);
     }
 
     /**
      * patch method
      */
     public BodyRequestBuilder patch(String url) throws RequestException {
-        return Requests.patch(url).executedBy(this);
+        return new BodyRequestBuilder().client(this).method(Method.PATCH).url(url);
+    }
+
+    /**
+     * trace method
+     */
+    public HeadOnlyRequestBuilder trace(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(this).method(Method.TRACE).url(url);
     }
 
     /**
@@ -128,14 +144,6 @@ public class Client implements Closeable {
     CloseableHttpClient getHttpClient() {
         return client;
     }
-
-    /**
-     * trace method
-     */
-    public BaseRequestBuilder trace(String url) throws RequestException {
-        return Requests.trace(url).executedBy(this);
-    }
-
 
     /**
      * execute request, get http response, and convert response with processor
@@ -165,6 +173,10 @@ public class Client implements Closeable {
             return wrapResponse(httpResponse, context, processor);
         } catch (IOException e) {
             throw new RequestException(e);
+        } finally {
+            if (closeOnRequestFinished) {
+                close();
+            }
         }
     }
 
@@ -201,16 +213,6 @@ public class Client implements Closeable {
             default:
                 throw new UnsupportedOperationException("Unsupported method:" + request.getMethod());
         }
-
-
-        RequestConfig.Builder configBuilder = RequestConfig.custom()
-                .setConnectTimeout(request.getConnectTimeout())
-                .setSocketTimeout(request.getSocketTimeout())
-                // we use connect timeout for connection request timeout
-                .setConnectionRequestTimeout(request.getConnectTimeout())
-                .setCookieSpec(CookieSpecs.DEFAULT);
-
-        httpRequest.setConfig(configBuilder.build());
 
         // set cookie
         CookieStore cookieStore = context.getCookieStore();

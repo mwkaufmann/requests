@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.exception.RequestException;
+import net.dongliu.requests.struct.Method;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCookieStore;
 
@@ -28,57 +29,57 @@ public class Session {
     /**
      * get method
      */
-    public BaseRequestBuilder get(String url) throws RequestException {
-        return Requests.get(url).session(this).executedBy(client);
+    public HeadOnlyRequestBuilder get(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.GET).url(url);
     }
 
     /**
      * head method
      */
-    public BaseRequestBuilder head(String url) throws RequestException {
-        return Requests.head(url).session(this).executedBy(client);
+    public HeadOnlyRequestBuilder head(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.HEAD).url(url);
     }
 
     /**
      * get url, and return content
      */
     public PostRequestBuilder post(String url) throws RequestException {
-        return Requests.post(url).session(this).executedBy(client);
+        return new PostRequestBuilder().client(client).session(this).method(Method.POST).url(url);
     }
 
     /**
      * put method
      */
     public BodyRequestBuilder put(String url) throws RequestException {
-        return Requests.put(url).session(this).executedBy(client);
+        return new BodyRequestBuilder().client(client).session(this).method(Method.PUT).url(url);
     }
 
     /**
      * delete method
      */
-    public BaseRequestBuilder delete(String url) throws RequestException {
-        return Requests.delete(url).session(this).executedBy(client);
+    public HeadOnlyRequestBuilder delete(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.DELETE).url(url);
     }
 
     /**
      * options method
      */
-    public BaseRequestBuilder options(String url) throws RequestException {
-        return Requests.options(url).session(this).executedBy(client);
+    public HeadOnlyRequestBuilder options(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.OPTIONS).url(url);
     }
 
     /**
      * patch method
      */
     public BodyRequestBuilder patch(String url) throws RequestException {
-        return Requests.patch(url).session(this).executedBy(client);
+        return new BodyRequestBuilder().client(client).session(this).method(Method.PATCH).url(url);
     }
 
     /**
      * trace method
      */
-    public BaseRequestBuilder trace(String url) throws RequestException {
-        return Requests.trace(url).session(this).executedBy(client);
+    public HeadOnlyRequestBuilder trace(String url) throws RequestException {
+        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.TRACE).url(url);
     }
 
 }

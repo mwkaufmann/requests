@@ -3,18 +3,17 @@ package net.dongliu.requests;
 import org.junit.Test;
 
 import java.net.URI;
-import java.net.URL;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Liu Dong
  */
-public class BaseRequestBuilderTest {
+public class HeadOnlyRequestBuilderTest {
 
     @Test
     public void testBuild() throws Exception {
-        Request request = new BaseRequestBuilder().url("http://www.baidu.com").build();
+        Request request = new HeadOnlyRequestBuilder().url("http://www.baidu.com").buildRequest();
         assertEquals(new URI("http://www.baidu.com"), request.getUrl());
     }
 }

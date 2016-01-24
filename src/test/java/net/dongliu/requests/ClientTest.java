@@ -1,8 +1,10 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.mock.MockServer;
+import net.dongliu.requests.struct.Proxy;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -25,7 +27,7 @@ public class ClientTest {
 
     @Test
     public void testMultiThread() throws IOException {
-        try(Client client = Client.custom().build()) {
+        try (Client client = Client.single().buildClient()) {
             for (int i = 0; i < 100; i++) {
                 Response<String> response = client.get("http://127.0.0.1:8080/").text();
                 assertEquals(200, response.getStatusCode());
@@ -34,8 +36,8 @@ public class ClientTest {
     }
 
     @Test
-    public void testPooledHttps() throws IOException {
-        try (Client client = Client.custom().verify(false).build()) {
+    public void testHttps() throws IOException {
+        try (Client client = Client.single().verify(false).buildClient()) {
             Response<String> response = client.get("https://127.0.0.1:8443/otn/").text();
             assertEquals(200, response.getStatusCode());
         }
@@ -43,10 +45,24 @@ public class ClientTest {
 
     @Test
     public void testSession() throws Exception {
-        try (Client client = Client.custom().verify(false).build()) {
+        try (Client client = Client.single().verify(false).buildClient()) {
             Session session = client.session();
             Response<String> response = session.get("https://127.0.0.1:8443/otn/").text();
             assertEquals(200, response.getStatusCode());
+        }
+    }
+
+    @Test
+    @Ignore("launch a proxy first to run this test")
+    public void testProxy() {
+        try (Client client = Client.single().verify(false).proxy(Proxy.httpProxy("127.0.0.1", 8000)).buildClient()) {
+            Response<String> resp = client.get("http://127.0.0.1:8080/").text();
+            assertEquals(200, resp.getStatusCode());
+        }
+
+        try (Client client = Client.single().verify(false).proxy(Proxy.socketProxy("127.0.0.1", 1080)).buildClient()) {
+            Response<String> resp1 = client.get("http://127.0.0.1:8080/").text();
+            assertEquals(200, resp1.getStatusCode());
         }
     }
 }
