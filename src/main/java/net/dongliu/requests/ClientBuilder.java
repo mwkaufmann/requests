@@ -50,7 +50,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> {
     ClientBuilder() {
     }
 
-    Client buildClient() {
+    public Client build() {
         Registry<ConnectionSocketFactory> registry = getConnectionSocketFactoryRegistry(proxy, verify);
         HttpClientConnectionManager connectionManager = buildManager(registry);
 

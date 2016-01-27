@@ -8,7 +8,7 @@ public class BodyRequestBuilder extends AbstractBodyRequestBuilder<BodyRequestBu
     }
 
     @Override
-    Request buildRequest() {
+    public Request build() {
         return new Request(method, url, parameters, headers, httpBody, charset, authInfo, cookies);
     }
 

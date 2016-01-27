@@ -31,7 +31,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
      * get http response for return result with Type T.
      */
     <R> Response<R> execute(ResponseProcessor<R> processor) throws RequestException {
-        Request request = buildRequest();
+        Request request = build();
         // use custom client
         return client.execute(request, processor, session);
     }
@@ -96,7 +96,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> {
         return self();
     }
 
-    abstract Request buildRequest();
+    public abstract Request build();
 
     /**
      * Set params of url query string. Will overwrite old cookie values

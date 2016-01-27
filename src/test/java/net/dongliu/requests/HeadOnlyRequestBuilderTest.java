@@ -13,7 +13,7 @@ public class HeadOnlyRequestBuilderTest {
 
     @Test
     public void testBuild() throws Exception {
-        Request request = new HeadOnlyRequestBuilder().url("http://www.baidu.com").buildRequest();
+        Request request = new HeadOnlyRequestBuilder().url("http://www.baidu.com").build();
         assertEquals(new URI("http://www.baidu.com"), request.getUrl());
     }
 }

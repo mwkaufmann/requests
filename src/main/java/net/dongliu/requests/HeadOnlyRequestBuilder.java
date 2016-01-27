@@ -8,7 +8,7 @@ public class HeadOnlyRequestBuilder extends RequestBuilder<HeadOnlyRequestBuilde
     }
 
     @Override
-    Request buildRequest() {
+    public Request build() {
         return new Request(method, url, parameters, headers, null, charset, authInfo, cookies);
     }
 

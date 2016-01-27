@@ -23,7 +23,7 @@ public class SessionTest {
 
     @Test
     public void testSession() {
-        try (Client client = Client.single().buildClient()) {
+        try (Client client = Client.single().build()) {
             Session session = client.session();
             Response<String> response = session.get("http://127.0.0.1:8080").text();
             assertEquals(200, response.getStatusCode());

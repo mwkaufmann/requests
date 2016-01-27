@@ -27,7 +27,7 @@ public class ClientTest {
 
     @Test
     public void testMultiThread() throws IOException {
-        try (Client client = Client.single().buildClient()) {
+        try (Client client = Client.single().build()) {
             for (int i = 0; i < 100; i++) {
                 Response<String> response = client.get("http://127.0.0.1:8080/").text();
                 assertEquals(200, response.getStatusCode());
@@ -37,7 +37,7 @@ public class ClientTest {
 
     @Test
     public void testHttps() throws IOException {
-        try (Client client = Client.single().verify(false).buildClient()) {
+        try (Client client = Client.single().verify(false).build()) {
             Response<String> response = client.get("https://127.0.0.1:8443/otn/").text();
             assertEquals(200, response.getStatusCode());
         }
@@ -45,7 +45,7 @@ public class ClientTest {
 
     @Test
     public void testSession() throws Exception {
-        try (Client client = Client.single().verify(false).buildClient()) {
+        try (Client client = Client.single().verify(false).build()) {
             Session session = client.session();
             Response<String> response = session.get("https://127.0.0.1:8443/otn/").text();
             assertEquals(200, response.getStatusCode());
@@ -55,12 +55,12 @@ public class ClientTest {
     @Test
     @Ignore("launch a proxy first to run this test")
     public void testProxy() {
-        try (Client client = Client.single().verify(false).proxy(Proxy.httpProxy("127.0.0.1", 8000)).buildClient()) {
+        try (Client client = Client.single().verify(false).proxy(Proxy.httpProxy("127.0.0.1", 8000)).build()) {
             Response<String> resp = client.get("http://127.0.0.1:8080/").text();
             assertEquals(200, resp.getStatusCode());
         }
 
-        try (Client client = Client.single().verify(false).proxy(Proxy.socketProxy("127.0.0.1", 1080)).buildClient()) {
+        try (Client client = Client.single().verify(false).proxy(Proxy.socketProxy("127.0.0.1", 1080)).build()) {
             Response<String> resp1 = client.get("http://127.0.0.1:8080/").text();
             assertEquals(200, resp1.getStatusCode());
         }

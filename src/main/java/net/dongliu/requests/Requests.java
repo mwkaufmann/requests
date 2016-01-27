@@ -66,6 +66,6 @@ public class Requests {
     }
 
     private static Client client() {
-        return Client.single().closeOnRequstFinished(true).buildClient();
+        return Client.single().closeOnRequstFinished(true).build();
     }
 }
