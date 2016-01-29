@@ -11,37 +11,29 @@ import java.io.InputStream;
 /**
  * @author Liu Dong
  */
-public abstract class AbstractBodyRequestBuilder<T extends AbstractBodyRequestBuilder<T>> extends RequestBuilder<T> {
+public abstract class AbstractBodyRequestBuilder<T extends AbstractBodyRequestBuilder<T>> extends RequestBuilder<T>
+        implements BodyRequestBuilderInterface<T> {
 
     protected HttpBody httpBody;
 
     protected AbstractBodyRequestBuilder() {
     }
 
-    /**
-     * Set http body data for Post/Put request
-     *
-     * @param data the data to post
-     */
+    @Override
     public T data(byte[] data) {
         checkHttpBody(BytesHttpBody.class);
         this.httpBody = new BytesHttpBody(data);
         return self();
     }
 
-    /**
-     * Set http data from inputStream for Post/Put request
-     */
+    @Override
     public T data(InputStream in) {
         checkHttpBody(InputHttpBody.class);
         this.httpBody = new InputHttpBody(in);
         return self();
     }
 
-    /**
-     * Set http data with text.
-     * The text string will be encoded, default using utf-8, set charset with charset(Charset charset) method
-     */
+    @Override
     public T data(String body) {
         checkHttpBody(StringHttpBody.class);
         this.httpBody = new StringHttpBody(body);

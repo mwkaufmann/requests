@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.exception.RequestException;
+import net.dongliu.requests.struct.Method;
 
 /**
  * Convenient utils method for to process common http request
@@ -12,60 +13,57 @@ public class Requests {
     /**
      * get method
      */
-    public static HeadOnlyRequestBuilder get(String url) throws RequestException {
-        return client().get(url);
+    public static MixinHeadOnlyRequestBuilder get(String url) throws RequestException {
+        return new MixinHeadOnlyRequestBuilder().method(Method.GET).url(url);
     }
 
     /**
      * head method
      */
-    public static HeadOnlyRequestBuilder head(String url) throws RequestException {
-        return client().head(url);
+    public static MixinHeadOnlyRequestBuilder head(String url) throws RequestException {
+        return new MixinHeadOnlyRequestBuilder().method(Method.HEAD).url(url);
     }
 
     /**
      * get url, and return content
      */
-    public static PostRequestBuilder post(String url) throws RequestException {
-        return client().post(url);
+    public static MixinPostRequestBuilder post(String url) throws RequestException {
+        return new MixinPostRequestBuilder().method(Method.POST).url(url);
     }
 
     /**
      * put method
      */
-    public static BodyRequestBuilder put(String url) throws RequestException {
-        return client().put(url);
+    public static MixinBodyRequestBuilder put(String url) throws RequestException {
+        return new MixinBodyRequestBuilder().method(Method.PUT).url(url);
     }
 
     /**
      * delete method
      */
-    public static HeadOnlyRequestBuilder delete(String url) throws RequestException {
-        return client().delete(url);
+    public static MixinHeadOnlyRequestBuilder delete(String url) throws RequestException {
+        return new MixinHeadOnlyRequestBuilder().method(Method.DELETE).url(url);
     }
 
     /**
      * options method
      */
-    public static HeadOnlyRequestBuilder options(String url) throws RequestException {
-        return client().options(url);
+    public static MixinHeadOnlyRequestBuilder options(String url) throws RequestException {
+        return new MixinHeadOnlyRequestBuilder().method(Method.OPTIONS).url(url);
     }
 
     /**
      * patch method
      */
-    public static BodyRequestBuilder patch(String url) throws RequestException {
-        return client().patch(url);
+    public static MixinBodyRequestBuilder patch(String url) throws RequestException {
+        return new MixinBodyRequestBuilder().method(Method.PATCH).url(url);
     }
 
     /**
      * trace method
      */
-    public static HeadOnlyRequestBuilder trace(String url) throws RequestException {
-        return client().trace(url);
+    public static MixinHeadOnlyRequestBuilder trace(String url) throws RequestException {
+        return new MixinHeadOnlyRequestBuilder().method(Method.TRACE).url(url);
     }
 
-    private static Client client() {
-        return Client.single().closeOnRequstFinished(true).build();
-    }
 }

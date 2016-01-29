@@ -24,9 +24,9 @@ import java.util.Objects;
 /**
  * @author Liu Dong
  */
-public abstract class ClientBuilder<T extends ClientBuilder<T>> {
+public abstract class ClientBuilder<T extends ClientBuilder<T>> implements ClientBuilderInterface<T> {
 
-    final static String defaultUserAgent = "Requests/2.1.0, Java " + System.getProperty("java.version");
+    final static String defaultUserAgent = "Requests/2.1.5, Java " + System.getProperty("java.version");
     final static int defaultTimeout = 10_000;
 
     // how long http connection keep, in milliseconds. default -1, get from server response
@@ -105,76 +105,57 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> {
                 .build();
     }
 
-    /**
-     * how long http connection keep, in milliseconds. default -1, get from server response
-     */
+    @Override
     public T timeToLive(long timeToLive) {
         this.timeToLive = timeToLive;
         return self();
     }
 
-    /**
-     * set userAgent
-     */
+    @Override
     public T userAgent(String userAgent) {
         Objects.requireNonNull(userAgent);
         this.userAgent = userAgent;
         return self();
     }
 
-    /**
-     * if verify http certificate, default true
-     */
+    @Override
     public T verify(boolean verify) {
         this.verify = verify;
         return self();
     }
 
-    /**
-     * If follow get/head redirect, default true.
-     * This method not set following redirect for post/put/delete method, use {@code allowPostRedirects} if you want this
-     */
+    @Override
     public T allowRedirects(boolean allowRedirects) {
         this.allowRedirects = allowRedirects;
         return self();
     }
 
-    /**
-     * if send compress requests. default true
-     */
+    @Override
     public T compress(boolean compress) {
         this.compress = compress;
         return self();
     }
 
-    /**
-     * Set connection proxy
-     */
+    @Override
     public T proxy(Proxy proxy) {
         this.proxy = proxy;
         return self();
     }
 
 
-    /**
-     * Set socket timeout and connect timeout in millis, default 10_000
-     */
+    @Override
     public T timeout(int timeout) {
         this.connectTimeout = this.socketTimeout = timeout;
         return self();
     }
 
-    /**
-     * Set socket timeout in millis, default 10_000
-     */
+    @Override
     public T socketTimeout(int timeout) {
         this.socketTimeout = timeout;
         return self();
     }
 
-    /**
-     * Set connect timeout in millis, default 10_000
-     */
+    @Override
     public T connectTimeout(int timeout) {
         this.connectTimeout = timeout;
         return self();
