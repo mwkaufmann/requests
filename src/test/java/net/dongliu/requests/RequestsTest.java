@@ -6,6 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -83,4 +84,22 @@ public class RequestsTest {
         assertTrue(response.getBody().contains("file"));
         assertTrue(response.getBody().contains("application/octem-stream"));
     }
+
+    @Test
+    public void testClientSetting() throws IOException {
+        Response<String> response = Requests.get("https://127.0.0.1:8443/otn/")
+                .timeout(3_000)
+                .compress(false)
+                .allowRedirects(false)
+                .userAgent("Custom user agent")
+                .verify(false).text();
+        assertEquals(200, response.getStatusCode());
+    }
+
+    @Test
+    public void testHttps() throws IOException {
+        Response<String> response = Requests.get("https://127.0.0.1:8443/otn/").verify(false).text();
+        assertEquals(200, response.getStatusCode());
+    }
+
 }

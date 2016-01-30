@@ -96,8 +96,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements Clien
             sslContext = SSLContexts.createSystemDefault();
         }
 
-        SSLConnectionSocketFactory sslsf = new CustomSSLConnectionSocketFactory(sslContext,
-                proxy, verify);
+        SSLConnectionSocketFactory sslsf = new CustomSSLConnectionSocketFactory(sslContext, proxy, verify);
         PlainConnectionSocketFactory psf = new CustomConnectionSocketFactory(proxy);
         return RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", psf)

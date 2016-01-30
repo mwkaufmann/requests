@@ -9,6 +9,7 @@ Requests is a http request lib for java, using HttpClient as backend and with fl
  * [Cookies](#cookies)
  * [Request with data](#request-with-data)
  * [Basic Auth](#basic-auth)
+ * [Client Settings](#client-settings)
 * [Client](#client)
  * [Redirection](#redirection)
  * [Timeout](#timeout)
@@ -165,25 +166,37 @@ Set http basic auth param by auth method:
 ```java
 Response<String> resp = Requests.get(url).auth("user", "passwd").verify(false).text();
 ```
+## Client Settings
+Requests create a Single Client object for each request, and close it when request finished. You can specify custom settings for this client:
+```java
+Response<String> response = Requests.get("https://127.0.0.1:8443/otn/")
+        .timeout(3_000)
+        .compress(false)
+        .allowRedirects(false)
+        .userAgent("Custom user agent")
+        .verify(false).text();
+assertEquals(200, response.getStatusCode());
+```
+See [Client section](#client) to get more client settings and what them means.
 # Client
 Use Client to reuse http connections, and custom connection properties. Client has similar method as Requests class.
 
-There are two kinds of client, single and pooled.Single Client is not thread-safe and only use on http connection, can 
-be use in single thread context;Pooled client is thread-safe and can be used across multi thread. 
+There are two kinds of client, single and pooled Client is not thread-safe and only process one http request at a time, can 
+be use in single thread context;Pooled client is thread-safe can be used across multi thread.
 
 Note: you need to close client when no longer used.
 ```java
+// create pooled client
 try(Client client = Client.pooled()
        .maxPerRoute(20) // max connection per site
        .maxTotal(100)   // max connectoin
        .build()) {
     Response<String> resp1 = client.get(url1).text();
     Response<String> resp2 = client.get(url2).text();
-
-    // get session
-    Session session = client.session();
-    Response<String> response = session.get(url3).text();
-
+}
+// create single client
+try(Client client = Client.single().build()) {
+   // ...
 }
 ```
 ##Redirection
@@ -235,12 +248,13 @@ Proxy.socketProxy("127.0.0.1", 5678)
 //with auth
 Proxy.httpProxy("127.0.0.1", 8080, userName, password)
 ```
-## Session
-Session keep cookies and basic auto cache and other http context for you, useful when need login or other situations. Session have the same usage as Requests and Client.
+# Session
+Session maintains cookies, basic authes and maybe other http context for you, useful when need login or other situations. Session have the same usage as Requests and Client.
 ```java
 Session session = client.session();
 Response<String> resp1 = session.get(url1).text();
 Response<String> resp2 = session.get(url2).text();
 ```
+Session do not need to be closed.If the client which produced this session is closed, session can no longer be used.
 #Exceptions
 Requests wrapped all checked exceptions into one runtime exception: RequestException. Catch this if you mind. Unchecked Exceptions are leaved as it is.
