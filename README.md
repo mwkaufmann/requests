@@ -164,7 +164,7 @@ Response<String> resp = Requests.post(url)
 ##Basic Auth
 Set http basic auth param by auth method:
 ```java
-Response<String> resp = Requests.get(url).auth("user", "passwd").verify(false).text();
+Response<String> resp = Requests.get(url).auth("user", "passwd").text();
 ```
 ## Client Settings
 Requests create a Single Client object for each request, and close it when request finished. You can specify custom settings for this client:
