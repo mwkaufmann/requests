@@ -16,7 +16,7 @@ Requests is a http request lib for java, using HttpClient as backend and with fl
  * [Response compress](#response-compress)
  * [Https Verification](#https-verification)
  * [Proxy](#proxy)
- * [Session](#session)
+* [Session](#session)
 * [Exceptions](#exceptions)
 
 #Maven Setting
@@ -255,6 +255,6 @@ Session session = client.session();
 Response<String> resp1 = session.get(url1).text();
 Response<String> resp2 = session.get(url2).text();
 ```
-Session do not need to be closed.If the client which produced this session is closed, session can no longer be used.
+Session do not need to be closed.If the client which this session obtained from is closed, session can no longer be used.
 #Exceptions
 Requests wrapped all checked exceptions into one runtime exception: RequestException. Catch this if you mind. Unchecked Exceptions are leaved as it is.
