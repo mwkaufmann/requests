@@ -18,6 +18,8 @@ interface ResponseProcessor<T> {
 
     /**
      * from http Body to result with type T
+     *
+     * @param httpEntity may be null if no http entity is set
      */
     T convert(int statusCode, Headers headers, HttpEntity httpEntity) throws IOException;
 }

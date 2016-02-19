@@ -45,11 +45,19 @@ final class FileResponseProcessor implements ResponseProcessor<File> {
             EntityUtils.consume(httpEntity);
             return null;
         }
+
+        if (httpEntity == null) {
+            // do nothing
+            try (OutputStream out = new FileOutputStream(this.file)) {
+            }
+            return this.file;
+        }
+
         try (InputStream in = httpEntity.getContent()) {
             try (OutputStream out = new FileOutputStream(this.file)) {
                 byte[] buffer = new byte[1024 * 8];
                 int len;
-                while((len = in.read(buffer)) != -1) {
+                while ((len = in.read(buffer)) != -1) {
                     out.write(buffer, 0, len);
                 }
             }

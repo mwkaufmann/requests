@@ -17,7 +17,7 @@ public abstract class AbstractMixinRequestBuilder<T extends AbstractMixinRequest
     private final SingleClientBuilder singleClientBuilder;
 
     AbstractMixinRequestBuilder() {
-        this.singleClientBuilder = new SingleClientBuilder().closeOnRequstFinished(true);
+        this.singleClientBuilder = new SingleClientBuilder().closeOnRequestFinished(true);
     }
 
     protected abstract T self();

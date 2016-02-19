@@ -45,6 +45,14 @@ public class RequestsTest {
     }
 
     @Test
+    public void testHead() {
+        Response<String> resp = Requests.head("http://127.0.0.1:8080")
+                .charset(StandardCharsets.UTF_8).text();
+        assertEquals(200, resp.getStatusCode());
+        assertTrue(resp.getBody().isEmpty());
+    }
+
+    @Test
     public void testPost() {
         // form encoded post
         Response<String> resp = Requests.post("http://127.0.0.1:8080/post")

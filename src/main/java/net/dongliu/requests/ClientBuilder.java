@@ -26,7 +26,7 @@ import java.util.Objects;
  */
 public abstract class ClientBuilder<T extends ClientBuilder<T>> implements ClientBuilderInterface<T> {
 
-    final static String defaultUserAgent = "Requests/2.1.5, Java " + System.getProperty("java.version");
+    final static String defaultUserAgent = "Requests, Java " + System.getProperty("java.version");
     final static int defaultTimeout = 10_000;
 
     // how long http connection keep, in milliseconds. default -1, get from server response
@@ -164,7 +164,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements Clien
      * Auto close client when finished one request. default false.
      * Only for internal use
      */
-    T closeOnRequstFinished(boolean closeOnRequstFinished) {
+    T closeOnRequestFinished(boolean closeOnRequstFinished) {
         this.closeOnRequstFinished = closeOnRequstFinished;
         return self();
     }

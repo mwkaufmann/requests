@@ -23,6 +23,10 @@ final class StringResponseProcessor implements ResponseProcessor<String> {
     @Override
     public String convert(int statusCode, Headers headers, HttpEntity httpEntity)
             throws IOException {
-        return EntityUtils.toString(httpEntity, charset);
+        if (httpEntity == null) {
+            return "";
+        } else {
+            return EntityUtils.toString(httpEntity, charset);
+        }
     }
 }
