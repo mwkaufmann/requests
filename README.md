@@ -24,6 +24,7 @@ From version 3.0, requests required java8.
 -	[Exceptions](#exceptions)
 
 #Maven Setting
+
 Requests is now in maven central repo.
 
 ```xml
@@ -34,8 +35,7 @@ Requests is now in maven central repo.
 </dependency>
 ```
 
-Requests
-========
+#Requests
 
 A Requests class is provided to make plain, simple http requests ##Simple http request Simple example that do http get request:
 
@@ -57,7 +57,7 @@ The response object have several common http response fields can be used:
 ```java
 RawResponse resp = Requests.get(url).send();
 int statusCode = resp.getStatus();
-List<header> headers = resp.getHeaders();
+List<Header> headers = resp.getHeaders();
 List<Cookie> cookies = resp.getCookies();
 String body = resp.readToText();
 ```
@@ -82,16 +82,18 @@ or you can custom http response processor your self:
 String resp = Requests.get(url).send().process(new ResponseHandler<String>() {...});
 ```
 
-##Request Charset Set charset used to encode parameters, post forms or request string body:
+##Request Charset 
 
+Set charset used to encode parameters, post forms or request string body:
 ```
 String resp = Requests.get(url).charset(StandardCharsets.UTF_8).send().readToText();
 ```
 
 Default charset is utf-8.
 
-##Passing Parameters Pass parameters in urls using param or params method:
+##Passing Parameters 
 
+Pass parameters in urls using param or params method:
 ```java
 // set params by map
 Map<String, Object> params = new HashMap<>();
@@ -116,8 +118,9 @@ String resp = Requests.get(url).headers(Entry.of("k1", "v1"), Entry.of("k2", "v2
         .send().readToText();
 ```
 
-##Cookies Cookies can be add by:
+##Cookies 
 
+Cookies can be add by:
 ```java
 Map<String, Object> cookies = new HashMap<>();
 cookies.put("k1", "v1");
@@ -129,8 +132,9 @@ String resp = Requests.get(url).cookies(Entry.of("k1", "v1"), Entry.of("k2", "v2
         .send().readToText();
 ```
 
-##Request with data Http Post, Put, Patch method can send request body. Take Post for example:
+##Request with data 
 
+Http Post, Put, Patch method can send request body. Take Post for example:
 ```java
 // set post form data
 String resp = Requests.post(url).forms(Entry.of("k1", "v1"), Entry.of("k2", "v2"))
@@ -162,17 +166,17 @@ String resp = Requests.post(url)
         .send().readToText();
 ```
 
-##Basic Auth Set http basic auth param by auth method:
+##Basic Auth 
 
+Set http basic auth param by auth method:
 ```java
 String resp = Requests.get(url).basicAuth("user", "passwd").send().readToText();
 ```
 
-Client Settings
----------------
+##Client Settings
+
 
 Requests create a Single Client object for each request, and close it when request finished. You can specify custom settings for this client:
-
 ```java
 String response = Requests.get("https://127.0.0.1:8443/otn/")
         .timeout(3_000)
@@ -185,8 +189,7 @@ assertEquals(200, response.getStatusCode());
 
 See [Client section](#client) to get more client settings and what them means.
 
-Client
-======
+#Client
 
 Use Client to reuse http connections, and custom connection properties. Client has similar method as Requests class.
 
@@ -209,7 +212,9 @@ try(Client client = Client.single().build()) {
 }
 ```
 
-##Redirection Requests and Client will handle 30x http redirect automatically, you can get redirect history via:
+##Redirection 
+
+Requests and Client will handle 30x http redirect automatically, you can get redirect history via:
 
 ```java
 RawResponse resp = client.get(url).send();
@@ -225,8 +230,7 @@ try (Client client = Client.single().allowRedirects(false).build()) {
 }
 ```
 
-Timeout
--------
+##Timeout
 
 There are two timeout parameters you can set, connect timeout, and socket timeout. The timeout value default to 10_1000 milliseconds.
 
@@ -243,13 +247,17 @@ You may not need to know, but Requests also use connect timeout as the timeout v
 Client client = Client.single().compress(false).build();
 ```
 
-##Https Verification Some https sites do not have trusted http certificate, Exception will be throwed when request. You can disable https certificate verify by:
+##Https Verification 
+
+Some https sites do not have trusted http certificate, Exception will be throwed when request. You can disable https certificate verify by:
 
 ```java
 Client client = Client.single().verify(false).build();
 ```
 
-##Proxy Set proxy by proxy method:
+##Proxy Set 
+
+Proxy by proxy method:
 
 ```java
 Client client = Client.single()
@@ -270,8 +278,7 @@ Proxy.socketProxy("127.0.0.1", 5678)
 Proxy.httpProxy("127.0.0.1", 8080, userName, password)
 ```
 
-Session
-=======
+#Session
 
 Session maintains cookies, basic authes and maybe other http context for you, useful when need login or other situations. Session have the same usage as Requests and Client.
 
@@ -281,4 +288,9 @@ String resp1 = session.get(url1).send().readToText();
 String resp2 = session.get(url2).send().readToText();
 ```
 
-Session do not need to be closed.If the client which this session obtained from is closed, session can no longer be used. #Exceptions Requests wrapped all checked exceptions into one runtime exception: RequestException. Catch this if you mind. Unchecked Exceptions are leaved as it is.
+Session do not need to be closed.If the client which this session obtained from is closed, session can no longer be used. 
+
+#Exceptions 
+
+Requests wrapped all checked exceptions into runtime exceptions, most of time is RequestException. 
+Catch this if you mind. Unchecked Exceptions are leaved as it is.
