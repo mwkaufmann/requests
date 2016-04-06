@@ -1,19 +1,18 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.exception.RequestException;
-import net.dongliu.requests.struct.*;
+import net.dongliu.requests.struct.Method;
+import net.dongliu.requests.struct.Proxy;
 
-import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Common logic for Mixed client builder and request builder
  */
 public abstract class AbstractMixinRequestBuilder<T extends AbstractMixinRequestBuilder<T, V>, V extends RequestBuilder<V>>
-        implements ClientBuilderInterface<T>, Executable, BaseRequestBuilderInterface<T> {
+        implements IClientBuilder<T>, IBaseRequestBuilder<T> {
     private final SingleClientBuilder singleClientBuilder;
 
     AbstractMixinRequestBuilder() {
@@ -78,32 +77,8 @@ public abstract class AbstractMixinRequestBuilder<T extends AbstractMixinRequest
         return requestBuilder().client(singleClientBuilder.build());
     }
 
-    public <R> Response<R> execute(ResponseProcessor<R> processor) throws RequestException {
-        return finalRequestBuilder().execute(processor);
-    }
-
-    public <R> Response<R> handle(ResponseHandler<R> handler) throws RequestException {
-        return finalRequestBuilder().handle(handler);
-    }
-
-    public Response<String> text(Charset responseCharset) throws RequestException {
-        return finalRequestBuilder().text(responseCharset);
-    }
-
-    public Response<String> text() throws RequestException {
-        return finalRequestBuilder().text();
-    }
-
-    public Response<byte[]> bytes() throws RequestException {
-        return finalRequestBuilder().bytes();
-    }
-
-    public Response<File> file(File file) throws RequestException {
-        return finalRequestBuilder().file(file);
-    }
-
-    public Response<File> file(String filePath) throws RequestException {
-        return finalRequestBuilder().file(filePath);
+    public RawResponse send() throws RequestException {
+        return finalRequestBuilder().send();
     }
 
     public T url(String url) throws RequestException {
@@ -111,32 +86,7 @@ public abstract class AbstractMixinRequestBuilder<T extends AbstractMixinRequest
         return self();
     }
 
-    public T params(Map<String, ?> params) {
-        requestBuilder().params(params);
-        return self();
-    }
-
-    public T params(Parameter... params) {
-        requestBuilder().params(params);
-        return self();
-    }
-
-    public T params(Collection<Parameter> params) {
-        requestBuilder().params(params);
-        return self();
-    }
-
-    public T addParam(String key, Object value) {
-        requestBuilder().addParam(key, value);
-        return self();
-    }
-
     public T charset(Charset charset) {
-        requestBuilder().charset(charset);
-        return self();
-    }
-
-    public T charset(String charset) {
         requestBuilder().charset(charset);
         return self();
     }
@@ -146,53 +96,32 @@ public abstract class AbstractMixinRequestBuilder<T extends AbstractMixinRequest
         return self();
     }
 
-    public T headers(Map<String, ?> params) {
-        requestBuilder().headers(params);
-        return self();
-    }
-
-    public T headers(Header... headers) {
-        requestBuilder().headers(headers);
-        return self();
-    }
-
-    public T headers(List<Header> headers) {
-        requestBuilder().headers(headers);
-        return self();
-    }
-
-    public T addHeader(String key, Object value) {
-        requestBuilder().addHeader(key, value);
-        return self();
-    }
-
-    public T auth(String userName, String password) {
-        requestBuilder().auth(userName, password);
-        return self();
-    }
-
-    public T cookies(Map<String, String> cookies) {
-        requestBuilder().cookies(cookies);
-        return self();
-    }
-
-    public T cookies(Cookie... cookies) {
-        requestBuilder().cookies(cookies);
-        return self();
-    }
-
-    public T cookies(Collection<Cookie> cookies) {
-        requestBuilder().cookies(cookies);
-        return self();
-    }
-
-    public T addCookie(String name, String value) {
-        requestBuilder().addCookie(name, value);
-        return self();
-    }
-
     public T session(Session session) {
         requestBuilder().session(session);
+        return self();
+    }
+
+    @Override
+    public T params(Collection<? extends Map.Entry<String, String>> params) {
+        requestBuilder().params(params);
+        return self();
+    }
+
+    @Override
+    public T headers(Collection<? extends Map.Entry<String, String>> headers) {
+        requestBuilder().headers(headers);
+        return self();
+    }
+
+    @Override
+    public T basicAuth(String userName, String password) {
+        requestBuilder().basicAuth(userName, password);
+        return self();
+    }
+
+    @Override
+    public T cookies(Collection<? extends Map.Entry<String, String>> cookies) {
+        requestBuilder().cookies(cookies);
         return self();
     }
 }

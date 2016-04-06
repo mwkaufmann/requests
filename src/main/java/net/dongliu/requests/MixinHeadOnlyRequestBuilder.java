@@ -5,7 +5,7 @@ package net.dongliu.requests;
  */
 public class MixinHeadOnlyRequestBuilder
         extends AbstractMixinRequestBuilder<MixinHeadOnlyRequestBuilder, HeadOnlyRequestBuilder>
-        implements ClientBuilderInterface<MixinHeadOnlyRequestBuilder>, BaseRequestBuilderInterface<MixinHeadOnlyRequestBuilder> {
+        implements IClientBuilder<MixinHeadOnlyRequestBuilder>, IBaseRequestBuilder<MixinHeadOnlyRequestBuilder> {
     private final HeadOnlyRequestBuilder requestBuilder;
 
     MixinHeadOnlyRequestBuilder() {
@@ -22,4 +22,5 @@ public class MixinHeadOnlyRequestBuilder
     protected HeadOnlyRequestBuilder requestBuilder() {
         return requestBuilder;
     }
+
 }

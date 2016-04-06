@@ -1,12 +1,14 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.struct.HttpBody;
+
 import java.io.InputStream;
 
 /**
  * Mixed client builder and request builder for Requests utils method
  */
 public class MixinBodyRequestBuilder extends AbstractMixinRequestBuilder<MixinBodyRequestBuilder, BodyRequestBuilder>
-        implements ClientBuilderInterface<MixinBodyRequestBuilder>, BodyRequestBuilderInterface<MixinBodyRequestBuilder> {
+        implements IClientBuilder<MixinBodyRequestBuilder>, IBodyRequestBuilder<MixinBodyRequestBuilder> {
     private final BodyRequestBuilder bodyRequestBuilder;
 
     public MixinBodyRequestBuilder() {
@@ -24,18 +26,25 @@ public class MixinBodyRequestBuilder extends AbstractMixinRequestBuilder<MixinBo
         return bodyRequestBuilder;
     }
 
-    public MixinBodyRequestBuilder data(byte[] data) {
-        bodyRequestBuilder.data(data);
+    public MixinBodyRequestBuilder body(byte[] data) {
+        bodyRequestBuilder.body(data);
         return this;
     }
 
-    public MixinBodyRequestBuilder data(InputStream in) {
-        bodyRequestBuilder.data(in);
+    public MixinBodyRequestBuilder body(InputStream in) {
+        bodyRequestBuilder.body(in);
         return this;
     }
 
-    public MixinBodyRequestBuilder data(String body) {
-        bodyRequestBuilder.data(body);
+    public MixinBodyRequestBuilder body(String body) {
+        bodyRequestBuilder.body(body);
         return this;
     }
+
+    @Override
+    public MixinBodyRequestBuilder body(HttpBody body) {
+        bodyRequestBuilder.body(body);
+        return this;
+    }
+
 }

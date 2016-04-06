@@ -1,25 +1,30 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.exception.RequestException;
-import net.dongliu.requests.struct.*;
+import net.dongliu.requests.exception.UncheckedURISyntaxException;
+import net.dongliu.requests.struct.AuthInfo;
+import net.dongliu.requests.struct.Method;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
 
 /**
+ * Http request builder
+ *
  * @author Liu Dong
  */
-public abstract class RequestBuilder<T extends RequestBuilder<T>> implements Executable, BaseRequestBuilderInterface<T> {
-    private Client client;
+public abstract class RequestBuilder<T extends RequestBuilder<T>> implements IBaseRequestBuilder<T> {
+    private PooledClient pooledClient;
     protected Method method;
     protected URI url;
-    protected List<Parameter> parameters;
-    protected List<Header> headers;
-    protected List<Cookie> cookies;
+    protected Collection<? extends Map.Entry<String, String>> parameters;
+    protected Collection<? extends Map.Entry<String, String>> headers;
+    protected Collection<? extends Map.Entry<String, String>> cookies;
 
     protected Charset charset = StandardCharsets.UTF_8;
 
@@ -28,46 +33,15 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> implements Exe
     protected Session session;
 
     /**
-     * get http response for return result with Type T.
+     * Send request and get response
      */
-    <R> Response<R> execute(ResponseProcessor<R> processor) throws RequestException {
+    public RawResponse send() throws RequestException {
         Request request = build();
-        // use custom client
-        return client.execute(request, processor, session);
+        return pooledClient.execute(request, session);
     }
 
-    @Override
-    public <R> Response<R> handle(ResponseHandler<R> handler) throws RequestException {
-        return execute(new ResponseHandlerAdapter<>(handler));
-    }
-
-    @Override
-    public Response<String> text(Charset responseCharset) throws RequestException {
-        return execute(new StringResponseProcessor(responseCharset));
-    }
-
-    @Override
-    public Response<String> text() throws RequestException {
-        return execute(new StringResponseProcessor(null));
-    }
-
-    @Override
-    public Response<byte[]> bytes() throws RequestException {
-        return execute(ResponseProcessor.bytes);
-    }
-
-    @Override
-    public Response<File> file(File file) throws RequestException {
-        return execute(new FileResponseProcessor(file));
-    }
-
-    @Override
-    public Response<File> file(String filePath) throws RequestException {
-        return execute(new FileResponseProcessor(filePath));
-    }
-
-    T client(Client client) {
-        this.client = client;
+    T client(PooledClient pooledClient) {
+        this.pooledClient = pooledClient;
         return self();
     }
 
@@ -75,7 +49,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> implements Exe
         try {
             this.url = new URI(url);
         } catch (URISyntaxException e) {
-            throw new RequestException(e);
+            throw new UncheckedURISyntaxException(e);
         }
         return self();
     }
@@ -83,43 +57,9 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> implements Exe
     public abstract Request build();
 
     @Override
-    public T params(Map<String, ?> params) {
-        this.parameters = new ArrayList<>(params.size());
-        for (Map.Entry<String, ?> entry : params.entrySet()) {
-            this.parameters.add(Parameter.of(entry.getKey(), entry.getValue()));
-        }
+    public T params(Collection<? extends Map.Entry<String, String>> params) {
+        this.parameters = Objects.requireNonNull(params);
         return self();
-    }
-
-    @Override
-    public T params(Parameter... params) {
-        this.parameters = new ArrayList<>(params.length);
-        for (Parameter param : params) {
-            this.parameters.add(new Parameter(param.getName(), param.getValue()));
-        }
-        return self();
-    }
-
-    @Override
-    public T params(Collection<Parameter> params) {
-        this.parameters = new ArrayList<>(params.size());
-        for (Parameter param : params) {
-            this.parameters.add(new Parameter(param.getName(), param.getValue()));
-        }
-        return self();
-    }
-
-    @Override
-    public T addParam(String key, Object value) {
-        ensureParameters();
-        this.parameters.add(Parameter.of(key, value));
-        return self();
-    }
-
-    private void ensureParameters() {
-        if (this.parameters == null) {
-            this.parameters = new ArrayList<>();
-        }
     }
 
     @Override
@@ -128,96 +68,27 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> implements Exe
         return self();
     }
 
-    @Override
-    public T charset(String charset) {
-        return charset(Charset.forName(charset));
-    }
-
     T method(Method method) {
         this.method = method;
         return self();
     }
 
     @Override
-    public T headers(Map<String, ?> params) {
-        this.headers = new ArrayList<>();
-        for (Map.Entry<String, ?> entry : params.entrySet()) {
-            this.headers.add(Header.of(entry.getKey(), entry.getValue()));
-        }
+    public T headers(Collection<? extends Map.Entry<String, String>> headers) {
+        this.headers = Objects.requireNonNull(headers);
         return self();
     }
 
     @Override
-    public T headers(Header... headers) {
-        this.headers = new ArrayList<>();
-        Collections.addAll(this.headers, headers);
-        return self();
-    }
-
-    @Override
-    public T headers(List<Header> headers) {
-        this.headers = new ArrayList<>();
-        for (Header header : headers) {
-            this.headers.add(header);
-        }
-        return self();
-    }
-
-    @Override
-    public T addHeader(String key, Object value) {
-        ensureHeaders();
-        this.headers.add(Header.of(key, value));
-        return self();
-    }
-
-    private void ensureHeaders() {
-        if (this.headers == null) {
-            this.headers = new ArrayList<>();
-        }
-    }
-
-    @Override
-    public T auth(String userName, String password) {
+    public T basicAuth(String userName, String password) {
         authInfo = new AuthInfo(userName, password);
         return self();
     }
 
     @Override
-    public T cookies(Map<String, String> cookies) {
-        this.cookies = new ArrayList<>(cookies.size());
-        for (Map.Entry<String, String> entry : cookies.entrySet()) {
-            this.cookies.add(new Cookie(entry.getKey(), entry.getValue()));
-        }
+    public T cookies(Collection<? extends Map.Entry<String, String>> cookies) {
+        this.cookies = cookies;
         return self();
-    }
-
-    @Override
-    public T cookies(Cookie... cookies) {
-        this.cookies = new ArrayList<>(cookies.length);
-        Collections.addAll(this.cookies, cookies);
-        return self();
-    }
-
-    @Override
-    public T cookies(Collection<Cookie> cookies) {
-        this.cookies = new ArrayList<>(cookies.size());
-        for (Cookie cookie : cookies) {
-            this.cookies.add(cookie);
-        }
-        return self();
-    }
-
-    @Override
-    public T addCookie(String name, String value) {
-        ensureCookies();
-        this.cookies.add(new Cookie(name, value));
-        return self();
-    }
-
-    private void ensureCookies() {
-        if (this.cookies == null) {
-            this.cookies = new ArrayList<>();
-        }
     }
 
     T session(Session session) {

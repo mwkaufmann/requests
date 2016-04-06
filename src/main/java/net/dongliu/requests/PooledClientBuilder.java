@@ -2,7 +2,6 @@ package net.dongliu.requests;
 
 
 import net.dongliu.requests.struct.Host;
-import net.dongliu.requests.struct.Pair;
 import org.apache.http.HttpHost;
 import org.apache.http.config.Registry;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -11,7 +10,9 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class PooledClientBuilder extends ClientBuilder<PooledClientBuilder> {
@@ -20,7 +21,7 @@ public class PooledClientBuilder extends ClientBuilder<PooledClientBuilder> {
     // the max connection count for each host
     private int maxPerRoute = 5;
     // set max count for specified host
-    private List<Pair<Host, Integer>> perRouteCount;
+    private Map<Host, Integer> perRouteCount;
 
     PooledClientBuilder() {
     }
@@ -46,13 +47,13 @@ public class PooledClientBuilder extends ClientBuilder<PooledClientBuilder> {
      */
     public PooledClientBuilder maxPerRoute(Host host, int maxPerRoute) {
         ensurePerRouteCount();
-        this.perRouteCount.add(new Pair<>(host, maxPerRoute));
+        this.perRouteCount.put(host, maxPerRoute);
         return this;
     }
 
     private void ensurePerRouteCount() {
         if (this.perRouteCount == null) {
-            this.perRouteCount = new ArrayList<>();
+            this.perRouteCount = new HashMap<>();
         }
     }
 
@@ -69,8 +70,8 @@ public class PooledClientBuilder extends ClientBuilder<PooledClientBuilder> {
         manager.setMaxTotal(maxTotal);
         manager.setDefaultMaxPerRoute(maxPerRoute);
         if (perRouteCount != null) {
-            for (Pair<Host, Integer> pair : perRouteCount) {
-                Host host = pair.getName();
+            for (Map.Entry<Host, Integer> pair : perRouteCount.entrySet()) {
+                Host host = pair.getKey();
                 manager.setMaxPerRoute(new HttpRoute(new HttpHost(host.getDomain(), host.getPort())),
                         pair.getValue());
             }

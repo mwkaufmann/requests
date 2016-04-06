@@ -1,30 +1,35 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.struct.*;
+import net.dongliu.requests.struct.AuthInfo;
+import net.dongliu.requests.struct.HttpBody;
+import net.dongliu.requests.struct.Method;
 
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Http request
  *
  * @author Dong Liu dongliu@live.cn
  */
-public class Request {
+class Request {
 
     private final Method method;
     private final URI url;
-    private final List<Header> headers;
-    private final List<Cookie> cookies;
-    private final List<Parameter> parameters;
+    private final Collection<? extends Map.Entry<String, String>> headers;
+    private final Collection<? extends Map.Entry<String, String>> cookies;
+    private final Collection<? extends Map.Entry<String, String>> parameters;
     private HttpBody httpBody;
 
     private final AuthInfo authInfo;
     private final Charset charset;
 
-    Request(Method method, URI url, List<Parameter> parameters, List<Header> headers,
-            HttpBody httpBody, Charset charset, AuthInfo authInfo, List<Cookie> cookies) {
+    Request(Method method, URI url, Collection<? extends Map.Entry<String, String>> parameters,
+            Collection<? extends Map.Entry<String, String>> headers,
+            HttpBody httpBody, Charset charset, AuthInfo authInfo,
+            Collection<? extends Map.Entry<String, String>> cookies) {
         this.method = method;
         this.url = url;
         this.parameters = parameters;
@@ -43,15 +48,15 @@ public class Request {
         return url;
     }
 
-    public List<Header> getHeaders() {
+    public Collection<? extends Map.Entry<String, String>> getHeaders() {
         return headers;
     }
 
-    public List<Cookie> getCookies() {
+    public Collection<? extends Map.Entry<String, String>> getCookies() {
         return cookies;
     }
 
-    public List<Parameter> getParameters() {
+    public Collection<? extends Map.Entry<String, String>> getParameters() {
         return parameters;
     }
 

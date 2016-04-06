@@ -24,7 +24,7 @@ import java.util.Objects;
 /**
  * @author Liu Dong
  */
-public abstract class ClientBuilder<T extends ClientBuilder<T>> implements ClientBuilderInterface<T> {
+public abstract class ClientBuilder<T extends ClientBuilder<T>> implements IClientBuilder<T> {
 
     final static String defaultUserAgent = "Requests, Java " + System.getProperty("java.version");
     final static int defaultTimeout = 10_000;
@@ -50,7 +50,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements Clien
     ClientBuilder() {
     }
 
-    public Client build() {
+    public PooledClient build() {
         Registry<ConnectionSocketFactory> registry = getConnectionSocketFactoryRegistry(proxy, verify);
         HttpClientConnectionManager connectionManager = buildManager(registry);
 
@@ -76,7 +76,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements Clien
             clientBuilder.disableRedirectHandling();
         }
 
-        return new Client(clientBuilder.build(), closeOnRequstFinished);
+        return new PooledClient(clientBuilder.build(), closeOnRequstFinished);
     }
 
 

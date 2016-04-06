@@ -2,7 +2,7 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.struct.Proxy;
 
-public interface ClientBuilderInterface<T> {
+public interface IClientBuilder<T> {
     /**
      * how long http connection keep, in milliseconds. default -1, get from server response
      */

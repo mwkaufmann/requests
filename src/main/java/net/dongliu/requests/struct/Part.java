@@ -9,7 +9,7 @@ import java.net.URLConnection;
  *
  * @author Dong Liu dongliu@live.cn
  */
-public class MultiPart {
+public class Part {
     private final Type type;
     // the filed name name
     private final String name;
@@ -23,7 +23,7 @@ public class MultiPart {
     private final byte[] bytes;
     private final String value;
 
-    public MultiPart(String name, String value) {
+    public Part(String name, String value) {
         this.file = null;
         this.mime = null;
         this.name = name;
@@ -37,14 +37,14 @@ public class MultiPart {
     /**
      * get multiPart from file path
      */
-    public MultiPart(String name, File file) {
+    public Part(String name, File file) {
         this(name, URLConnection.guessContentTypeFromName(file.getName()), file);
     }
 
     /**
      * get multiPart from file path
      */
-    public MultiPart(String name, String mime, File file) {
+    public Part(String name, String mime, File file) {
         this.file = file;
         this.mime = mime;
         this.name = name;
@@ -58,7 +58,7 @@ public class MultiPart {
     /**
      * get multiPart from file path
      */
-    public MultiPart(String name, String mime, String fileName, InputStream in) {
+    public Part(String name, String mime, String fileName, InputStream in) {
         this.file = null;
         this.in = in;
         this.bytes = null;
@@ -72,7 +72,7 @@ public class MultiPart {
     /**
      * get multiPart from file path
      */
-    public MultiPart(String name, String mime, String fileName, byte[] bytes) {
+    public Part(String name, String mime, String fileName, byte[] bytes) {
         this.file = null;
         this.in = null;
         this.bytes = bytes;

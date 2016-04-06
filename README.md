@@ -1,6 +1,8 @@
-[![](https://travis-ci.org/caoqianli/requests.svg)](https://travis-ci.org/caoqianli/requests) ![License](https://img.shields.io/badge/licence-%20BSD%203--Clause%20-blue.svg?style=flat)
+[![](https://travis-ci.org/caoqianli/requests.svg)](https://travis-ci.org/caoqianli/requests) 
+![License](https://img.shields.io/badge/licence-Simplified%20BSD-blue.svg?style=flat)
 
 Requests is a http request lib for java, using HttpClient as backend and with fluent api.
+From version 3.0, requests required java8.
 
 -	[Maven Setting](#maven-setting)
 -	[Requests](#requests)
@@ -21,13 +23,14 @@ Requests is a http request lib for java, using HttpClient as backend and with fl
 -	[Session](#session)
 -	[Exceptions](#exceptions)
 
-#Maven Setting Requests is now in maven central repo.
+#Maven Setting
+Requests is now in maven central repo.
 
 ```xml
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>2.1.6</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
@@ -38,50 +41,51 @@ A Requests class is provided to make plain, simple http requests ##Simple http r
 
 ```java
 String url = ...;
-Response<String> resp = Requests.get(url).text();
+String resp = Requests.get(url).send().readToText();
 ```
 
 Post and other method:
 
 ```java
-resp = Requests.post(url).text();
-resp = Requests.head(url).text();
+resp = Requests.post(url).send().readToText();
+resp = Requests.head(url).send().readToText();
 ...
 ```
 
 The response object have several common http response fields can be used:
 
 ```java
-Response<String> resp = Requests.get(url).text();
-int statusCode = resp.getStatusCode();
-Headers headers = resp.getHeaders();
-Cookies cookies = resp.getCookies();
-String body = resp.getBody();
+RawResponse resp = Requests.get(url).send();
+int statusCode = resp.getStatus();
+List<header> headers = resp.getHeaders();
+List<Cookie> cookies = resp.getCookies();
+String body = resp.readToText();
 ```
+Make sure call readToText or other methods to consume resp, or call close method to close resp.
 
-The text() method here trans http response body as String, more other methods provided:
+The readToText() method here trans http response body as String, more other methods provided:
 
 ```java
 // get response as string, use encoding get from response header
-Response<String> resp = Requests.get(url).text();
+String resp = Requests.get(url).send().readToText();
 // get response as string, and use provided encoding
-Response<String> resp = Requests.get(url).text(StandardCharsets.UTF-8);
+String resp = Requests.get(url).send().readToText(StandardCharsets.UTF-8);
 // get response as bytes
-Response<byte[]> resp1 = Requests.get(url).bytes();
+byte[] resp1 = Requests.get(url).send().readToBytes();
 // save response as file
-Response<File> resp2 = Requests.get(url).file("/path/to/save/file");
+boolean result = Requests.get(url).send().writeTo("/path/to/save/file");
 ```
 
 or you can custom http response processor your self:
 
 ```java
-Response<String> resp = Requests.get(url).handle(new ResponseHandler<String>() {...});
+String resp = Requests.get(url).send().process(new ResponseHandler<String>() {...});
 ```
 
 ##Request Charset Set charset used to encode parameters, post forms or request string body:
 
 ```
-Response<String> resp = Requests.get(url).charset(StandardCharsets.UTF_8).text();
+String resp = Requests.get(url).charset(StandardCharsets.UTF_8).send().readToText();
 ```
 
 Default charset is utf-8.
@@ -89,80 +93,62 @@ Default charset is utf-8.
 ##Passing Parameters Pass parameters in urls using param or params method:
 
 ```java
-Response<String> resp = Requests.get(url)
-        // add one param
-        .addParam("key1", "value1")
-        .addParam("key1", "value1")
-        .text();
 // set params by map
 Map<String, Object> params = new HashMap<>();
 params.put("k1", "v1");
 params.put("k2", "v2");
-Response<String> resp = Requests.get(url).params(params).text();
+String resp = Requests.get(url).params(params).send().readToText();
 // set multi params
-Response<String> resp = Requests.get(url).params(new Parameter(...), new Parameter(...))
-        .text();
+String resp = Requests.get(url).params(Entry.of("k1", "v1"), Entry.of("k2", "v2"))
+        .send().readToText();
 ```
 
 If you want to send post form-encoded paramters, use form()/forms() methods ##Custom Headers Http request headers can be set by header or headers method:
 
 ```java
-Response<String> resp = Requests.get(url)
-        // add one header
-        .addHeader("key1", "value1")
-        .addHeader("key2", "value2")
-        .text();
-// set multi headers by map
+// set headers by map
 Map<String, Object> headers = new HashMap<>();
 headers.put("k1", "v1");
 headers.put("k2", "v2");
-Response<String> resp = Requests.get(url).headers(headers).text();
+String resp = Requests.get(url).headers(headers).send().readToText();
 // set multi headers
-Response<String> resp = Requests.get(url).headers(new Header(...), new Header(...))
-        .text();
+String resp = Requests.get(url).headers(Entry.of("k1", "v1"), Entry.of("k2", "v2"))
+        .send().readToText();
 ```
 
 ##Cookies Cookies can be add by:
 
 ```java
-Response<String> resp = Requests.get(url)
-        // add one cookie
-        .addCookie("key1", "value1")
-        .addCookie("key2", "value2")
-        .text();
 Map<String, Object> cookies = new HashMap<>();
 cookies.put("k1", "v1");
 cookies.put("k2", "v2");
 // set cookies by map
-Response<String> resp = Requests.get(url).cookies(cookies).text();
+String resp = Requests.get(url).cookies(cookies).send().readToText();
 // set cookies
-Response<String> resp = Requests.get(url).cookies(new Cookie(...), new Cookie(...))
-        .text();
+String resp = Requests.get(url).cookies(Entry.of("k1", "v1"), Entry.of("k2", "v2"))
+        .send().readToText();
 ```
 
 ##Request with data Http Post, Put, Patch method can send request body. Take Post for example:
 
 ```java
-// add post from data
-Response<String> resp = Requests.post(url)
-        .addForm("key1", "value1").addForm("key2", "value2").text();
 // set post form data
-Response<String> resp = Requests.post(url).forms(new Parameter(...), new Parameter(...))
-        .text();
+String resp = Requests.post(url).forms(Entry.of("k1", "v1"), Entry.of("k2", "v2"))
+        .send().readToText();
 // set post form data by map
 Map<String, Object> formData = new HashMap<>();
 formData.put("k1", "v1");
 formData.put("k2", "v2");
-Response<String> resp = Requests.post(url).forms(formData).text();
+String resp = Requests.post(url).forms(formData).send().readToText();
 // send byte array data as body
 byte[] data = ...;
-resp = Requests.post(url).data(data).text();
+resp = Requests.post(url).body(data).send().readToText();
 // send string data as body
 String str = ...;
-resp = Requests.post(url).data(str).text();
+resp = Requests.post(url).body(str).send().readToText();
 // send data from inputStream
 InputStream in = ...
-resp = Requests.post(url).data(in).text();
+resp = Requests.post(url).body(in).send().readToText();
 ```
 
 One more complicate situation is multiPart post request, this can be done via multiPart method:
@@ -171,18 +157,15 @@ One more complicate situation is multiPart post request, this can be done via mu
 // send form-encoded data
 InputStream in = ...;
 byte[] bytes = ...;
-Response<String> resp = Requests.post(url)
-        .addMultiPart("test", "value")
-        .addMultiPart("byFile", new File("/path/to/file"))
-        .addMultiPart("byStream", mimeType, in)
-        .addMultiPart("byBytes", mimeType, bytes)
-        .text();
+String resp = Requests.post(url)
+        .multiParts(new Part("file1", new File(...)), new Part("file2", new File("...")))
+        .send().readToText();
 ```
 
 ##Basic Auth Set http basic auth param by auth method:
 
 ```java
-Response<String> resp = Requests.get(url).auth("user", "passwd").text();
+String resp = Requests.get(url).basicAuth("user", "passwd").send().readToText();
 ```
 
 Client Settings
@@ -191,12 +174,12 @@ Client Settings
 Requests create a Single Client object for each request, and close it when request finished. You can specify custom settings for this client:
 
 ```java
-Response<String> response = Requests.get("https://127.0.0.1:8443/otn/")
+String response = Requests.get("https://127.0.0.1:8443/otn/")
         .timeout(3_000)
         .compress(false)
         .allowRedirects(false)
         .userAgent("Custom user agent")
-        .verify(false).text();
+        .verify(false).send().readToText();
 assertEquals(200, response.getStatusCode());
 ```
 
@@ -217,8 +200,8 @@ try(Client client = Client.pooled()
        .maxPerRoute(20) // max connection per site
        .maxTotal(100)   // max connectoin
        .build()) {
-    Response<String> resp1 = client.get(url1).text();
-    Response<String> resp2 = client.get(url2).text();
+    String resp1 = client.get(url1).send().readToText();
+    String resp2 = client.get(url2).send().readToText();
 }
 // create single client
 try(Client client = Client.single().build()) {
@@ -229,15 +212,16 @@ try(Client client = Client.single().build()) {
 ##Redirection Requests and Client will handle 30x http redirect automatically, you can get redirect history via:
 
 ```java
-Response<String> resp = client.get(url).text();
+RawResponse resp = client.get(url).send();
 List<URI> history = resp.getHistory();
+resp.close();
 ```
 
 Or you can disable it:
 
 ```java
 try (Client client = Client.single().allowRedirects(false).build()) {
-    Response<String> resp = client.get(url).text();
+    String resp = client.get(url).send().readToText();
 }
 ```
 
@@ -293,8 +277,8 @@ Session maintains cookies, basic authes and maybe other http context for you, us
 
 ```java
 Session session = client.session();
-Response<String> resp1 = session.get(url1).text();
-Response<String> resp2 = session.get(url2).text();
+String resp1 = session.get(url1).send().readToText();
+String resp2 = session.get(url2).send().readToText();
 ```
 
 Session do not need to be closed.If the client which this session obtained from is closed, session can no longer be used. #Exceptions Requests wrapped all checked exceptions into one runtime exception: RequestException. Catch this if you mind. Unchecked Exceptions are leaved as it is.

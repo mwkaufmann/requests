@@ -1,9 +1,10 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.mock.MockServer;
+import net.dongliu.requests.struct.Part;
+import net.dongliu.requests.struct.Entry;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -29,85 +30,85 @@ public class RequestsTest {
 
     @Test
     public void testGet() throws Exception {
-        Response<String> resp = Requests.get("http://127.0.0.1:8080")
-                .charset(StandardCharsets.UTF_8).text();
-        assertEquals(200, resp.getStatusCode());
+        String resp = Requests.get("http://127.0.0.1:8080")
+                .charset(StandardCharsets.UTF_8).send().readToText();
+        assertFalse(resp.isEmpty());
 
-        resp = Requests.get("http://127.0.0.1:8080").text();
-        assertEquals(200, resp.getStatusCode());
+        resp = Requests.get("http://127.0.0.1:8080").send().readToText();
+        assertFalse(resp.isEmpty());
 
         // get with params
         Map<String, String> map = new HashMap<>();
         map.put("wd", "test");
-        resp = Requests.get("http://127.0.0.1:8080").params(map).text();
-        assertEquals(200, resp.getStatusCode());
-        assertTrue(resp.getBody().contains("wd=test"));
+        resp = Requests.get("http://127.0.0.1:8080").params(map).send().readToText();
+        assertFalse(resp.isEmpty());
+        assertTrue(resp.contains("wd=test"));
     }
 
     @Test
     public void testHead() {
-        Response<String> resp = Requests.head("http://127.0.0.1:8080")
-                .charset(StandardCharsets.UTF_8).text();
-        assertEquals(200, resp.getStatusCode());
-        assertTrue(resp.getBody().isEmpty());
+        RawResponse resp = Requests.head("http://127.0.0.1:8080")
+                .charset(StandardCharsets.UTF_8).send();
+        assertEquals(200, resp.getStatus());
+        resp.readToText();
     }
 
     @Test
     public void testPost() {
         // form encoded post
-        Response<String> resp = Requests.post("http://127.0.0.1:8080/post")
-                .addForm("wd", "test")
-                .text();
-        assertTrue(resp.getBody().contains("wd=test"));
+        String resp = Requests.post("http://127.0.0.1:8080/post")
+                .forms(Entry.of("wd", "test"))
+                .send().readToText();
+        assertTrue(resp.contains("wd=test"));
     }
 
     @Test
     public void testCookie() {
-        Response<String> response = Requests.get("http://127.0.0.1:8080/cookie")
-                .addCookie("test", "value").text();
-        assertNotNull(response.getCookies().getFirst("test"));
+        RawResponse response = Requests.get("http://127.0.0.1:8080/cookie")
+                .cookies(Entry.of("test", "value")).send();
+        assertTrue(response.getCookies().stream().filter(c -> c.getName().equals("test")).findFirst().isPresent());
     }
 
     @Test
     public void testBasicAuth() {
-        Response<String> response = Requests.get("http://127.0.0.1:8080/basicAuth")
-                .auth("test", "password")
-                .text();
-        assertEquals(200, response.getStatusCode());
+        RawResponse response = Requests.get("http://127.0.0.1:8080/basicAuth")
+                .basicAuth("test", "password")
+                .send();
+        assertEquals(200, response.getStatus());
+        response.readToText();
     }
 
     @Test
     public void testRedirect() {
-        Response<String> resp = Requests.get("http://127.0.0.1:8080/redirect").text();
-        assertEquals(200, resp.getStatusCode());
+        RawResponse resp = Requests.get("http://127.0.0.1:8080/redirect").send();
+        assertEquals(200, resp.getStatus());
         assertEquals("/", resp.getHistory().get(0).getPath());
+        resp.readToText();
     }
 
     @Test
     public void testMultiPart() {
-        Response<String> response = Requests.post("http://127.0.0.1:8080/upload")
-                .addMultiPart("file", "application/octem-stream", this.getClass().getResourceAsStream("/keystore"))
-                .text();
-        assertEquals(200, response.getStatusCode());
-        assertTrue(response.getBody().contains("file"));
-        assertTrue(response.getBody().contains("application/octem-stream"));
+        String response = Requests.post("http://127.0.0.1:8080/upload")
+                .multiParts(new Part("writeTo", "application/octem-stream", "",
+                        this.getClass().getResourceAsStream("/keystore")))
+                .send().readToText();
+        assertTrue(response.contains("writeTo"));
+        assertTrue(response.contains("application/octem-stream"));
     }
 
     @Test
     public void testClientSetting() throws IOException {
-        Response<String> response = Requests.get("https://127.0.0.1:8443/otn/")
+        String response = Requests.get("https://127.0.0.1:8443/otn/")
                 .timeout(3_000)
                 .compress(false)
                 .allowRedirects(false)
                 .userAgent("Custom user agent")
-                .verify(false).text();
-        assertEquals(200, response.getStatusCode());
+                .verify(false).send().readToText();
     }
 
     @Test
     public void testHttps() throws IOException {
-        Response<String> response = Requests.get("https://127.0.0.1:8443/otn/").verify(false).text();
-        assertEquals(200, response.getStatusCode());
+        String response = Requests.get("https://127.0.0.1:8443/otn/").verify(false).send().readToText();
     }
 
 }

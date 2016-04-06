@@ -5,7 +5,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SessionTest {
 
@@ -23,10 +23,10 @@ public class SessionTest {
 
     @Test
     public void testSession() {
-        try (Client client = Client.single().build()) {
-            Session session = client.session();
-            Response<String> response = session.get("http://127.0.0.1:8080").text();
-            assertEquals(200, response.getStatusCode());
+        try (PooledClient pooledClient = PooledClient.single().build()) {
+            Session session = pooledClient.session();
+            String response = session.get("http://127.0.0.1:8080").send().readToText();
+            assertTrue(!response.isEmpty());
         }
     }
 }
