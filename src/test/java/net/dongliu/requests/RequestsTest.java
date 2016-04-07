@@ -31,7 +31,7 @@ public class RequestsTest {
     @Test
     public void testGet() throws Exception {
         String resp = Requests.get("http://127.0.0.1:8080")
-                .charset(StandardCharsets.UTF_8).send().readToText();
+                .requestCharset(StandardCharsets.UTF_8).send().readToText();
         assertFalse(resp.isEmpty());
 
         resp = Requests.get("http://127.0.0.1:8080").send().readToText();
@@ -48,7 +48,7 @@ public class RequestsTest {
     @Test
     public void testHead() {
         RawResponse resp = Requests.head("http://127.0.0.1:8080")
-                .charset(StandardCharsets.UTF_8).send();
+                .requestCharset(StandardCharsets.UTF_8).send();
         assertEquals(200, resp.getStatus());
         resp.readToText();
     }

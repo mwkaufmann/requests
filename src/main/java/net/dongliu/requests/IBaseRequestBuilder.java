@@ -31,13 +31,13 @@ public interface IBaseRequestBuilder<T> {
     /**
      * Set charset used to encode request, default utf-8.
      */
-    T charset(Charset charset);
+    T requestCharset(Charset charset);
 
     /**
      * Set charset used to encode request, default utf-8.
      */
-    default T charset(String charset) {
-        return charset(Charset.forName(charset));
+    default T requestCharset(String charset) {
+        return requestCharset(Charset.forName(charset));
     }
 
     /**

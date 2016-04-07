@@ -63,7 +63,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> implements IBa
     }
 
     @Override
-    public T charset(Charset charset) {
+    public T requestCharset(Charset charset) {
         this.charset = charset;
         return self();
     }

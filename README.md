@@ -7,7 +7,7 @@ From version 3.0, requests required java8.
 -	[Maven Setting](#maven-setting)
 -	[Requests](#requests)
 	-	[Simple http request](#simple-http-request)
-	-	[Request Charset](#request-charset)
+	-	[Charset](#charset)
 	-	[Passing Parameters](#passing-parameters)
 	-	[Custom Headers](#custom-headers)
 	-	[Cookies](#cookies)
@@ -31,7 +31,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>3.0.3</version>
+    <version>3.0.4</version>
 </dependency>
 ```
 
@@ -68,8 +68,6 @@ The readToText() method here trans http response body as String, more other meth
 ```java
 // get response as string, use encoding get from response header
 String resp = Requests.get(url).send().readToText();
-// get response as string, and use provided encoding
-String resp = Requests.get(url).send().readToText(StandardCharsets.UTF-8);
 // get response as bytes
 byte[] resp1 = Requests.get(url).send().readToBytes();
 // save response as file
@@ -82,14 +80,17 @@ or you can custom http response processor your self:
 String resp = Requests.get(url).send().process(new ResponseHandler<String>() {...});
 ```
 
-##Request Charset 
+##Charset 
 
-Set charset used to encode parameters, post forms or request string body:
+Requests default use UTF-8 to encode parameters, post forms or request string body, you can set other charset by:
 ```
-String resp = Requests.get(url).charset(StandardCharsets.UTF_8).send().readToText();
+String resp = Requests.get(url).requestCharset(StandardCharsets.ISO_8859_1).send().readToText();
 ```
-
-Default charset is utf-8.
+When read response to text-based result, use charset get from http response header, or UTF-8 if not found.
+Can force use other charset by:
+```
+String resp = Requests.get(url).send().responseCharset(StandardCharsets.ISO_8859_1).readToText();
+```
 
 ##Passing Parameters 
 

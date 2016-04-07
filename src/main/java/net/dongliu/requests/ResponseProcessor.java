@@ -61,19 +61,5 @@ interface ResponseProcessor<T> {
             return in;
         }
 
-        /**
-         * Get charset from content-type header; if not found use defaultCharset
-         */
-        public Charset getCharset(Charset defaultCharset) {
-            Charset charset = null;
-            ContentType contentType = getContentType();
-            if (contentType != null) {
-                charset = contentType.getCharset();
-            }
-            if (charset == null) {
-                charset = defaultCharset;
-            }
-            return charset;
-        }
     }
 }

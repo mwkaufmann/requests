@@ -86,8 +86,8 @@ public abstract class AbstractMixinRequestBuilder<T extends AbstractMixinRequest
         return self();
     }
 
-    public T charset(Charset charset) {
-        requestBuilder().charset(charset);
+    public T requestCharset(Charset charset) {
+        requestBuilder().requestCharset(charset);
         return self();
     }
 

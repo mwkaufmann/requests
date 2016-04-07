@@ -11,10 +11,11 @@ import javax.annotation.Nullable;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -32,6 +33,9 @@ public class RawResponse implements Closeable {
     private final List<Cookie> cookies;
     private final List<URI> history;
 
+    @Nullable
+    private Charset charset;
+
     RawResponse(CloseableHttpResponse closeableHttpResponse, PooledClient client,
                 boolean closeOnFinished, int status, List<Header> headers,
                 List<Cookie> cookies, @Nullable List<URI> history) {
@@ -44,12 +48,12 @@ public class RawResponse implements Closeable {
         this.history = history == null ? Collections.emptyList() : Collections.unmodifiableList(history);
     }
 
-
     /**
      * If status is not valid(2xx or 3xx), throw IllegalStatusException
      */
-    public RawResponse statusIsValid() throws IllegalStatusException {
+    public RawResponse checkStatusValid() throws IllegalStatusException {
         if (status < 200 || status >= 400) {
+            close();
             throw new IllegalStatusException(status);
         }
         return this;
@@ -58,10 +62,20 @@ public class RawResponse implements Closeable {
     /**
      * If status is not 2xx, throw IllegalStatusException
      */
-    public RawResponse statusIs2xx() throws IllegalStatusException {
+    public RawResponse checkStatus2xx() throws IllegalStatusException {
         if (status < 200 || status >= 300) {
+            close();
             throw new IllegalStatusException(status);
         }
+        return this;
+    }
+
+    /**
+     * Force use charset to wrap input stream to reader for text-based handler use
+     * If not set, use charset got from http resp header; if not exists, use UTF-8
+     */
+    public RawResponse responseCharset(Charset charset) {
+        this.charset = charset;
         return this;
     }
 
@@ -96,13 +110,31 @@ public class RawResponse implements Closeable {
     }
 
     /**
-     * Get http response for return text result.
-     * Decode response body to text with charset provided.
+     * Unmarshal http response to instance of type T.
+     *
+     * @return null if http body not exists
+     * @throws IllegalStatusException if status is 2xx
      */
-    public String readToText(Charset charset) throws UncheckedIOException {
-        String str = process(respData -> IOUtils.toString(new InputStreamReader(respData.getIn(), charset),
-                Math.toIntExact(byteLen2CharLen(respData.getContentLen()))));
-        return str == null ? "" : str;
+    @Nullable
+    public <T> T unmarshalBin(Function<InputStream, T> function) {
+        checkStatus2xx();
+        return process(resp -> function.apply(resp.getIn()));
+    }
+
+    /**
+     * Unmarshal http response to instance of type T.
+     *
+     * @return null if http body not exists
+     * @throws IllegalStatusException if status is 2xx
+     */
+    @Nullable
+    public <T> T unmarshalText(Function<Reader, T> function) {
+        checkStatus2xx();
+        return process(resp -> {
+            try (Reader reader = new InputStreamReader(resp.getIn(), getCharset())) {
+                return function.apply(reader);
+            }
+        });
     }
 
     /**
@@ -111,7 +143,7 @@ public class RawResponse implements Closeable {
      */
     public String readToText() throws UncheckedIOException {
         String str = process(respData ->
-                IOUtils.toString(new InputStreamReader(respData.getIn(), respData.getCharset(UTF_8)),
+                IOUtils.toString(new InputStreamReader(respData.getIn(), getCharset()),
                         Math.toIntExact(byteLen2CharLen(respData.getContentLen()))));
         return str == null ? "" : str;
     }
@@ -179,7 +211,7 @@ public class RawResponse implements Closeable {
      */
     public boolean writeTo(Writer writer) {
         Boolean result = process(respData -> {
-            IOUtils.copy(new InputStreamReader(respData.getIn(), respData.getCharset(UTF_8)), writer,
+            IOUtils.copy(new InputStreamReader(respData.getIn(), getCharset()), writer,
                     byteLen2CharLen(respData.getContentLen()));
             return true;
         });
@@ -190,20 +222,16 @@ public class RawResponse implements Closeable {
         return result;
     }
 
-    /**
-     * Write response content to writer, use charset specified
-     */
-    public boolean writeTo(Writer writer, Charset charset) {
-        Boolean result = process(respData -> {
-            IOUtils.copy(new InputStreamReader(respData.getIn(), charset), writer,
-                    byteLen2CharLen(respData.getContentLen()));
-            return true;
-        });
-        if (result == null) {
-            // no http response entity
-            return false;
+    private Charset getCharset() {
+        if (this.charset != null) {
+            return this.charset;
         }
-        return result;
+
+        ContentType contentType = ContentType.get(closeableHttpResponse.getEntity());
+        if (contentType != null && contentType.getCharset() != null) {
+            return contentType.getCharset();
+        }
+        return StandardCharsets.UTF_8;
     }
 
     /**
