@@ -4,6 +4,7 @@ import net.dongliu.requests.struct.Proxy;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.protocol.HttpContext;
 
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -13,9 +14,10 @@ import java.net.Socket;
  * @author Dong Liu dongliu@live.cn
  */
 public class CustomSSLConnectionSocketFactory extends SSLConnectionSocketFactory {
+    @Nullable
     private final Proxy proxy;
 
-    public CustomSSLConnectionSocketFactory(SSLContext sslContext, Proxy proxy, boolean verify) {
+    public CustomSSLConnectionSocketFactory(SSLContext sslContext, @Nullable Proxy proxy, boolean verify) {
         super(sslContext, verify ? SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER
                 : SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
         this.proxy = proxy;

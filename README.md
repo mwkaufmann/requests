@@ -31,7 +31,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>3.0.4</version>
+    <version>3.0.5</version>
 </dependency>
 ```
 
@@ -215,15 +215,7 @@ try(Client client = Client.single().build()) {
 
 ##Redirection 
 
-Requests and Client will handle 30x http redirect automatically, you can get redirect history via:
-
-```java
-RawResponse resp = client.get(url).send();
-List<URI> history = resp.getHistory();
-resp.close();
-```
-
-Or you can disable it:
+Requests and Client will handle 30x http redirect automatically, you can disable it by:
 
 ```java
 try (Client client = Client.single().allowRedirects(false).build()) {

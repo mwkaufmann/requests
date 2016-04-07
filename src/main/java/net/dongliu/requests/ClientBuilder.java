@@ -50,7 +50,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements IClie
     ClientBuilder() {
     }
 
-    public PooledClient build() {
+    public Client build() {
         Registry<ConnectionSocketFactory> registry = getConnectionSocketFactoryRegistry(proxy, verify);
         HttpClientConnectionManager connectionManager = buildManager(registry);
 
@@ -76,7 +76,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements IClie
             clientBuilder.disableRedirectHandling();
         }
 
-        return new PooledClient(clientBuilder.build(), closeOnRequstFinished);
+        return new Client(clientBuilder.build(), closeOnRequstFinished);
     }
 
 

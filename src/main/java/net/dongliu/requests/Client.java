@@ -18,6 +18,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
 
+import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -35,14 +36,14 @@ import java.util.Map;
  *
  * @author Dong Liu dongliu@live.cn
  */
-public class PooledClient implements Closeable {
+public class Client implements Closeable {
 
     // the wrapped http client
     private final CloseableHttpClient client;
     // close client when request finished
     private final boolean closeOnFinished;
 
-    public PooledClient(CloseableHttpClient client, boolean closeOnFinished) {
+    public Client(CloseableHttpClient client, boolean closeOnFinished) {
         this.client = client;
         this.closeOnFinished = closeOnFinished;
     }
@@ -135,7 +136,7 @@ public class PooledClient implements Closeable {
     /**
      * execute request, get http response, and convert response with processor
      */
-    RawResponse execute(Request request, Session session) throws UncheckedIOException {
+    RawResponse execute(Request request, @Nullable Session session) throws UncheckedIOException {
         CredentialsProvider provider = new BasicCredentialsProvider();
         HttpClientContext context;
         if (session != null) {
@@ -263,7 +264,8 @@ public class PooledClient implements Closeable {
         return httpPatch;
     }
 
-    private URI buildUrl(URI url, Charset charset, Collection<? extends Map.Entry<String, String>> parameters) {
+    private URI buildUrl(URI url, Charset charset,
+                         @Nullable Collection<? extends Map.Entry<String, String>> parameters) {
         try {
             if (parameters == null || parameters.isEmpty()) {
                 return url;

@@ -82,7 +82,7 @@ public class RequestsTest {
     public void testRedirect() {
         RawResponse resp = Requests.get("http://127.0.0.1:8080/redirect").send();
         assertEquals(200, resp.getStatus());
-        assertEquals("/", resp.getHistory().get(0).getPath());
+        assertEquals("/", resp.getRedirectLocations().get(0).getPath());
         resp.readToText();
     }
 

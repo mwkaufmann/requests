@@ -11,7 +11,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertFalse;
 
-public class PooledClientTest {
+public class ClientTest {
 
     private static MockServer server = new MockServer();
 
@@ -27,9 +27,9 @@ public class PooledClientTest {
 
     @Test
     public void testMultiThread() throws IOException {
-        try (PooledClient pooledClient = PooledClient.single().build()) {
+        try (Client client = Client.single().build()) {
             for (int i = 0; i < 100; i++) {
-                String response = pooledClient.get("http://127.0.0.1:8080/").send().readToText();
+                String response = client.get("http://127.0.0.1:8080/").send().readToText();
                 assertFalse(response.isEmpty());
             }
         }
@@ -37,16 +37,16 @@ public class PooledClientTest {
 
     @Test
     public void testHttps() throws IOException {
-        try (PooledClient pooledClient = PooledClient.single().verify(false).build()) {
-            String response = pooledClient.get("https://127.0.0.1:8443/otn/").send().readToText();
+        try (Client client = Client.single().verify(false).build()) {
+            String response = client.get("https://127.0.0.1:8443/otn/").send().readToText();
             assertFalse(response.isEmpty());
         }
     }
 
     @Test
     public void testSession() throws Exception {
-        try (PooledClient pooledClient = PooledClient.single().verify(false).build()) {
-            Session session = pooledClient.session();
+        try (Client client = Client.single().verify(false).build()) {
+            Session session = client.session();
             String response = session.get("https://127.0.0.1:8443/otn/").send().readToText();
             assertFalse(response.isEmpty());
         }
@@ -55,13 +55,13 @@ public class PooledClientTest {
     @Test
     @Ignore("launch a proxy first to run this test")
     public void testProxy() {
-        try (PooledClient pooledClient = PooledClient.single().verify(false).proxy(Proxy.httpProxy("127.0.0.1", 8000)).build()) {
-            String resp = pooledClient.get("http://127.0.0.1:8080/").send().readToText();
+        try (Client client = Client.single().verify(false).proxy(Proxy.httpProxy("127.0.0.1", 8000)).build()) {
+            String resp = client.get("http://127.0.0.1:8080/").send().readToText();
             assertFalse(resp.isEmpty());
         }
 
-        try (PooledClient pooledClient = PooledClient.single().verify(false).proxy(Proxy.socketProxy("127.0.0.1", 1080)).build()) {
-            String resp1 = pooledClient.get("http://127.0.0.1:8080/").send().readToText();
+        try (Client client = Client.single().verify(false).proxy(Proxy.socketProxy("127.0.0.1", 1080)).build()) {
+            String resp1 = client.get("http://127.0.0.1:8080/").send().readToText();
             assertFalse(resp1.isEmpty());
         }
     }

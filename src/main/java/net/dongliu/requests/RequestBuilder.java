@@ -4,6 +4,7 @@ import net.dongliu.requests.exception.UncheckedURISyntaxException;
 import net.dongliu.requests.struct.AuthInfo;
 import net.dongliu.requests.struct.Method;
 
+import javax.annotation.Nullable;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,17 +20,22 @@ import java.util.Objects;
  * @author Liu Dong
  */
 public abstract class RequestBuilder<T extends RequestBuilder<T>> implements IBaseRequestBuilder<T> {
-    private PooledClient pooledClient;
+    private Client client;
     protected Method method;
     protected URI url;
+    @Nullable
     protected Collection<? extends Map.Entry<String, String>> parameters;
+    @Nullable
     protected Collection<? extends Map.Entry<String, String>> headers;
+    @Nullable
     protected Collection<? extends Map.Entry<String, String>> cookies;
 
     protected Charset charset = StandardCharsets.UTF_8;
 
     //protected CredentialsProvider provider;
+    @Nullable
     protected AuthInfo authInfo;
+    @Nullable
     protected Session session;
 
     /**
@@ -37,11 +43,11 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> implements IBa
      */
     public RawResponse send() throws UncheckedIOException {
         Request request = build();
-        return pooledClient.execute(request, session);
+        return client.execute(request, session);
     }
 
-    T client(PooledClient pooledClient) {
-        this.pooledClient = pooledClient;
+    T client(Client client) {
+        this.client = client;
         return self();
     }
 

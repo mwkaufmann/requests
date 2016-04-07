@@ -25,27 +25,28 @@ import static java.util.stream.Collectors.toList;
  */
 public class RawResponse implements Closeable {
     private final CloseableHttpResponse closeableHttpResponse;
-    private final PooledClient client;
+    private final Client client;
     private final boolean closeOnFinished;
 
     private final int status;
     private final List<Header> headers;
     private final List<Cookie> cookies;
-    private final List<URI> history;
+    private final List<URI> redirectLocations;
 
     @Nullable
     private Charset charset;
 
-    RawResponse(CloseableHttpResponse closeableHttpResponse, PooledClient client,
+    RawResponse(CloseableHttpResponse closeableHttpResponse, Client client,
                 boolean closeOnFinished, int status, List<Header> headers,
-                List<Cookie> cookies, @Nullable List<URI> history) {
+                List<Cookie> cookies, @Nullable List<URI> redirectLocations) {
         this.closeableHttpResponse = closeableHttpResponse;
         this.client = client;
         this.closeOnFinished = closeOnFinished;
         this.status = status;
         this.headers = Collections.unmodifiableList(headers);
         this.cookies = Collections.unmodifiableList(cookies);
-        this.history = history == null ? Collections.emptyList() : Collections.unmodifiableList(history);
+        this.redirectLocations = redirectLocations == null ? Collections.emptyList() :
+                Collections.unmodifiableList(redirectLocations);
     }
 
     /**
@@ -292,12 +293,12 @@ public class RawResponse implements Closeable {
     }
 
     /**
-     * Redirect history url.
+     * Redirect locations.
      *
-     * @return immutable non-null list. empty list if no history
+     * @return immutable non-null list. return empty list if no redirect handled
      */
-    public List<URI> getHistory() {
-        return history;
+    public List<URI> getRedirectLocations() {
+        return redirectLocations;
     }
 
     @Override
