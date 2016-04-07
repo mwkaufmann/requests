@@ -100,7 +100,8 @@ public class RawResponse implements Closeable {
      * Decode response body to text with charset provided.
      */
     public String readToText(Charset charset) throws UncheckedIOException {
-        String str = process(respData -> IOUtils.toString(new InputStreamReader(respData.getIn(), charset)));
+        String str = process(respData -> IOUtils.toString(new InputStreamReader(respData.getIn(), charset),
+                Math.toIntExact(byteLen2CharLen(respData.getContentLen()))));
         return str == null ? "" : str;
     }
 
@@ -110,15 +111,28 @@ public class RawResponse implements Closeable {
      */
     public String readToText() throws UncheckedIOException {
         String str = process(respData ->
-                IOUtils.toString(new InputStreamReader(respData.getIn(), respData.getCharset(UTF_8))));
+                IOUtils.toString(new InputStreamReader(respData.getIn(), respData.getCharset(UTF_8)),
+                        Math.toIntExact(byteLen2CharLen(respData.getContentLen()))));
         return str == null ? "" : str;
+    }
+
+    private long byteLen2CharLen(long byteLen) {
+        if (byteLen < 0) {
+            return byteLen;
+        }
+
+        if (byteLen < 1024 * 8) {
+            // now just return byteLen..
+            return byteLen;
+        }
+        return (long) (byteLen / 1.5);
     }
 
     /**
      * get http response for return byte array result.
      */
     public byte[] readToBytes() throws UncheckedIOException {
-        byte[] bytes = process(respData -> IOUtils.toBytes(respData.getIn()));
+        byte[] bytes = process(respData -> IOUtils.toBytes(respData.getIn(), Math.toIntExact(respData.getContentLen())));
         return bytes == null ? new byte[0] : IOUtils.emptyByteArray;
     }
 
@@ -131,7 +145,7 @@ public class RawResponse implements Closeable {
     public boolean writeTo(File file) throws UncheckedIOException {
         Boolean result = process(responseData -> {
             try (OutputStream out = new FileOutputStream(file)) {
-                IOUtils.copy(responseData.getIn(), out);
+                IOUtils.copy(responseData.getIn(), out, responseData.getContentLen());
             }
             return true;
         });
@@ -150,7 +164,7 @@ public class RawResponse implements Closeable {
      */
     public boolean writeTo(OutputStream out) throws UncheckedIOException {
         Boolean result = process(responseData -> {
-            IOUtils.copy(responseData.getIn(), out);
+            IOUtils.copy(responseData.getIn(), out, responseData.getContentLen());
             return true;
         });
         if (result == null) {
@@ -165,7 +179,8 @@ public class RawResponse implements Closeable {
      */
     public boolean writeTo(Writer writer) {
         Boolean result = process(respData -> {
-            IOUtils.copy(new InputStreamReader(respData.getIn(), respData.getCharset(UTF_8)), writer);
+            IOUtils.copy(new InputStreamReader(respData.getIn(), respData.getCharset(UTF_8)), writer,
+                    byteLen2CharLen(respData.getContentLen()));
             return true;
         });
         if (result == null) {
@@ -180,7 +195,8 @@ public class RawResponse implements Closeable {
      */
     public boolean writeTo(Writer writer, Charset charset) {
         Boolean result = process(respData -> {
-            IOUtils.copy(new InputStreamReader(respData.getIn(), charset), writer);
+            IOUtils.copy(new InputStreamReader(respData.getIn(), charset), writer,
+                    byteLen2CharLen(respData.getContentLen()));
             return true;
         });
         if (result == null) {

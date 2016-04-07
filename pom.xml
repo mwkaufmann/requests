@@ -14,7 +14,7 @@
     <artifactId>requests</artifactId>
     <name>requests</name>
     <packaging>jar</packaging>
-    <version>3.0.2</version>
+    <version>3.0.3</version>
     <url>https://github.com/caoqianli/requests</url>
 
     <distributionManagement>
