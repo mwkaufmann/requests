@@ -1,5 +1,7 @@
 package net.dongliu.requests.struct;
 
+import org.apache.http.annotation.Immutable;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -8,6 +10,7 @@ import java.util.Objects;
  *
  * @author Liu Dong
  */
+@Immutable
 public class Entry implements Map.Entry<String, String> {
     private final String key;
     private final String value;

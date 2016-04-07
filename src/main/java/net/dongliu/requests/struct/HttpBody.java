@@ -1,6 +1,7 @@
 package net.dongliu.requests.struct;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.annotation.Immutable;
 
 import java.nio.charset.Charset;
 
@@ -9,6 +10,7 @@ import java.nio.charset.Charset;
  *
  * @author Liu Dong
  */
+@Immutable
 public abstract class HttpBody<T> {
     private final T body;
 

@@ -1,10 +1,10 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.exception.UncheckedURISyntaxException;
 import net.dongliu.requests.struct.AuthInfo;
 import net.dongliu.requests.struct.Method;
 
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -35,7 +35,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> implements IBa
     /**
      * Send request and get response
      */
-    public RawResponse send() throws RequestException {
+    public RawResponse send() throws UncheckedIOException {
         Request request = build();
         return pooledClient.execute(request, session);
     }
@@ -45,7 +45,7 @@ public abstract class RequestBuilder<T extends RequestBuilder<T>> implements IBa
         return self();
     }
 
-    T url(String url) throws RequestException {
+    T url(String url) throws UncheckedIOException {
         try {
             this.url = new URI(url);
         } catch (URISyntaxException e) {

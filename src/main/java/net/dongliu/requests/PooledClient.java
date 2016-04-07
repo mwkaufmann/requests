@@ -1,7 +1,6 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.encode.URIBuilder;
-import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.exception.UncheckedURISyntaxException;
 import net.dongliu.requests.struct.HttpBody;
 import net.dongliu.requests.struct.Method;
@@ -21,6 +20,7 @@ import org.apache.http.impl.cookie.BasicClientCookie;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -72,56 +72,56 @@ public class PooledClient implements Closeable {
     /**
      * get method
      */
-    public HeadOnlyRequestBuilder get(String url) throws RequestException {
+    public HeadOnlyRequestBuilder get(String url) throws UncheckedIOException {
         return new HeadOnlyRequestBuilder().client(this).method(Method.GET).url(url);
     }
 
     /**
      * head method
      */
-    public HeadOnlyRequestBuilder head(String url) throws RequestException {
+    public HeadOnlyRequestBuilder head(String url) throws UncheckedIOException {
         return new HeadOnlyRequestBuilder().client(this).method(Method.HEAD).url(url);
     }
 
     /**
      * get url, and return content
      */
-    public PostRequestBuilder post(String url) throws RequestException {
+    public PostRequestBuilder post(String url) throws UncheckedIOException {
         return new PostRequestBuilder().client(this).method(Method.POST).url(url);
     }
 
     /**
      * put method
      */
-    public BodyRequestBuilder put(String url) throws RequestException {
+    public BodyRequestBuilder put(String url) throws UncheckedIOException {
         return new BodyRequestBuilder().client(this).method(Method.PUT).url(url);
     }
 
     /**
      * delete method
      */
-    public HeadOnlyRequestBuilder delete(String url) throws RequestException {
+    public HeadOnlyRequestBuilder delete(String url) throws UncheckedIOException {
         return new HeadOnlyRequestBuilder().client(this).method(Method.DELETE).url(url);
     }
 
     /**
      * options method
      */
-    public HeadOnlyRequestBuilder options(String url) throws RequestException {
+    public HeadOnlyRequestBuilder options(String url) throws UncheckedIOException {
         return new HeadOnlyRequestBuilder().client(this).method(Method.OPTIONS).url(url);
     }
 
     /**
      * patch method
      */
-    public BodyRequestBuilder patch(String url) throws RequestException {
+    public BodyRequestBuilder patch(String url) throws UncheckedIOException {
         return new BodyRequestBuilder().client(this).method(Method.PATCH).url(url);
     }
 
     /**
      * trace method
      */
-    public HeadOnlyRequestBuilder trace(String url) throws RequestException {
+    public HeadOnlyRequestBuilder trace(String url) throws UncheckedIOException {
         return new HeadOnlyRequestBuilder().client(this).method(Method.TRACE).url(url);
     }
 
@@ -135,7 +135,7 @@ public class PooledClient implements Closeable {
     /**
      * execute request, get http response, and convert response with processor
      */
-    RawResponse execute(Request request, Session session) throws RequestException {
+    RawResponse execute(Request request, Session session) throws UncheckedIOException {
         CredentialsProvider provider = new BasicCredentialsProvider();
         HttpClientContext context;
         if (session != null) {
@@ -160,7 +160,7 @@ public class PooledClient implements Closeable {
         try {
             httpResponse = client.execute(httpRequest, context);
         } catch (IOException e) {
-            throw new RequestException(e);
+            throw new UncheckedIOException(e);
         }
 
         int statusCode = httpResponse.getStatusLine().getStatusCode();

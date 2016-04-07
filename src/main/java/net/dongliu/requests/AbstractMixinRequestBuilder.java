@@ -1,9 +1,9 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.RequestException;
 import net.dongliu.requests.struct.Method;
 import net.dongliu.requests.struct.Proxy;
 
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Map;
@@ -77,11 +77,11 @@ public abstract class AbstractMixinRequestBuilder<T extends AbstractMixinRequest
         return requestBuilder().client(singleClientBuilder.build());
     }
 
-    public RawResponse send() throws RequestException {
+    public RawResponse send() throws UncheckedIOException {
         return finalRequestBuilder().send();
     }
 
-    public T url(String url) throws RequestException {
+    public T url(String url) throws UncheckedIOException {
         requestBuilder().url(url);
         return self();
     }

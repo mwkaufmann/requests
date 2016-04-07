@@ -3,6 +3,7 @@ package net.dongliu.requests;
 import net.dongliu.requests.struct.AuthInfo;
 import net.dongliu.requests.struct.HttpBody;
 import net.dongliu.requests.struct.Method;
+import org.apache.http.annotation.Immutable;
 
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -14,6 +15,7 @@ import java.util.Map;
  *
  * @author Dong Liu dongliu@live.cn
  */
+@Immutable
 class Request {
 
     private final Method method;

@@ -89,7 +89,7 @@ public class RequestsTest {
     @Test
     public void testMultiPart() {
         String response = Requests.post("http://127.0.0.1:8080/upload")
-                .multiParts(new Part("writeTo", "application/octem-stream", "",
+                .multiParts(Part.filePart("writeTo", "application/octem-stream", "",
                         this.getClass().getResourceAsStream("/keystore")))
                 .send().readToText();
         assertTrue(response.contains("writeTo"));

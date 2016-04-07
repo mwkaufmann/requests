@@ -1,17 +1,23 @@
 package net.dongliu.requests.struct;
 
+import org.apache.http.annotation.Immutable;
+
+import javax.annotation.Nullable;
+
 /**
  * http proxy / socket proxy
  *
  * @author Dong Liu
  */
+@Immutable
 public class Proxy {
     private final Scheme scheme;
     private final String host;
     private final int port;
+    @Nullable
     private final AuthInfo authInfo;
 
-    public Proxy(Scheme scheme, String host, int port, AuthInfo authInfo) {
+    public Proxy(Scheme scheme, String host, int port, @Nullable AuthInfo authInfo) {
         this.scheme = scheme;
         this.host = host;
         this.port = port;
@@ -50,16 +56,9 @@ public class Proxy {
         return port;
     }
 
+    @Nullable
     public AuthInfo getAuthInfo() {
         return authInfo;
-    }
-
-    public String getUserName() {
-        return authInfo.getUserName();
-    }
-
-    public String getPassword() {
-        return authInfo.getPassword();
     }
 
     public Scheme getScheme() {

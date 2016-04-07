@@ -9,6 +9,6 @@ public class MultiPartTest {
 
     @Test
     public void testOf() throws Exception {
-        Part multiPart = new Part("writeTo", new File("MultiPartTest.java"));
+        Part multiPart = Part.filePart("writeTo", new File("MultiPartTest.java"));
     }
 }

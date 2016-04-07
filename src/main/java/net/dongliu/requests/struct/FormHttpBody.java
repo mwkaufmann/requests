@@ -1,5 +1,6 @@
 package net.dongliu.requests.struct;
 
+import org.apache.http.annotation.Immutable;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.message.BasicNameValuePair;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 /**
  * @author Liu Dong
  */
+@Immutable
 public class FormHttpBody extends HttpBody<Collection<? extends Map.Entry<String, String>>> {
     public FormHttpBody(Collection<? extends Map.Entry<String, String>> body) {
         super(body);

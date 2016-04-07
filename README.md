@@ -31,7 +31,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.2</version>
 </dependency>
 ```
 
@@ -162,7 +162,7 @@ One more complicate situation is multiPart post request, this can be done via mu
 InputStream in = ...;
 byte[] bytes = ...;
 String resp = Requests.post(url)
-        .multiParts(new Part("file1", new File(...)), new Part("file2", new File("...")))
+        .multiParts(Part.filePart("file1", new File(...)), Part.filePart("file2", new File("...")))
         .send().readToText();
 ```
 
@@ -292,5 +292,8 @@ Session do not need to be closed.If the client which this session obtained from 
 
 #Exceptions 
 
-Requests wrapped all checked exceptions into runtime exceptions, most of time is RequestException. 
-Catch this if you mind. Unchecked Exceptions are leaved as it is.
+Requests wrapped all checked exceptions into corresponding unchecked exceptions:
+```
+ IOException -> UncheckedIOException
+ URISyntaxException -> UncheckedURISyntaxException
+```

@@ -4,6 +4,7 @@ import net.dongliu.requests.struct.Proxy;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.protocol.HttpContext;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -12,9 +13,10 @@ import java.net.Socket;
  * @author Dong Liu dongliu@live.cn
  */
 public class CustomConnectionSocketFactory extends PlainConnectionSocketFactory {
+    @Nullable
     private final Proxy proxy;
 
-    public CustomConnectionSocketFactory(Proxy proxy) {
+    public CustomConnectionSocketFactory(@Nullable Proxy proxy) {
         this.proxy = proxy;
     }
 

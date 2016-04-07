@@ -1,8 +1,13 @@
 package net.dongliu.requests.struct;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
+ * Auth info
+ *
  * @author Dong Liu dongliu@live.cn
  */
+@Immutable
 public class AuthInfo {
     private final String userName;
     private final String password;

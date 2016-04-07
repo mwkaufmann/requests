@@ -1,6 +1,7 @@
 package net.dongliu.requests.struct;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.annotation.Immutable;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 
@@ -10,6 +11,7 @@ import java.util.Collection;
 /**
  * @author Liu Dong
  */
+@Immutable
 public class MultiPartHttpBody extends HttpBody<Collection<? extends Part>> {
     public MultiPartHttpBody(Collection<? extends Part> body) {
         super(body);
