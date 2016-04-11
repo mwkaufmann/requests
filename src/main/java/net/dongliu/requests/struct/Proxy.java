@@ -11,41 +11,48 @@ import javax.annotation.Nullable;
  */
 @Immutable
 public class Proxy {
-    private final Scheme scheme;
+    private final String scheme;
     private final String host;
     private final int port;
     @Nullable
     private final AuthInfo authInfo;
 
-    public Proxy(Scheme scheme, String host, int port, @Nullable AuthInfo authInfo) {
+    public static final String HTTP = "http";
+    public static final String HTTPS = "https";
+    public static final String SOCKS = "socks";
+
+    private Proxy(String scheme, String host, int port, @Nullable AuthInfo authInfo) {
         this.scheme = scheme;
         this.host = host;
         this.port = port;
         this.authInfo = authInfo;
     }
 
-    public static Proxy httpProxy(String host, int port, String userName, String password) {
-        return new Proxy(Scheme.http, host, port, new AuthInfo(userName, password));
-    }
-
-    public static Proxy httpsProxy(String host, int port, String userName, String password) {
-        return new Proxy(Scheme.https, host, port, new AuthInfo(userName, password));
-    }
-
-    public static Proxy socketProxy(String host, int port, String userName, String password) {
-        return new Proxy(Scheme.socks, host, port, new AuthInfo(userName, password));
-    }
-
     public static Proxy httpProxy(String host, int port) {
-        return new Proxy(Scheme.http, host, port, null);
+        return new Proxy(HTTP, host, port, null);
     }
 
-    public static Proxy httpsProxy(String host, int port) {
-        return new Proxy(Scheme.https, host, port, null);
+    //TODO: java can only set global socks proxy setting
+//    public static Proxy socksProxy(String host, int port, String userName, String password) {
+//        return new Proxy(SOCKS, host, port, new AuthInfo(userName, password));
+//    }
+
+    public static Proxy httpProxy(String host, int port, String userName, String password) {
+        return new Proxy(HTTP, host, port, new AuthInfo(userName, password));
     }
 
-    public static Proxy socketProxy(String host, int port) {
-        return new Proxy(Scheme.socks, host, port, null);
+    // TODO: https proxy not supported?
+//    public static Proxy httpsProxy(String host, int port) {
+//        return new Proxy(HTTPS, host, port, null);
+//    }
+
+//    public static Proxy httpsProxy(String host, int port, String userName, String password) {
+//        return new Proxy(HTTPS, host, port, new AuthInfo(userName, password));
+//    }
+
+
+    public static Proxy socksProxy(String host, int port) {
+        return new Proxy(SOCKS, host, port, null);
     }
 
     public String getHost() {
@@ -61,11 +68,8 @@ public class Proxy {
         return authInfo;
     }
 
-    public Scheme getScheme() {
+    public String getScheme() {
         return scheme;
     }
 
-    public static enum Scheme {
-        http, https, socks
-    }
 }

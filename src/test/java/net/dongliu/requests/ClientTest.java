@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class ClientTest {
@@ -54,15 +55,23 @@ public class ClientTest {
 
     @Test
     @Ignore("launch a proxy first to run this test")
-    public void testProxy() {
-        try (Client client = Client.single().verify(false).proxy(Proxy.httpProxy("127.0.0.1", 8000)).build()) {
-            String resp = client.get("http://127.0.0.1:8080/").send().readToText();
-            assertFalse(resp.isEmpty());
+    public void testHttpProxy() {
+        try (Client client = Client.single().proxy(Proxy.httpProxy("127.0.0.1", 1081)).build()) {
+            RawResponse resp = client.get("http://www.baidu.com/").send();
+            String content = resp.readToText();
+            assertEquals(200, resp.getStatus());
+            assertFalse(content.isEmpty());
         }
+    }
 
-        try (Client client = Client.single().verify(false).proxy(Proxy.socketProxy("127.0.0.1", 1080)).build()) {
-            String resp1 = client.get("http://127.0.0.1:8080/").send().readToText();
-            assertFalse(resp1.isEmpty());
+    @Test
+    @Ignore("launch a proxy first to run this test")
+    public void testSocksProxy() {
+        try (Client client = Client.single().verify(false).proxy(Proxy.socksProxy("127.0.0.1", 1080)).build()) {
+            RawResponse resp = client.get("http://stackoverflow.com/").send();
+            String content = resp.readToText();
+            assertEquals(200, resp.getStatus());
+            assertFalse(content.isEmpty());
         }
     }
 }

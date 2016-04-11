@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.struct.Proxy;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.protocol.HttpContext;
 
@@ -13,19 +14,19 @@ import java.net.Socket;
 /**
  * @author Dong Liu dongliu@live.cn
  */
-public class CustomSSLConnectionSocketFactory extends SSLConnectionSocketFactory {
+class CustomSSLConnectionSocketFactory extends SSLConnectionSocketFactory {
     @Nullable
     private final Proxy proxy;
 
     public CustomSSLConnectionSocketFactory(SSLContext sslContext, @Nullable Proxy proxy, boolean verify) {
-        super(sslContext, verify ? SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER
-                : SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+        super(sslContext, verify ? SSLConnectionSocketFactory.getDefaultHostnameVerifier()
+                : NoopHostnameVerifier.INSTANCE);
         this.proxy = proxy;
     }
 
     @Override
     public Socket createSocket(final HttpContext context) throws IOException {
-        if (proxy == null || proxy.getScheme() != Proxy.Scheme.socks) {
+        if (proxy == null || !proxy.getScheme().equals(Proxy.SOCKS)) {
             return super.createSocket(context);
         }
         java.net.Proxy proxy = new java.net.Proxy(java.net.Proxy.Type.SOCKS,

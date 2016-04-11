@@ -3,6 +3,7 @@ package net.dongliu.requests;
 import net.dongliu.requests.mock.MockServer;
 import net.dongliu.requests.struct.Part;
 import net.dongliu.requests.struct.Entry;
+import net.dongliu.requests.struct.Proxy;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -98,17 +99,21 @@ public class RequestsTest {
 
     @Test
     public void testClientSetting() throws IOException {
-        String response = Requests.get("https://127.0.0.1:8443/otn/")
+        RawResponse response = Requests.get("https://127.0.0.1:8443/otn/")
                 .timeout(3_000)
                 .compress(false)
                 .allowRedirects(false)
                 .userAgent("Custom user agent")
-                .verify(false).send().readToText();
+                .verify(false).send();
+        assertEquals(200, response.getStatus());
     }
 
     @Test
     public void testHttps() throws IOException {
-        String response = Requests.get("https://127.0.0.1:8443/otn/").verify(false).send().readToText();
+        RawResponse response = Requests.get("https://127.0.0.1:8443/otn/").verify(false).send();
+        String s = response.readToText();
+        assertEquals(200, response.getStatus());
+        assertFalse(s.isEmpty());
     }
 
 }

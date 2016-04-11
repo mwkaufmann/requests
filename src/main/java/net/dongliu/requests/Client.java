@@ -1,9 +1,10 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.encode.URIBuilder;
 import net.dongliu.requests.exception.UncheckedURISyntaxException;
+import net.dongliu.requests.struct.AuthInfo;
 import net.dongliu.requests.struct.HttpBody;
 import net.dongliu.requests.struct.Method;
+import net.dongliu.requests.struct.Proxy;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.auth.AuthScope;
@@ -12,6 +13,7 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -42,10 +44,14 @@ public class Client implements Closeable {
     private final CloseableHttpClient client;
     // close client when request finished
     private final boolean closeOnFinished;
+    @Nullable
+    private final Proxy proxy;
+    private AuthInfo authInfo;
 
-    public Client(CloseableHttpClient client, boolean closeOnFinished) {
+    public Client(CloseableHttpClient client, boolean closeOnFinished, Proxy proxy) {
         this.client = client;
         this.closeOnFinished = closeOnFinished;
+        this.proxy = proxy;
     }
 
     /**
@@ -137,7 +143,6 @@ public class Client implements Closeable {
      * execute request, get http response, and convert response with processor
      */
     RawResponse execute(Request request, @Nullable Session session) throws UncheckedIOException {
-        CredentialsProvider provider = new BasicCredentialsProvider();
         HttpClientContext context;
         if (session != null) {
             context = session.getContext();
@@ -147,12 +152,23 @@ public class Client implements Closeable {
             context.setCookieStore(cookieStore);
         }
 
+        // set authes
+        CredentialsProvider provider = new BasicCredentialsProvider();
         HttpRequestBase httpRequest = buildRequest(request, context);
         // basic auth
         if (request.getAuthInfo() != null) {
             UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
                     request.getAuthInfo().getUserName(), request.getAuthInfo().getPassword());
             provider.setCredentials(new AuthScope(request.getUrl().getHost(), request.getUrl().getPort()), credentials);
+        }
+        // proxy auth
+        if (proxy != null && proxy.getScheme().equals(Proxy.HTTP)) {
+            AuthInfo proxyAuthInfo = proxy.getAuthInfo();
+            if (proxyAuthInfo != null) {
+                provider.setCredentials(new AuthScope(proxy.getHost(), proxy.getPort()),
+                        new UsernamePasswordCredentials(proxyAuthInfo.getUserName(), proxyAuthInfo.getUserName()));
+
+            }
         }
 
         context.setAttribute(HttpClientContext.CREDS_PROVIDER, provider);

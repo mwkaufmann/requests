@@ -29,7 +29,8 @@ interface ResponseProcessor<T> {
         private final ContentType contentType;
         private final InputStream in;
 
-        public ResponseData(int status, List<Header> headers, long contentLen, ContentType contentType, InputStream in) {
+        public ResponseData(int status, List<Header> headers, long contentLen, @Nullable ContentType contentType,
+                            InputStream in) {
             this.status = status;
             this.headers = headers;
             this.contentLen = contentLen;

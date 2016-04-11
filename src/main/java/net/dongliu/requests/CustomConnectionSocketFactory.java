@@ -12,7 +12,7 @@ import java.net.Socket;
 /**
  * @author Dong Liu dongliu@live.cn
  */
-public class CustomConnectionSocketFactory extends PlainConnectionSocketFactory {
+class CustomConnectionSocketFactory extends PlainConnectionSocketFactory {
     @Nullable
     private final Proxy proxy;
 
@@ -22,7 +22,7 @@ public class CustomConnectionSocketFactory extends PlainConnectionSocketFactory 
 
     @Override
     public Socket createSocket(final HttpContext context) throws IOException {
-        if (proxy == null || proxy.getScheme() != Proxy.Scheme.socks) {
+        if (proxy == null || !proxy.getScheme().equals(Proxy.SOCKS)) {
             return super.createSocket(context);
         }
         java.net.Proxy proxy = new java.net.Proxy(java.net.Proxy.Type.SOCKS,

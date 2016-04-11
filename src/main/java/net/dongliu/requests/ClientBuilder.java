@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.struct.Proxy;
+import org.apache.http.HttpHost;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.Registry;
@@ -9,9 +10,9 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContexts;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
@@ -45,7 +46,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements IClie
     private int connectTimeout = defaultTimeout;
     private int socketTimeout = defaultTimeout;
 
-    private boolean closeOnRequstFinished = false;
+    private boolean closeOnFinished = false;
 
     ClientBuilder() {
     }
@@ -63,6 +64,12 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements IClie
                 // we use connect timeout for connection request timeout
                 .setConnectionRequestTimeout(connectTimeout)
                 .setCookieSpec(CookieSpecs.DEFAULT);
+
+        // http/https proxy
+        if (proxy != null && proxy.getScheme().equals(Proxy.HTTP)) {
+            HttpHost httpProxy = new HttpHost(proxy.getHost(), proxy.getPort(), proxy.getScheme());
+            configBuilder.setProxy(httpProxy);
+        }
         clientBuilder.setDefaultRequestConfig(configBuilder.build());
 
         // disable compress
@@ -76,7 +83,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements IClie
             clientBuilder.disableRedirectHandling();
         }
 
-        return new Client(clientBuilder.build(), closeOnRequstFinished);
+        return new Client(clientBuilder.build(), closeOnFinished, proxy);
     }
 
 
@@ -86,7 +93,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements IClie
         // trust all http certificate
         if (!verify) {
             try {
-                sslContext = SSLContexts.custom().useTLS().build();
+                sslContext = SSLContexts.custom().useProtocol("TLS").build();
                 sslContext.init(new KeyManager[0], new TrustManager[]{new AllTrustManager()},
                         new SecureRandom());
             } catch (NoSuchAlgorithmException | KeyManagementException e) {
@@ -165,7 +172,7 @@ public abstract class ClientBuilder<T extends ClientBuilder<T>> implements IClie
      * Only for internal use
      */
     T closeOnRequestFinished(boolean closeOnRequstFinished) {
-        this.closeOnRequstFinished = closeOnRequstFinished;
+        this.closeOnFinished = closeOnRequstFinished;
         return self();
     }
 
