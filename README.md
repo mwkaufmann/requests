@@ -248,9 +248,9 @@ Some https sites do not have trusted http certificate, Exception will be throwed
 Client client = Client.single().verify(false).build();
 ```
 
-##Proxy Set 
+##Proxy 
 
-Proxy by proxy method:
+Set proxy by proxy method:
 
 ```java
 Client client = Client.single()
@@ -263,12 +263,10 @@ The proxy can be created by:
 ```java
 //http proxy
 Proxy.httpProxy("127.0.0.1", 8080)
-//https proxy
-Proxy.httpsProxy("127.0.0.1", 8080)
-//socket proxy
-Proxy.socketProxy("127.0.0.1", 5678)
 //with auth
 Proxy.httpProxy("127.0.0.1", 8080, userName, password)
+//socket proxy
+Proxy.socksProxy("127.0.0.1", 5678)
 ```
 
 #Session
