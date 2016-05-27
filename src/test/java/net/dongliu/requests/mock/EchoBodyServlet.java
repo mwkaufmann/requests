@@ -1,31 +1,30 @@
 package net.dongliu.requests.mock;
 
+import net.dongliu.commons.io.ReaderWriters;
+
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.Map;
 
 /**
- * @author Liu Dong {@literal <im@dongliu.net>}
+ * @author Liu Dong {@literal <dongliu@live.cn>}
  */
-public class MockPostServlet extends HttpServlet {
+public class EchoBodyServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String uri = request.getRequestURI();
-        Map<String, String[]> params = request.getParameterMap();
+        String body = ReaderWriters.readAll(request.getReader());
 
         response.setContentType("text/plain");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setCharacterEncoding(request.getCharacterEncoding());
         PrintWriter out = response.getWriter();
-        out.println(uri);
-        for (Map.Entry<String, String[]> entry : params.entrySet()) {
-            out.println(entry.getKey() + "=" + entry.getValue()[0]);
-        }
+        out.write(body);
+        out.flush();
     }
 }

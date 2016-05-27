@@ -1,107 +1,182 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.IllegalStatusException;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.entity.ContentType;
+import net.dongliu.commons.collection.Lists;
+import net.dongliu.commons.collection.Pair;
+import net.dongliu.commons.io.Closables;
+import net.dongliu.commons.io.InputOutputs;
+import net.dongliu.commons.io.ReaderWriters;
+import net.dongliu.requests.json.JsonLookup;
+import net.dongliu.requests.json.TypeInfer;
 
 import javax.annotation.Nullable;
 import java.io.*;
-import java.net.URI;
+import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
+import java.util.*;
 
-import static java.util.stream.Collectors.toList;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Http response.
- * Http response must be consumed using close/readToText/readToBytes/writeTo or other similar methods,
- * resource may leak if not.
+ * Raw http response
+ *
+ * @author Liu Dong
  */
-public class RawResponse implements Closeable {
-    private final CloseableHttpResponse closeableHttpResponse;
-    private final Client client;
-    private final boolean closeOnFinished;
+public class RawResponse implements AutoCloseable {
+    private final int statusCode;
+    private final List<Pair<String, String>> headerList;
+    final Set<Cookie> cookieList;
+    private final Map<String, List<String>> headerMap;
+    private final Map<String, List<Cookie>> cookieMap;
+    private final InputStream in;
+    private final HttpURLConnection conn;
+    // redirect history
 
-    private final int status;
-    private final List<Header> headers;
-    private final List<Cookie> cookies;
-    private final List<URI> redirectLocations;
+    RawResponse(int statusCode, List<Pair<String, String>> headerMap, Set<Cookie> cookieList, InputStream in,
+                HttpURLConnection conn) {
+        this.statusCode = statusCode;
+        this.headerList = headerMap;
+        this.cookieList = cookieList;
+        this.headerMap = convertHeaders(headerMap);
+        this.cookieMap = convertCookies(cookieList);
+        this.in = in;
+        this.conn = conn;
+    }
 
-    @Nullable
-    private Charset charset;
+    @Override
+    public void close() {
+        Closables.closeQuietly(in);
+        conn.disconnect();
+    }
 
-    RawResponse(CloseableHttpResponse closeableHttpResponse, Client client,
-                boolean closeOnFinished, int status, List<Header> headers,
-                List<Cookie> cookies, @Nullable List<URI> redirectLocations) {
-        this.closeableHttpResponse = closeableHttpResponse;
-        this.client = client;
-        this.closeOnFinished = closeOnFinished;
-        this.status = status;
-        this.headers = Collections.unmodifiableList(headers);
-        this.cookies = Collections.unmodifiableList(cookies);
-        this.redirectLocations = redirectLocations == null ? Collections.emptyList() :
-                Collections.unmodifiableList(redirectLocations);
+
+    /**
+     * Read response body to string. return empty string if response has no body
+     */
+    public String readToText() {
+        Charset charset = getCharsetFromHeaders().orElse(UTF_8);
+        return readToText(charset);
     }
 
     /**
-     * If status is not valid(2xx or 3xx), throw IllegalStatusException
+     * Read response body to string. return empty string if response has no body
      */
-    public RawResponse checkStatusValid() throws IllegalStatusException {
-        if (status < 200 || status >= 400) {
+    public String readToText(Charset charset) {
+        try (Reader reader = new InputStreamReader(in, charset)) {
+            return ReaderWriters.readAll(reader);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
             close();
-            throw new IllegalStatusException(status);
         }
-        return this;
     }
 
-    /**
-     * If status is not 2xx, throw IllegalStatusException
-     */
-    public RawResponse checkStatus2xx() throws IllegalStatusException {
-        if (status < 200 || status >= 300) {
-            close();
-            throw new IllegalStatusException(status);
+    private Map<String, List<Cookie>> convertCookies(Set<Cookie> cookies) {
+        Map<String, List<Cookie>> map = new HashMap<>();
+        for (Cookie cookie : cookies) {
+            map.computeIfAbsent(cookie.getName(), name -> new LinkedList<>()).add(cookie);
         }
-        return this;
+        return map;
+    }
+
+    private Map<String, List<String>> convertHeaders(List<Pair<String, String>> headers) {
+        Map<String, List<String>> map = new HashMap<>();
+        for (Pair<String, String> header : headers) {
+            map.computeIfAbsent(header.getName(), name -> new LinkedList<>()).add(header.getValue());
+        }
+        return map;
     }
 
     /**
-     * Force use charset to wrap input stream to reader for text-based handler use
-     * If not set, use charset got from http resp header; if not exists, use UTF-8
+     * Read response body to byte array. return empty byte array if response has no body
      */
-    public RawResponse responseCharset(Charset charset) {
-        this.charset = charset;
-        return this;
-    }
-
-    /**
-     * Use custom handler to handle http response.
-     *
-     * @return null if entity not exists
-     */
-    @Nullable
-    public <R> R process(ResponseProcessor<R> processor) throws UncheckedIOException {
+    public byte[] readToBytes() {
         try {
-            HttpEntity entity = closeableHttpResponse.getEntity();
-            if (entity == null) {
-                return null;
-            }
-            ContentType contentType = ContentType.get(entity);
-            long contentLength = entity.getContentLength();
+            return InputOutputs.readAll(in);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            close();
+        }
+    }
 
-            try (InputStream in = entity.getContent()) {
-                if (in == null) {
-                    return null;
-                }
-                ResponseProcessor.ResponseData responseData = new ResponseProcessor.ResponseData(
-                        status, headers, contentLength, contentType, in);
-                return processor.convert(responseData);
+    /**
+     * Deserialize response content as json
+     *
+     * @return null if json value is null or empty
+     */
+    @Nullable
+    public <T> T readAsJson(Type type, Charset charset) {
+        try {
+            return JsonLookup.getInstance().lookup().unmarshal(new InputStreamReader(in, charset), type);
+        } finally {
+            close();
+        }
+    }
+
+    /**
+     * Deserialize response content as json
+     *
+     * @return null if json value is null or empty
+     */
+    @Nullable
+    public <T> T readAsJson(Type type) {
+        try {
+            Charset charset = getCharsetFromHeaders().orElse(StandardCharsets.UTF_8);
+            return readAsJson(type, charset);
+        } finally {
+            close();
+        }
+    }
+
+    /**
+     * Deserialize response content as json
+     *
+     * @return null if json value is null or empty
+     */
+    @Nullable
+    public <T> T readAsJson(TypeInfer<T> typeInfer, Charset charset) {
+        return readAsJson(typeInfer.getType(), charset);
+    }
+
+    /**
+     * Deserialize response content as json
+     *
+     * @return null if json value is null or empty
+     */
+    @Nullable
+    public <T> T readAsJson(TypeInfer<T> typeInfer) {
+        return readAsJson(typeInfer.getType());
+    }
+
+    /**
+     * Deserialize response content as json
+     *
+     * @return null if json value is null or empty
+     */
+    @Nullable
+    public <T> T readAsJson(Class<T> cls, Charset charset) {
+        return readAsJson((Type) cls, charset);
+    }
+
+    /**
+     * Deserialize response content as json
+     *
+     * @return null if json value is null or empty
+     */
+    @Nullable
+    public <T> T readAsJson(Class<T> cls) {
+        return readAsJson((Type) cls);
+    }
+
+    /**
+     * Write response body to file
+     */
+    public void writeToFile(File path) {
+        try {
+            try (FileOutputStream fos = new FileOutputStream(path)) {
+                InputOutputs.copy(in, fos);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -111,201 +186,119 @@ public class RawResponse implements Closeable {
     }
 
     /**
-     * Unmarshal http response to instance of type T.
-     *
-     * @return null if http body not exists
-     * @throws IllegalStatusException if status is 2xx
+     * Write response body to output stream. Output stream will not be closed.
      */
-    @Nullable
-    public <T> T unmarshalBin(Function<InputStream, T> function) {
-        checkStatus2xx();
-        return process(resp -> function.apply(resp.getIn()));
+    public void writeTo(OutputStream out) {
+        try {
+            InputOutputs.copy(in, out);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            close();
+        }
     }
 
     /**
-     * Unmarshal http response to instance of type T.
-     *
-     * @return null if http body not exists
-     * @throws IllegalStatusException if status is 2xx
+     * Consume and discard this response body
      */
-    @Nullable
-    public <T> T unmarshalText(Function<Reader, T> function) {
-        checkStatus2xx();
-        return process(resp -> {
-            try (Reader reader = new InputStreamReader(resp.getIn(), getCharset())) {
-                return function.apply(reader);
+    public void discardBody() {
+        try {
+            discard(in);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            close();
+        }
+    }
+
+    /**
+     * Discard all input data, and close input.
+     *
+     * @return discarded byte num
+     */
+    private static int discard(InputStream input) throws IOException {
+        byte[] data = new byte[1024 * 4];
+        try {
+            int read;
+            int total = 0;
+            while ((read = input.read(data)) != -1) {
+                total += read;
             }
-        });
-    }
-
-    /**
-     * Get http response for return text result.
-     * Decode response body to text with charset get from response header, use UTF-8 if not found
-     */
-    public String readToText() throws UncheckedIOException {
-        String str = process(respData ->
-                IOUtils.toString(new InputStreamReader(respData.getIn(), getCharset()),
-                        Math.toIntExact(byteLen2CharLen(respData.getContentLen()))));
-        return str == null ? "" : str;
-    }
-
-    private long byteLen2CharLen(long byteLen) {
-        if (byteLen < 0) {
-            return byteLen;
+            return total;
+        } finally {
+            Closables.closeQuietly(input);
         }
+    }
 
-        if (byteLen < 1024 * 8) {
-            // now just return byteLen..
-            return byteLen;
+    /**
+     * The response status code
+     */
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    /**
+     * The response body input stream
+     */
+    public InputStream getIn() {
+        return in;
+    }
+
+    /**
+     * Get header value with name
+     */
+    public Optional<String> getFirstHeader(String name) {
+        List<String> values = headerMap.get(name);
+        if (values == null || values.isEmpty()) {
+            return Optional.empty();
         }
-        return (long) (byteLen / 1.5);
+        return Optional.of(values.get(0));
+    }
+
+    public List<Pair<String, String>> getHeaders() {
+        return headerList;
     }
 
     /**
-     * get http response for return byte array result.
-     */
-    public byte[] readToBytes() throws UncheckedIOException {
-        byte[] bytes = process(respData -> IOUtils.toBytes(respData.getIn(), Math.toIntExact(respData.getContentLen())));
-        return bytes == null ? new byte[0] : IOUtils.emptyByteArray;
-    }
-
-    /**
-     * Write output stream to file
-     *
-     * @return false if http response body not exists
-     * @throws UncheckedIOException if get io error
-     */
-    public boolean writeTo(File file) throws UncheckedIOException {
-        Boolean result = process(responseData -> {
-            try (OutputStream out = new FileOutputStream(file)) {
-                IOUtils.copy(responseData.getIn(), out, responseData.getContentLen());
-            }
-            return true;
-        });
-        if (result == null) {
-            // no http response entity
-            return false;
-        }
-        return result;
-    }
-
-    /**
-     * Write response content to output stream
-     *
-     * @return false if response code is not 20x
-     * @throws UncheckedIOException if get io error
-     */
-    public boolean writeTo(OutputStream out) throws UncheckedIOException {
-        Boolean result = process(responseData -> {
-            IOUtils.copy(responseData.getIn(), out, responseData.getContentLen());
-            return true;
-        });
-        if (result == null) {
-            // no http response entity
-            return false;
-        }
-        return result;
-    }
-
-    /**
-     * Write response content to writer, use charset from http header, use UTF-8 if not found
-     */
-    public boolean writeTo(Writer writer) {
-        Boolean result = process(respData -> {
-            IOUtils.copy(new InputStreamReader(respData.getIn(), getCharset()), writer,
-                    byteLen2CharLen(respData.getContentLen()));
-            return true;
-        });
-        if (result == null) {
-            // no http response entity
-            return false;
-        }
-        return result;
-    }
-
-    private Charset getCharset() {
-        if (this.charset != null) {
-            return this.charset;
-        }
-
-        ContentType contentType = ContentType.get(closeableHttpResponse.getEntity());
-        if (contentType != null && contentType.getCharset() != null) {
-            return contentType.getCharset();
-        }
-        return StandardCharsets.UTF_8;
-    }
-
-    /**
-     * Http response status code
-     */
-    public int getStatus() {
-        return status;
-    }
-
-    /**
-     * Response header.
-     *
-     * @return immutable non-null list
-     */
-    public List<Header> getHeaders() {
-        return headers;
-    }
-
-    /**
-     * All cookies of current session
-     *
-     * @return immutable non-null list
-     */
-    public List<Cookie> getCookies() {
-        return cookies;
-    }
-
-
-    /**
-     * Get first match header value
-     */
-    @Nullable
-    public String getFirstHeader(String name) {
-        return headers.stream().filter(h -> h.getName().equals(name)).findFirst().map(Header::getValue).orElse(null);
-    }
-
-    /**
-     * Get headers value by name
+     * Get all headers values with name
      */
     public List<String> getHeaders(String name) {
-        return headers.stream().filter(h -> h.getName().equals(name)).map(Header::getValue).collect(toList());
+        return Lists.nullToEmpty(headerMap.get(name));
     }
 
-
     /**
-     * Get first match cookie
+     * Get cookie with name
      */
-    @Nullable
-    public Cookie getFirstCookie(String name) {
-        return cookies.stream().filter(h -> h.getName().equals(name)).findFirst().orElse(null);
+    public Optional<Cookie> getFirstCookie(String name) {
+        List<Cookie> values = cookieMap.get(name);
+        if (values == null || values.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(values.get(0));
     }
 
     /**
-     * Get cookies by name
+     * Get all cookies
+     */
+    public Collection<Cookie> getCookies() {
+        return cookieList;
+    }
+
+    /**
+     * Get all cookies with name
      */
     public List<Cookie> getCookies(String name) {
-        return cookies.stream().filter(h -> h.getName().equals(name)).collect(toList());
+        return Lists.nullToEmpty(cookieMap.get(name));
     }
 
-    /**
-     * Redirect locations.
-     *
-     * @return immutable non-null list. return empty list if no redirect handled
-     */
-    public List<URI> getRedirectLocations() {
-        return redirectLocations;
-    }
-
-    @Override
-    public void close() {
-        IOUtils.closeQuietly(closeableHttpResponse);
-        if (closeOnFinished) {
-            client.close();
+    private Optional<Charset> getCharsetFromHeaders() {
+        Optional<String> contentType = getFirstHeader(HttpHeaders.NAME_CONTENT_TYPE);
+        if (!contentType.isPresent()) {
+            return Optional.empty();
         }
+        String[] items = contentType.get().split("; ");
+        return Arrays.stream(items).filter(it -> it.startsWith("charset="))
+                .map(it -> Charset.forName(it.substring("charset=".length()).trim()))
+                .findAny();
     }
 }

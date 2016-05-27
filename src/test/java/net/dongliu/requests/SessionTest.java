@@ -23,10 +23,8 @@ public class SessionTest {
 
     @Test
     public void testSession() {
-        try (Client client = Client.single().build()) {
-            Session session = client.session();
-            String response = session.get("http://127.0.0.1:8080").send().readToText();
-            assertTrue(!response.isEmpty());
-        }
+        Session session = Requests.session();
+        String response = session.get("http://127.0.0.1:8080").send().readToText();
+        assertTrue(!response.isEmpty());
     }
 }

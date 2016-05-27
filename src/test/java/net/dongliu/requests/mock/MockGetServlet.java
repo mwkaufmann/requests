@@ -19,6 +19,8 @@ public class MockGetServlet extends HttpServlet {
         String uri = request.getRequestURI();
         String queryStr = request.getQueryString();
 
+        response.setContentType("text/plain");
+        response.setCharacterEncoding("UTF-8");
         // cookie
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {

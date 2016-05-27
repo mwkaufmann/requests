@@ -24,7 +24,6 @@ public class MockServer {
         http.setPort(8080);
         http.setIdleTimeout(30000);
 
-        //File keystoreFile = new File(this.getClass().getResource("keystore");
         SslContextFactory sslContextFactory = new SslContextFactory();
         sslContextFactory.setKeyStorePath(this.getClass().getResource("/keystore").toExternalForm());
         sslContextFactory.setKeyStorePassword("123456");
@@ -47,6 +46,8 @@ public class MockServer {
         handler.addServletWithMapping(MockPostServlet.class, "/post");
         handler.addServletWithMapping(MockBasicAuthenticationServlet.class, "/basicAuth");
         handler.addServletWithMapping(MockPartServlet.class, "/upload");
+        handler.addServletWithMapping(EchoBodyServlet.class, "/echo_body");
+        handler.addServletWithMapping(EchoHeaderServlet.class, "/echo_header");
 
         // Start things up!
         try {

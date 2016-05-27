@@ -1,86 +1,68 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.struct.Method;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCookieStore;
+import net.dongliu.commons.collection.Sets;
 
-import java.io.UncheckedIOException;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * one http session, share cookies, basic auth across http request.
- *
- * @author Dong Liu dongliu@live.cn
+ * Http request share cookies, basic auths(?)
+ * This class is thread-safe
  */
 public class Session {
-    private final HttpClientContext context;
-    // null if do not set connectionPool
-    private final Client client;
 
-    Session(Client client) {
-        this.client = client;
-        context = HttpClientContext.create();
-        BasicCookieStore cookieStore = new BasicCookieStore();
-        context.setCookieStore(cookieStore);
+    private final AtomicReference<Set<Cookie>> cookies = new AtomicReference<>(Sets.of());
+
+    Session() {
     }
 
-    HttpClientContext getContext() {
-        return context;
+    static Session create(Set<Cookie> cookies) {
+        Session session = new Session();
+        session.updateCookie(cookies);
+        return session;
     }
 
-    /**
-     * get method
-     */
-    public HeadOnlyRequestBuilder get(String url) throws UncheckedIOException {
-        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.GET).url(url);
+    void updateCookie(Set<Cookie> newCookies) {
+        if (newCookies.isEmpty()) {
+            return;
+        }
+
+        boolean success;
+        do {
+            Set<Cookie> oldCookies = cookies.get();
+            Set<Cookie> s = Utils.mergeCookie(oldCookies, newCookies);
+            success = cookies.compareAndSet(oldCookies, s);
+        } while (!success);
+
     }
 
-    /**
-     * head method
-     */
-    public HeadOnlyRequestBuilder head(String url) throws UncheckedIOException {
-        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.HEAD).url(url);
+    Set<Cookie> getCookies() {
+        return cookies.get();
     }
 
-    /**
-     * get url, and return content
-     */
-    public PostRequestBuilder post(String url) throws UncheckedIOException {
-        return new PostRequestBuilder().client(client).session(this).method(Method.POST).url(url);
+    public RequestBuilder get(String url) {
+        return Requests.get(url).session(this);
     }
 
-    /**
-     * put method
-     */
-    public BodyRequestBuilder put(String url) throws UncheckedIOException {
-        return new BodyRequestBuilder().client(client).session(this).method(Method.PUT).url(url);
+    public RequestBuilder post(String url) {
+        return Requests.post(url).session(this);
     }
 
-    /**
-     * delete method
-     */
-    public HeadOnlyRequestBuilder delete(String url) throws UncheckedIOException {
-        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.DELETE).url(url);
+    public RequestBuilder put(String url) {
+        return Requests.put(url).session(this);
     }
 
-    /**
-     * options method
-     */
-    public HeadOnlyRequestBuilder options(String url) throws UncheckedIOException {
-        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.OPTIONS).url(url);
+    public RequestBuilder head(String url) {
+        return Requests.head(url).session(this);
     }
 
-    /**
-     * patch method
-     */
-    public BodyRequestBuilder patch(String url) throws UncheckedIOException {
-        return new BodyRequestBuilder().client(client).session(this).method(Method.PATCH).url(url);
+    public RequestBuilder delete(String url) {
+        return Requests.delete(url).session(this);
     }
 
-    /**
-     * trace method
-     */
-    public HeadOnlyRequestBuilder trace(String url) throws UncheckedIOException {
-        return new HeadOnlyRequestBuilder().client(client).session(this).method(Method.TRACE).url(url);
+    public RequestBuilder patch(String url) {
+        return Requests.patch(url).session(this);
     }
+
 
 }

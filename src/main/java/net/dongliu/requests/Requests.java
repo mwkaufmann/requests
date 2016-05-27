@@ -1,70 +1,47 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.struct.Method;
-
-import java.io.UncheckedIOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Convenient utils method for to process common http request
+ * Http request
  *
- * @author Dong Liu
+ * @author Liu Dong
  */
 public class Requests {
 
-    /**
-     * get method
-     */
-    public static MixinHeadOnlyRequestBuilder get(String url) throws UncheckedIOException {
-        return new MixinHeadOnlyRequestBuilder().method(Method.GET).url(url);
+    private static Logger logger = LoggerFactory.getLogger(Requests.class);
+
+    static {
+        // we can modify Host, and other restricted headers
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
     }
 
-    /**
-     * head method
-     */
-    public static MixinHeadOnlyRequestBuilder head(String url) throws UncheckedIOException {
-        return new MixinHeadOnlyRequestBuilder().method(Method.HEAD).url(url);
+    public static RequestBuilder get(String url) {
+        return HttpRequest.newBuilder().url(url).method("GET");
     }
 
-    /**
-     * get url, and return content
-     */
-    public static MixinPostRequestBuilder post(String url) throws UncheckedIOException {
-        return new MixinPostRequestBuilder().method(Method.POST).url(url);
+    public static RequestBuilder post(String url) {
+        return HttpRequest.newBuilder().url(url).method("POST");
     }
 
-    /**
-     * put method
-     */
-    public static MixinBodyRequestBuilder put(String url) throws UncheckedIOException {
-        return new MixinBodyRequestBuilder().method(Method.PUT).url(url);
+    public static RequestBuilder put(String url) {
+        return HttpRequest.newBuilder().url(url).method("PUT");
     }
 
-    /**
-     * delete method
-     */
-    public static MixinHeadOnlyRequestBuilder delete(String url) throws UncheckedIOException {
-        return new MixinHeadOnlyRequestBuilder().method(Method.DELETE).url(url);
+    public static RequestBuilder delete(String url) {
+        return HttpRequest.newBuilder().url(url).method("DELETE");
     }
 
-    /**
-     * options method
-     */
-    public static MixinHeadOnlyRequestBuilder options(String url) throws UncheckedIOException {
-        return new MixinHeadOnlyRequestBuilder().method(Method.OPTIONS).url(url);
+    public static RequestBuilder head(String url) {
+        return HttpRequest.newBuilder().url(url).method("HEAD");
     }
 
-    /**
-     * patch method
-     */
-    public static MixinBodyRequestBuilder patch(String url) throws UncheckedIOException {
-        return new MixinBodyRequestBuilder().method(Method.PATCH).url(url);
+    public static RequestBuilder patch(String url) {
+        return HttpRequest.newBuilder().url(url).method("PATCH");
     }
 
-    /**
-     * trace method
-     */
-    public static MixinHeadOnlyRequestBuilder trace(String url) throws UncheckedIOException {
-        return new MixinHeadOnlyRequestBuilder().method(Method.TRACE).url(url);
+    public static Session session() {
+        return new Session();
     }
-
 }

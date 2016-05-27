@@ -1,27 +1,7 @@
 [![](https://travis-ci.org/caoqianli/requests.svg)](https://travis-ci.org/caoqianli/requests) 
 ![License](https://img.shields.io/badge/licence-Simplified%20BSD-blue.svg?style=flat)
 
-Requests is a http request lib for java, using HttpClient as backend and with fluent api.
-From version 3.0, requests required java8.
-
--	[Maven Setting](#maven-setting)
--	[Requests](#requests)
-	-	[Simple http request](#simple-http-request)
-	-	[Charset](#charset)
-	-	[Passing Parameters](#passing-parameters)
-	-	[Custom Headers](#custom-headers)
-	-	[Cookies](#cookies)
-	-	[Request with data](#request-with-data)
-	-	[Basic Auth](#basic-auth)
-	-	[Client Settings](#client-settings)
--	[Client](#client)
-	-	[Redirection](#redirection)
-	-	[Timeout](#timeout)
-	-	[Response compress](#response-compress)
-	-	[Https Verification](#https-verification)
-	-	[Proxy](#proxy)
--	[Session](#session)
--	[Exceptions](#exceptions)
+Requests is a http request lib with fluent api for java. From version 3.0, requests required java8.
 
 #Maven Setting
 
@@ -31,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>3.0.6</version>
+    <version>4.0.0</version>
 </dependency>
 ```
 
@@ -56,7 +36,7 @@ The response object have several common http response fields can be used:
 
 ```java
 RawResponse resp = Requests.get(url).send();
-int statusCode = resp.getStatus();
+int statusCode = resp.getStatusCode();
 List<Header> headers = resp.getHeaders();
 List<Cookie> cookies = resp.getCookies();
 String body = resp.readToText();
@@ -71,13 +51,7 @@ String resp = Requests.get(url).send().readToText();
 // get response as bytes
 byte[] resp1 = Requests.get(url).send().readToBytes();
 // save response as file
-boolean result = Requests.get(url).send().writeTo("/path/to/save/file");
-```
-
-or you can custom http response processor your self:
-
-```java
-String resp = Requests.get(url).send().process(new ResponseHandler<String>() {...});
+boolean result = Requests.get(url).send().writeToFile("/path/to/save/file");
 ```
 
 ##Charset 
@@ -89,7 +63,7 @@ String resp = Requests.get(url).requestCharset(StandardCharsets.ISO_8859_1).send
 When read response to text-based result, use charset get from http response header, or UTF-8 if not found.
 Can force use other charset by:
 ```
-String resp = Requests.get(url).send().responseCharset(StandardCharsets.ISO_8859_1).readToText();
+String resp = Requests.get(url).send().readToText(StandardCharsets.ISO_8859_1);
 ```
 
 ##Passing Parameters 
@@ -102,7 +76,7 @@ params.put("k1", "v1");
 params.put("k2", "v2");
 String resp = Requests.get(url).params(params).send().readToText();
 // set multi params
-String resp = Requests.get(url).params(Entry.of("k1", "v1"), Entry.of("k2", "v2"))
+String resp = Requests.get(url).params(Pair.of("k1", "v1"), Pair.of("k2", "v2"))
         .send().readToText();
 ```
 
@@ -115,7 +89,7 @@ headers.put("k1", "v1");
 headers.put("k2", "v2");
 String resp = Requests.get(url).headers(headers).send().readToText();
 // set multi headers
-String resp = Requests.get(url).headers(Entry.of("k1", "v1"), Entry.of("k2", "v2"))
+String resp = Requests.get(url).headers(Pair.of("k1", "v1"), Pair.of("k2", "v2"))
         .send().readToText();
 ```
 
@@ -129,7 +103,7 @@ cookies.put("k2", "v2");
 // set cookies by map
 String resp = Requests.get(url).cookies(cookies).send().readToText();
 // set cookies
-String resp = Requests.get(url).cookies(Entry.of("k1", "v1"), Entry.of("k2", "v2"))
+String resp = Requests.get(url).cookies(Pair.of("k1", "v1"), Pair.of("k2", "v2"))
         .send().readToText();
 ```
 
@@ -138,7 +112,7 @@ String resp = Requests.get(url).cookies(Entry.of("k1", "v1"), Entry.of("k2", "v2
 Http Post, Put, Patch method can send request body. Take Post for example:
 ```java
 // set post form data
-String resp = Requests.post(url).forms(Entry.of("k1", "v1"), Entry.of("k2", "v2"))
+String resp = Requests.post(url).forms(Pair.of("k1", "v1"), Pair.of("k2", "v2"))
         .send().readToText();
 // set post form data by map
 Map<String, Object> formData = new HashMap<>();
@@ -163,7 +137,7 @@ One more complicate situation is multiPart post request, this can be done via mu
 InputStream in = ...;
 byte[] bytes = ...;
 String resp = Requests.post(url)
-        .multiParts(Part.filePart("file1", new File(...)), Part.filePart("file2", new File("...")))
+        .multiPartBody(Part.file("file1", new File(...)), Part.file("file2", new File("...")))
         .send().readToText();
 ```
 
@@ -174,53 +148,12 @@ Set http basic auth param by auth method:
 String resp = Requests.get(url).basicAuth("user", "passwd").send().readToText();
 ```
 
-##Client Settings
-
-
-Requests create a Single Client object for each request, and close it when request finished. You can specify custom settings for this client:
-```java
-String response = Requests.get("https://127.0.0.1:8443/otn/")
-        .timeout(3_000)
-        .compress(false)
-        .allowRedirects(false)
-        .userAgent("Custom user agent")
-        .verify(false).send().readToText();
-assertEquals(200, response.getStatusCode());
-```
-
-See [Client section](#client) to get more client settings and what them means.
-
-#Client
-
-Use Client to reuse http connections, and custom connection properties. Client has similar method as Requests class.
-
-There are two kinds of client, single and pooled Client is not thread-safe and only process one http request at a time, can be use in single thread context;Pooled client is thread-safe can be used across multi thread.
-
-Note: you need to close client when no longer used.
-
-```java
-// create pooled client
-try(Client client = Client.pooled()
-       .maxPerRoute(20) // max connection per site
-       .maxTotal(100)   // max connectoin
-       .build()) {
-    String resp1 = client.get(url1).send().readToText();
-    String resp2 = client.get(url2).send().readToText();
-}
-// create single client
-try(Client client = Client.single().build()) {
-   // ...
-}
-```
-
 ##Redirection 
 
-Requests and Client will handle 30x http redirect automatically, you can disable it by:
+Requests will handle 30x http redirect automatically, you can disable it by:
 
 ```java
-try (Client client = Client.single().allowRedirects(false).build()) {
-    String resp = client.get(url).send().readToText();
-}
+Requests.get(url).followRedirect(false).send();
 ```
 
 ##Timeout
@@ -229,23 +162,24 @@ There are two timeout parameters you can set, connect timeout, and socket timeou
 
 ```java
 // both connec timeout, and socket timeout
-Client client = Client.single().timeout(30_000).build();
+Requests.get(url).timeout(30_000).send();
 // set connect timeout and socket timeout separately
-Client client = Client.single().socketTimeout(20_000).connectTimeout(30_000).build();
+Requests.get(url).socketTimeout(20_000).connectTimeout(30_000).send();
 ```
 
-You may not need to know, but Requests also use connect timeout as the timeout value get connection from connection pool if connection pool is used. ##Response compress Requests send Accept-Encoding: gzip, deflate, and handle gzipped response in default. You can disable this by:
+##Response compress 
+Requests send Accept-Encoding: gzip, deflate, and handle gzipped response in default. You can disable this by:
 
 ```java
-Client client = Client.single().compress(false).build();
+Requests.get(url).compress(false).send();
 ```
 
 ##Https Verification 
 
-Some https sites do not have trusted http certificate, Exception will be throwed when request. You can disable https certificate verify by:
+Some https sites do not have trusted http certificate, Exception will be thrown when request. You can disable https certificate verify by:
 
 ```java
-Client client = Client.single().verify(false).build();
+Requests.get(url).verify(false).send();
 ```
 
 ##Proxy 
@@ -253,38 +187,25 @@ Client client = Client.single().verify(false).build();
 Set proxy by proxy method:
 
 ```java
-Client client = Client.single()
-        .proxy(Proxy.httpProxy("127.0.0.1", 8080))
-        .build();
-```
-
-The proxy can be created by:
-
-```java
-//http proxy
-Proxy.httpProxy("127.0.0.1", 8080)
-//with auth
-Proxy.httpProxy("127.0.0.1", 8080, userName, password)
-//socket proxy
-Proxy.socksProxy("127.0.0.1", 5678)
+Requests.get(url).proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8080))).send();
 ```
 
 #Session
 
-Session maintains cookies, basic authes and maybe other http context for you, useful when need login or other situations. Session have the same usage as Requests and Client.
+Session maintains cookies, basic auth and maybe other http context for you, useful when need login or other situations. Session have the same usage as Requests.
 
 ```java
-Session session = client.session();
+Session session = Requests.session();
 String resp1 = session.get(url1).send().readToText();
 String resp2 = session.get(url2).send().readToText();
 ```
 
-Session do not need to be closed.If the client which this session obtained from is closed, session can no longer be used. 
+Session do not need to be closed. 
 
 #Exceptions 
 
 Requests wrapped all checked exceptions into corresponding unchecked exceptions:
 ```
  IOException -> UncheckedIOException
- URISyntaxException -> UncheckedURISyntaxException
+ URISyntaxException/... -> RequestsException
 ```

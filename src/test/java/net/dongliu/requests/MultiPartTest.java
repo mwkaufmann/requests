@@ -1,6 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.struct.Part;
+import net.dongliu.requests.body.Part;
 import org.junit.Test;
 
 import java.io.File;
@@ -9,6 +9,6 @@ public class MultiPartTest {
 
     @Test
     public void testOf() throws Exception {
-        Part multiPart = Part.filePart("writeTo", new File("MultiPartTest.java"));
+        Part multiPart = Part.file("writeTo", new File("MultiPartTest.java"));
     }
 }

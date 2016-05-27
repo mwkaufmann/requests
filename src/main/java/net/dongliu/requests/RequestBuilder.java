@@ -1,106 +1,325 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.UncheckedURISyntaxException;
-import net.dongliu.requests.struct.AuthInfo;
-import net.dongliu.requests.struct.Method;
+import net.dongliu.commons.collection.Lists;
+import net.dongliu.commons.collection.Pair;
+import net.dongliu.requests.body.Part;
+import net.dongliu.requests.body.RequestBody;
 
-import javax.annotation.Nullable;
-import java.io.UncheckedIOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.InputStream;
+import java.net.Proxy;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 /**
- * Http request builder
+ * Http Request builder
  *
  * @author Liu Dong
  */
-public abstract class RequestBuilder<T extends RequestBuilder<T>> implements IBaseRequestBuilder<T> {
-    private Client client;
-    protected Method method;
-    protected URI url;
-    @Nullable
-    protected Collection<? extends Map.Entry<String, String>> parameters;
-    @Nullable
-    protected Collection<? extends Map.Entry<String, String>> headers;
-    @Nullable
-    protected Collection<? extends Map.Entry<String, String>> cookies;
+public final class RequestBuilder {
+    String method = "GET";
+    String url;
+    Collection<Pair<String, String>> headers = Lists.of();
+    Collection<Pair<String, String>> cookies = Lists.of();
+    String userAgent = "Requests/4.0, Java " + System.getProperty("java.version");
+    Collection<Pair<String, String>> params = Lists.of();
+    Charset requestCharset = StandardCharsets.UTF_8;
+    RequestBody<?> body;
+    int socksTimeout = HttpRequest.DEFAULT_TIMEOUT;
+    int connectTimeout = HttpRequest.DEFAULT_TIMEOUT;
+    Proxy proxy;
+    boolean followRedirect = true;
+    boolean compress = true;
+    boolean verify = true;
+    List<CertificateInfo> certs = Lists.of();
+    BasicAuth basicAuth;
+    Session session;
 
-    protected Charset charset = StandardCharsets.UTF_8;
+    RequestBuilder() {
+    }
 
-    //protected CredentialsProvider provider;
-    @Nullable
-    protected AuthInfo authInfo;
-    @Nullable
-    protected Session session;
+    public RequestBuilder method(String method) {
+        this.method = Objects.requireNonNull(method);
+        return this;
+    }
+
+    public RequestBuilder url(String url) {
+        this.url = Objects.requireNonNull(url);
+        return this;
+    }
 
     /**
-     * Send request and get response
+     * Set request headers.
      */
-    public RawResponse send() throws UncheckedIOException {
-        Request request = build();
-        return client.execute(request, session);
+    public RequestBuilder headers(Collection<? extends Map.Entry<String, ?>> headers) {
+        this.headers = Lists.convert(headers, this::toStringPair);
+        return this;
     }
 
-    T client(Client client) {
-        this.client = client;
-        return self();
+    /**
+     * Set request headers.
+     */
+    @SafeVarargs
+    public final RequestBuilder headers(Map.Entry<String, ?>... headers) {
+        headers(Lists.of(headers));
+        return this;
     }
 
-    T url(String url) throws UncheckedIOException {
-        try {
-            this.url = new URI(url);
-        } catch (URISyntaxException e) {
-            throw new UncheckedURISyntaxException(e);
-        }
-        return self();
+    /**
+     * Set request headers.
+     */
+    public final RequestBuilder headers(Map<String, ?> map) {
+        this.headers = Lists.convert(map.entrySet(), e -> Pair.of(e.getKey(), String.valueOf(e.getValue())));
+        return this;
     }
 
-    public abstract Request build();
-
-    @Override
-    public T params(Collection<? extends Map.Entry<String, String>> params) {
-        this.parameters = Objects.requireNonNull(params);
-        return self();
+    /**
+     * Set request cookies.
+     */
+    public RequestBuilder cookies(Collection<? extends Map.Entry<String, ?>> cookies) {
+        this.cookies = Lists.convert(cookies, this::toStringPair);
+        return this;
     }
 
-    @Override
-    public T requestCharset(Charset charset) {
-        this.charset = charset;
-        return self();
+    /**
+     * Set request cookies.
+     */
+    @SafeVarargs
+    public final RequestBuilder cookies(Map.Entry<String, ?>... cookies) {
+        cookies(Lists.of(cookies));
+        return this;
     }
 
-    T method(Method method) {
-        this.method = method;
-        return self();
+    /**
+     * Set request cookies.
+     */
+    public final RequestBuilder cookies(Map<String, ?> map) {
+        this.cookies = Lists.convert(map.entrySet(), e -> Pair.of(e.getKey(), String.valueOf(e.getValue())));
+        return this;
     }
 
-    @Override
-    public T headers(Collection<? extends Map.Entry<String, String>> headers) {
-        this.headers = Objects.requireNonNull(headers);
-        return self();
+    public RequestBuilder userAgent(String userAgent) {
+        this.userAgent = Objects.requireNonNull(userAgent);
+        return this;
     }
 
-    @Override
-    public T basicAuth(String userName, String password) {
-        authInfo = new AuthInfo(userName, password);
-        return self();
+    /**
+     * Set url query params.
+     */
+    public RequestBuilder params(Collection<? extends Map.Entry<String, ?>> params) {
+        this.cookies = Lists.convert(params, this::toStringPair);
+        return this;
     }
 
-    @Override
-    public T cookies(Collection<? extends Map.Entry<String, String>> cookies) {
-        this.cookies = cookies;
-        return self();
+    /**
+     * Set url query params.
+     */
+    @SafeVarargs
+    public final RequestBuilder params(Map.Entry<String, ?>... params) {
+        this.params = Lists.convert(Lists.of(params), this::toStringPair);
+        return this;
     }
 
-    T session(Session session) {
+    /**
+     * Set url query params.
+     */
+    public final RequestBuilder params(Map<String, ?> map) {
+        this.params = Lists.convert(map.entrySet(), e -> Pair.of(e.getKey(), String.valueOf(e.getValue())));
+        return this;
+    }
+
+    /**
+     * Set charset used to encode request params or forms. Default UTF8
+     */
+    public RequestBuilder requestCharset(Charset charset) {
+        requestCharset = charset;
+        return this;
+    }
+
+    /**
+     * Set request body
+     */
+    public RequestBuilder body(RequestBody<?> body) {
+        this.body = body;
+        return this;
+    }
+
+    /**
+     * Set www-form-encoded body. Only for Post
+     */
+    public RequestBuilder forms(Collection<? extends Map.Entry<String, ?>> params) {
+        body = RequestBody.form(Lists.convert(params, this::toStringPair));
+        return this;
+    }
+
+    /**
+     * Set www-form-encoded body. Only for Post
+     */
+    @SafeVarargs
+    public final RequestBuilder forms(Map.Entry<String, ?>... formBody) {
+        return forms(Lists.of(formBody));
+    }
+
+    /**
+     * Set www-form-encoded body. Only for Post
+     */
+    public RequestBuilder forms(Map<String, ?> formBody) {
+        return forms(formBody.entrySet());
+    }
+
+    /**
+     * Set string body
+     */
+    public RequestBuilder body(String str) {
+        body = RequestBody.text(str);
+        return this;
+    }
+
+    /**
+     * Set binary body
+     */
+    public RequestBuilder body(byte[] bytes) {
+        body = RequestBody.bytes(bytes);
+        return this;
+    }
+
+    /**
+     * Set input body
+     */
+    public RequestBuilder body(InputStream input) {
+        body = RequestBody.inputStream(input);
+        return this;
+    }
+
+    /**
+     * For send application/json post request.
+     * Must have jackson or gson in classpath, or a runtime exception will be raised
+     */
+    public RequestBuilder jsonBody(Object value) {
+        body = RequestBody.json(value);
+        return this;
+    }
+
+    /**
+     * Set tcp socks timeout in mills
+     */
+    public RequestBuilder socksTimeout(int timeout) {
+        this.socksTimeout = timeout;
+        return this;
+    }
+
+    /**
+     * Set tcp connect timeout in mills
+     */
+    public RequestBuilder connectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
+        return this;
+    }
+
+    /**
+     * set proxy
+     */
+    public RequestBuilder proxy(Proxy proxy) {
+        this.proxy = proxy;
+        return this;
+    }
+
+    /**
+     * Set auto handle redirect. default true
+     */
+    public RequestBuilder followRedirect(boolean followRedirect) {
+        this.followRedirect = followRedirect;
+        return this;
+    }
+
+    /**
+     * Set accept compressed response. default true
+     */
+    public RequestBuilder compress(boolean compress) {
+        this.compress = compress;
+        return this;
+    }
+
+    /**
+     * Check ssl cert. default true
+     */
+    public RequestBuilder verify(boolean verify) {
+        this.verify = verify;
+        return this;
+    }
+
+    /**
+     * Add trust certs
+     */
+    public RequestBuilder certs(List<CertificateInfo> certs) {
+        this.certs = Objects.requireNonNull(certs);
+        return this;
+    }
+
+    /**
+     * Set http basicAuth by BasicAuth(DigestAuth/NTLMAuth not supported now)
+     */
+    public RequestBuilder basicAuth(String user, String password) {
+        this.basicAuth = new BasicAuth(user, password);
+        return this;
+    }
+
+    /**
+     * Set http basicAuth by BasicAuth(DigestAuth/NTLMAuth not supported now)
+     */
+    public RequestBuilder basicAuth(BasicAuth basicAuth) {
+        this.basicAuth = basicAuth;
+        return this;
+    }
+
+    RequestBuilder session(Session session) {
         this.session = session;
-        return self();
+        return this;
     }
 
-    protected abstract T self();
+    HttpRequest build() {
+        return new HttpRequest(this);
+    }
+
+    /**
+     * build http request, and send out
+     */
+    public RawResponse send() {
+        HttpRequest request = build();
+        return request.handleRequest();
+    }
+
+    //TODO: auto handle datetime header here?
+    @SuppressWarnings("unchecked")
+    private Pair<String, String> toStringPair(Map.Entry<String, ?> pair) {
+        if (pair.getValue() instanceof String) {
+            return (Pair<String, String>) pair;
+        } else {
+            return Pair.of(pair.getKey(), pair.getValue().toString());
+        }
+    }
+
+    /**
+     * Set connect timeout and socket time out
+     */
+    public RequestBuilder timeout(int timeout) {
+        return connectTimeout(timeout).socksTimeout(timeout);
+    }
+
+    /**
+     * Set multiPart body. Only form multi-part post
+     */
+    public final RequestBuilder multiPartBody(Part<?>... parts) {
+        return multiPartBody(Lists.of(parts));
+    }
+
+    /**
+     * Set multiPart body. Only form multi-part post
+     */
+    public final RequestBuilder multiPartBody(Collection<Part<?>> parts) {
+        return body(RequestBody.multiPart(parts));
+    }
 }

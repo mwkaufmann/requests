@@ -29,6 +29,7 @@ public class MockPartServlet extends HttpServlet {
         Collection<Part> parts = request.getParts();
 
         response.setContentType("text/plain");
+        response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
         PrintWriter out = response.getWriter();
         out.println(uri);
