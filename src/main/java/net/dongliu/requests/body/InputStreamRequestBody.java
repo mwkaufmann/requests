@@ -12,8 +12,8 @@ import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_BINARY;
 /**
  * @author Liu Dong
  */
-class StreamRequestBody extends RequestBody<InputStream> {
-    StreamRequestBody(InputStream body) {
+class InputStreamRequestBody extends RequestBody<InputStream> {
+    InputStreamRequestBody(InputStream body) {
         super(body, CONTENT_TYPE_BINARY, false);
     }
 

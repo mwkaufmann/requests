@@ -9,6 +9,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +53,8 @@ public class RequestsTest {
         RawResponse resp = Requests.head("http://127.0.0.1:8080")
                 .requestCharset(StandardCharsets.UTF_8).send();
         assertEquals(200, resp.getStatusCode());
-        resp.readToText();
+        String text = resp.readToText();
+        assertTrue(text.isEmpty());
     }
 
     @Test
@@ -120,5 +122,14 @@ public class RequestsTest {
                 .send().readToText();
         assertTrue(text.contains("Host: www.baidu.com"));
         assertTrue(text.contains("TestHeader: 1"));
+    }
+
+    @Test
+    public void testHttps() throws IOException {
+        RawResponse response = Requests.get("https://127.0.0.1:8443/https")
+                .verify(false).send();
+        String s = response.readToText();
+        assertEquals(200, response.getStatusCode());
+        assertFalse(s.isEmpty());
     }
 }

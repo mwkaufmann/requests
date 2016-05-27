@@ -1,14 +1,15 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.mock.MockServer;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 /**
  * @author Liu Dong
@@ -16,31 +17,17 @@ import static org.junit.Assert.assertFalse;
 @Ignore
 public class RequestsTest2 {
 
-    //TODO: url connection https verify
-    @Test
-    public void testClientSetting() throws IOException {
-        RawResponse response = Requests
-                .get("https://kyfw.12306.cn/otn/")
-                //.get("https://127.0.0.1:8443/https")
-                .timeout(3_000)
-                .compress(false)
-                .followRedirect(false)
-                .userAgent("Custom user agent")
-                .verify(false).send();
-        assertEquals(200, response.getStatusCode());
+    private static MockServer server = new MockServer();
+
+    @BeforeClass
+    public static void init() {
+        server.start();
     }
 
-    @Test
-    public void testHttps() throws IOException {
-        RawResponse response = Requests
-//                .get("https://127.0.0.1:8443/https")
-                .get("https://kyfw.12306.cn/otn/")
-                .verify(false).send();
-        String s = response.readToText();
-        assertEquals(200, response.getStatusCode());
-        assertFalse(s.isEmpty());
+    @AfterClass
+    public static void destroy() {
+        server.stop();
     }
-
 
     @Test
     public void testHttpProxy() throws Exception {

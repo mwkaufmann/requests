@@ -61,14 +61,20 @@ public class MockServer {
     public void join() {
         try {
             server.join();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
         }
     }
 
     public void stop() {
         try {
             server.stop();
-        } catch (Exception e) {
+        } catch (Exception ignore) {
         }
+    }
+
+    public static void main(String[] args) {
+        MockServer server = new MockServer();
+        server.start();
+        server.join();
     }
 }

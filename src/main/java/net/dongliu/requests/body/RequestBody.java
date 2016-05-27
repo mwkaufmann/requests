@@ -96,7 +96,7 @@ public abstract class RequestBody<T> {
      * Create request body from input stream
      */
     public static RequestBody<InputStream> inputStream(InputStream in) {
-        return new StreamRequestBody(Objects.requireNonNull(in));
+        return new InputStreamRequestBody(Objects.requireNonNull(in));
     }
 
     /**

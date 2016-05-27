@@ -106,7 +106,6 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    @Nullable
     public <T> T readAsJson(Type type, Charset charset) {
         try {
             return JsonLookup.getInstance().lookup().unmarshal(new InputStreamReader(in, charset), type);
@@ -120,7 +119,6 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    @Nullable
     public <T> T readAsJson(Type type) {
         try {
             Charset charset = getCharsetFromHeaders().orElse(StandardCharsets.UTF_8);
@@ -135,7 +133,6 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    @Nullable
     public <T> T readAsJson(TypeInfer<T> typeInfer, Charset charset) {
         return readAsJson(typeInfer.getType(), charset);
     }
@@ -145,7 +142,6 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    @Nullable
     public <T> T readAsJson(TypeInfer<T> typeInfer) {
         return readAsJson(typeInfer.getType());
     }
@@ -155,7 +151,6 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    @Nullable
     public <T> T readAsJson(Class<T> cls, Charset charset) {
         return readAsJson((Type) cls, charset);
     }
@@ -165,7 +160,6 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    @Nullable
     public <T> T readAsJson(Class<T> cls) {
         return readAsJson((Type) cls);
     }
