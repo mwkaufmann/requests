@@ -222,7 +222,6 @@ public class HttpRequest {
         for (Pair<String, String> header : headers) {
             conn.setRequestProperty(header.getName(), header.getValue());
             Map<String, List<String>> requestProperties = conn.getRequestProperties();
-            System.out.println(requestProperties);
         }
 
         try {
