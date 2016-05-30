@@ -1,10 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.Strings;
-import net.dongliu.commons.collection.Pair;
-import net.dongliu.commons.collection.Sets;
-import net.dongliu.commons.exception.Exceptions;
-import net.dongliu.commons.io.Closables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
@@ -41,10 +36,10 @@ public class HttpRequest {
 
     private final String method;
     private final String url;
-    private final Collection<Pair<String, String>> headers;
-    private final Collection<Pair<String, String>> cookies;
+    private final Collection<Map.Entry<String, String>> headers;
+    private final Collection<Map.Entry<String, String>> cookies;
     private final String userAgent;
-    private final Collection<Pair<String, String>> params;
+    private final Collection<Map.Entry<String, String>> params;
     private final Charset requestCharset;
     private final RequestBody<?> body;
     private final int readTimeout;
@@ -128,7 +123,16 @@ public class HttpRequest {
     private RawResponse doRequest() {
         Charset charset = requestCharset;
         String host = fullUrl.getHost();
-        String effectivePath = Strings.beforeLast(fullUrl.getPath(), "/") + "/";
+        String path = fullUrl.getPath();
+        int idx = path.lastIndexOf('/');
+        if (idx >= 0) {
+            path = path.substring(0, idx + 1);
+        } else {
+            path = path + "/";
+        }
+
+        //TODO: cookie path ?
+        String effectivePath = path;
 
         HttpURLConnection conn;
         try {
@@ -158,7 +162,7 @@ public class HttpRequest {
                     sslContext = SSLContext.getInstance("SSL");
                     sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
                 } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                    throw Exceptions.sneakyThrow(e);
+                    throw new RequestsException(e);
                 }
 
                 SSLSocketFactory ssf = sslContext.getSocketFactory();
@@ -204,7 +208,7 @@ public class HttpRequest {
 
         // set cookies
         if (!cookies.isEmpty() || session != null) {
-            Stream<String> stream1 = cookies.stream().map(e -> e.getName() + "=" + e.getValue());
+            Stream<String> stream1 = cookies.stream().map(e -> e.getKey() + "=" + e.getValue());
             Instant now = Instant.now();
             Stream<String> stream2;
             if (session != null) {
@@ -219,9 +223,8 @@ public class HttpRequest {
             conn.setRequestProperty(NAME_COOKIE, cookieStr);
         }
 
-        for (Pair<String, String> header : headers) {
-            conn.setRequestProperty(header.getName(), header.getValue());
-            Map<String, List<String>> requestProperties = conn.getRequestProperties();
+        for (Map.Entry<String, String> header : headers) {
+            conn.setRequestProperty(header.getKey(), header.getValue());
         }
 
         try {
@@ -240,17 +243,17 @@ public class HttpRequest {
             int status = conn.getResponseCode();
 
             // headers
-            List<Pair<String, String>> responseHeaders = conn.getHeaderFields().entrySet().stream()
+            List<Map.Entry<String, String>> responseHeaders = conn.getHeaderFields().entrySet().stream()
                     // ignore status line
                     .filter(it -> it.getKey() != null)
-                    .flatMap(e -> e.getValue().stream().map(v -> Pair.of(e.getKey(), v)))
+                    .flatMap(e -> e.getValue().stream().map(v -> Parameter.of(e.getKey(), v)))
                     .collect(toList());
             // cookies
             List<SetCookie> setCookieList = conn.getHeaderFields().entrySet().stream()
                     .filter(e -> NAME_SET_COOKIE.equals(e.getKey()))
                     .flatMap(e -> e.getValue().stream().map(SetCookie::parse))
                     .collect(toList());
-            Set<Cookie> cookieSet = Sets.create();
+            Set<Cookie> cookieSet = new HashSet<>();
             for (SetCookie setCookie : setCookieList) {
                 // we do not check top domain here..
                 if (setCookie.getDomain() == null || !host.endsWith(setCookie.getDomain())) {
@@ -260,8 +263,8 @@ public class HttpRequest {
                 if (setCookie.getPath() == null) {
                     setCookie.setPath(effectivePath);
                 }
-                List<Pair<String, String>> respCookies = setCookie.getCookies();
-                for (Pair<String, String> pair : respCookies) {
+                List<Map.Entry<String, String>> respCookies = setCookie.getCookies();
+                for (Map.Entry<String, String> pair : respCookies) {
                     cookieSet.add(new Cookie(setCookie.getDomain(), setCookie.isBareDomain(),
                             setCookie.getPath(), pair.getKey(),
                             pair.getValue(), setCookie.getExpiry()));
@@ -284,7 +287,7 @@ public class HttpRequest {
         }
     }
 
-    private InputStream wrap(int status, List<Pair<String, String>> headers, InputStream input) {
+    private InputStream wrap(int status, List<Map.Entry<String, String>> headers, InputStream input) {
 
         // if has no boddy
         if (method.equals("HEAD")) {
@@ -303,7 +306,7 @@ public class HttpRequest {
                 try {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
-                    Closables.closeQuietly(input);
+                    IOUtils.closeQuietly(input);
                     throw new UncheckedIOException(e);
                 }
             case "deflate":
@@ -318,9 +321,9 @@ public class HttpRequest {
 
     private
     @Nullable
-    String getHeaderValue(List<Pair<String, String>> headers, String name) {
-        return headers.stream().filter(h -> h.getName().equalsIgnoreCase(name))
-                .map(Pair::getValue).findAny().orElse(null);
+    String getHeaderValue(List<Map.Entry<String, String>> headers, String name) {
+        return headers.stream().filter(h -> h.getKey().equalsIgnoreCase(name))
+                .map(Map.Entry::getValue).findAny().orElse(null);
     }
 
 

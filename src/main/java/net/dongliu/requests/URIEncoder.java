@@ -1,8 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Lists;
-import net.dongliu.commons.collection.Pair;
-
 import java.io.CharArrayWriter;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
@@ -10,10 +7,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>
@@ -138,17 +132,17 @@ public class URIEncoder {
     /**
      * Encode key-value query parameter
      */
-    public static String encodeQuery(Pair<String, String> query, Charset charset) {
-        return encodeParam(query.getName(), charset) + "=" + encodeParam(query.getValue(), charset);
+    public static String encodeQuery(Map.Entry<String, String> query, Charset charset) {
+        return encodeParam(query.getKey(), charset) + "=" + encodeParam(query.getValue(), charset);
     }
 
     /**
      * Encode multi queries
      */
-    public static String encodeQueries(Collection<? extends Pair<String, String>> queries, Charset charset) {
+    public static String encodeQueries(Collection<? extends Map.Entry<String, String>> queries, Charset charset) {
         StringBuilder sb = new StringBuilder();
-        for (Pair<String, String> query : queries) {
-            sb.append(encodeParam(query.getName(), charset));
+        for (Map.Entry<String, String> query : queries) {
+            sb.append(encodeParam(query.getKey(), charset));
             sb.append('=');
             sb.append(encodeParam(query.getValue(), charset));
             sb.append('&');
@@ -162,18 +156,18 @@ public class URIEncoder {
     /**
      * Decode key-value query parameter
      */
-    public static Pair<String, String> decodeQuery(String s, Charset charset) {
+    public static Map.Entry<String, String> decodeQuery(String s, Charset charset) {
         int idx = s.indexOf("=");
         if (idx < 0) {
-            return Pair.of("", decodeParam(s, charset));
+            return Parameter.of("", decodeParam(s, charset));
         }
-        return Pair.of(decodeParam(s.substring(0, idx), charset), decodeParam(s.substring(idx + 1), charset));
+        return Parameter.of(decodeParam(s.substring(0, idx), charset), decodeParam(s.substring(idx + 1), charset));
     }
 
     /**
      * Parse query params
      */
-    public static List<Pair<String, String>> decodeQueries(String queryStr, Charset charset) {
+    public static List<Map.Entry<String, String>> decodeQueries(String queryStr, Charset charset) {
         String[] queries = queryStr.split("&");
         return Lists.convert(Arrays.asList(queries), query -> decodeQuery(query, charset));
     }
@@ -338,9 +332,9 @@ public class URIEncoder {
     /**
      * Encode key-value form parameter
      */
-    public static String encodeForm(Pair<String, String> query, Charset charset) {
+    public static String encodeForm(Map.Entry<String, String> query, Charset charset) {
         try {
-            return URLEncoder.encode(query.getName(), charset.name()) + "=" + URLEncoder.encode(query.getValue(), charset.name());
+            return URLEncoder.encode(query.getKey(), charset.name()) + "=" + URLEncoder.encode(query.getValue(), charset.name());
         } catch (UnsupportedEncodingException e) {
             throw new UncheckedIOException(e);
         }
@@ -349,11 +343,11 @@ public class URIEncoder {
     /**
      * Encode multi form parameters
      */
-    public static String encodeForms(Collection<? extends Pair<String, String>> queries, Charset charset) {
+    public static String encodeForms(Collection<? extends Map.Entry<String, String>> queries, Charset charset) {
         StringBuilder sb = new StringBuilder();
         try {
-            for (Pair<String, String> query : queries) {
-                sb.append(URLEncoder.encode(query.getName(), charset.name()));
+            for (Map.Entry<String, String> query : queries) {
+                sb.append(URLEncoder.encode(query.getKey(), charset.name()));
                 sb.append('=');
                 sb.append(URLEncoder.encode(query.getValue(), charset.name()));
                 sb.append('&');
@@ -370,13 +364,13 @@ public class URIEncoder {
     /**
      * Decode key-value query parameter
      */
-    public static Pair<String, String> decodeForm(String s, Charset charset) {
+    public static Map.Entry<String, String> decodeForm(String s, Charset charset) {
         int idx = s.indexOf("=");
         try {
             if (idx < 0) {
-                return Pair.of("", URLDecoder.decode(s, charset.name()));
+                return Parameter.of("", URLDecoder.decode(s, charset.name()));
             }
-            return Pair.of(URLDecoder.decode(s.substring(0, idx), charset.name()),
+            return Parameter.of(URLDecoder.decode(s.substring(0, idx), charset.name()),
                     URLDecoder.decode(s.substring(idx + 1), charset.name()));
         } catch (UnsupportedEncodingException e) {
             throw new UncheckedIOException(e);
@@ -386,7 +380,7 @@ public class URIEncoder {
     /**
      * Parse query params
      */
-    public static List<Pair<String, String>> decodeForms(String queryStr, Charset charset) {
+    public static List<Map.Entry<String, String>> decodeForms(String queryStr, Charset charset) {
         String[] queries = queryStr.split("&");
         return Lists.convert(Arrays.asList(queries), query -> decodeForm(query, charset));
     }

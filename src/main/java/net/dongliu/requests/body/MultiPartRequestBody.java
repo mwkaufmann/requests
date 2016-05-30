@@ -1,7 +1,5 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.commons.Strings;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -13,7 +11,7 @@ import java.util.Collection;
  * @author Liu Dong
  */
 class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
-    private static final String BOUNDARY = Strings.repeat("*", 20) + System.currentTimeMillis();
+    private static final String BOUNDARY = "********************" + System.currentTimeMillis();
     private static final String LINE_END = "\r\n";
 
     public MultiPartRequestBody(Collection<? extends Part> body) {

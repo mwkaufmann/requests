@@ -1,6 +1,5 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.commons.collection.Pair;
 import net.dongliu.requests.URIEncoder;
 
 import java.io.IOException;
@@ -9,14 +8,15 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Map;
 
 import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_FORM_ENCODED;
 
 /**
  * @author Liu Dong
  */
-class FormRequestBody extends RequestBody<Collection<? extends Pair<String, String>>> {
-    FormRequestBody(Collection<? extends Pair<String, String>> body) {
+class FormRequestBody extends RequestBody<Collection<? extends Map.Entry<String, String>>> {
+    FormRequestBody(Collection<? extends Map.Entry<String, String>> body) {
         super(body, CONTENT_TYPE_FORM_ENCODED, true);
     }
 

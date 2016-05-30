@@ -1,14 +1,8 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Lists;
-import net.dongliu.commons.collection.Pair;
-import net.dongliu.commons.io.Closables;
-import net.dongliu.commons.io.InputOutputs;
-import net.dongliu.commons.io.ReaderWriters;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
@@ -25,7 +19,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class RawResponse implements AutoCloseable {
     private final int statusCode;
-    private final List<Pair<String, String>> headerList;
+    private final List<Map.Entry<String, String>> headerList;
     final Set<Cookie> cookieList;
     private final Map<String, List<String>> headerMap;
     private final Map<String, List<Cookie>> cookieMap;
@@ -33,7 +27,7 @@ public class RawResponse implements AutoCloseable {
     private final HttpURLConnection conn;
     // redirect history
 
-    RawResponse(int statusCode, List<Pair<String, String>> headerMap, Set<Cookie> cookieList, InputStream in,
+    RawResponse(int statusCode, List<Map.Entry<String, String>> headerMap, Set<Cookie> cookieList, InputStream in,
                 HttpURLConnection conn) {
         this.statusCode = statusCode;
         this.headerList = headerMap;
@@ -46,7 +40,7 @@ public class RawResponse implements AutoCloseable {
 
     @Override
     public void close() {
-        Closables.closeQuietly(in);
+        IOUtils.closeQuietly(in);
         conn.disconnect();
     }
 
@@ -64,7 +58,7 @@ public class RawResponse implements AutoCloseable {
      */
     public String readToText(Charset charset) {
         try (Reader reader = new InputStreamReader(in, charset)) {
-            return ReaderWriters.readAll(reader);
+            return IOUtils.readAll(reader);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -80,10 +74,10 @@ public class RawResponse implements AutoCloseable {
         return map;
     }
 
-    private Map<String, List<String>> convertHeaders(List<Pair<String, String>> headers) {
+    private Map<String, List<String>> convertHeaders(List<Map.Entry<String, String>> headers) {
         Map<String, List<String>> map = new HashMap<>();
-        for (Pair<String, String> header : headers) {
-            map.computeIfAbsent(header.getName(), name -> new LinkedList<>()).add(header.getValue());
+        for (Map.Entry<String, String> header : headers) {
+            map.computeIfAbsent(header.getKey(), name -> new LinkedList<>()).add(header.getValue());
         }
         return map;
     }
@@ -93,7 +87,7 @@ public class RawResponse implements AutoCloseable {
      */
     public byte[] readToBytes() {
         try {
-            return InputOutputs.readAll(in);
+            return IOUtils.readAll(in);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -170,7 +164,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(File path) {
         try {
             try (FileOutputStream fos = new FileOutputStream(path)) {
-                InputOutputs.copy(in, fos);
+                IOUtils.copy(in, fos);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -184,7 +178,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void writeTo(OutputStream out) {
         try {
-            InputOutputs.copy(in, out);
+            IOUtils.copy(in, out);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -220,7 +214,7 @@ public class RawResponse implements AutoCloseable {
             }
             return total;
         } finally {
-            Closables.closeQuietly(input);
+            IOUtils.closeQuietly(input);
         }
     }
 
@@ -249,7 +243,7 @@ public class RawResponse implements AutoCloseable {
         return Optional.of(values.get(0));
     }
 
-    public List<Pair<String, String>> getHeaders() {
+    public List<Map.Entry<String, String>> getHeaders() {
         return headerList;
     }
 
@@ -257,7 +251,11 @@ public class RawResponse implements AutoCloseable {
      * Get all headers values with name
      */
     public List<String> getHeaders(String name) {
-        return Lists.nullToEmpty(headerMap.get(name));
+        List<String> headers = headerMap.get(name);
+        if (headers == null) {
+            headers = Collections.emptyList();
+        }
+        return headers;
     }
 
     /**
@@ -282,7 +280,11 @@ public class RawResponse implements AutoCloseable {
      * Get all cookies with name
      */
     public List<Cookie> getCookies(String name) {
-        return Lists.nullToEmpty(cookieMap.get(name));
+        List<Cookie> cookies = cookieMap.get(name);
+        if (cookies == null) {
+            cookies = Collections.emptyList();
+        }
+        return cookies;
     }
 
     private Optional<Charset> getCharsetFromHeaders() {

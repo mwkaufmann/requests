@@ -1,11 +1,10 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Pair;
-
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -13,17 +12,17 @@ import java.util.Optional;
  */
 class SetCookie {
 
-    private List<Pair<String, String>> cookies = new ArrayList<>();
+    private List<Map.Entry<String, String>> cookies = new ArrayList<>();
     private String domain;
     private boolean bareDomain;
     private String path;
     private Optional<Instant> expiry = Optional.empty();
 
-    public List<Pair<String, String>> getCookies() {
+    public List<Map.Entry<String, String>> getCookies() {
         return cookies;
     }
 
-    public void addCookie(Pair<String, String> cookie) {
+    public void addCookie(Map.Entry<String, String> cookie) {
         this.cookies.add(cookie);
     }
 
@@ -66,8 +65,8 @@ class SetCookie {
     public static SetCookie parse(String value) {
         SetCookie setCookie = new SetCookie();
         for (String item : value.split("; ")) {
-            Pair<String, String> pair = Utils.pairFrom(item);
-            switch (pair.getName().toLowerCase()) {
+            Map.Entry<String, String> pair = Utils.pairFrom(item);
+            switch (pair.getKey().toLowerCase()) {
                 case "domain":
                     String domain = pair.getValue();
                     if (domain.startsWith(".")) {

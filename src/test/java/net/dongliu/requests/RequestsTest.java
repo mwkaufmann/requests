@@ -1,7 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Lists;
-import net.dongliu.commons.collection.Pair;
 import net.dongliu.requests.body.Part;
 import net.dongliu.requests.json.TypeInfer;
 import net.dongliu.requests.mock.MockServer;
@@ -11,6 +9,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +60,7 @@ public class RequestsTest {
     public void testPost() {
         // form encoded post
         String text = Requests.post("http://127.0.0.1:8080/post")
-                .forms(Pair.of("wd", "test"))
+                .forms(Parameter.of("wd", "test"))
                 .send().readToText();
         assertTrue(text.contains("wd=test"));
     }
@@ -69,7 +68,7 @@ public class RequestsTest {
     @Test
     public void testCookie() {
         RawResponse response = Requests.get("http://127.0.0.1:8080/cookie")
-                .cookies(Pair.of("test", "value")).send();
+                .cookies(Parameter.of("test", "value")).send();
         assertTrue(response.getCookies().stream().filter(c -> c.getName().equals("test")).findFirst().isPresent());
     }
 
@@ -102,7 +101,7 @@ public class RequestsTest {
 
     @Test
     public void sendJson() {
-        String text = Requests.post("http://127.0.0.1:8080/echo_body").jsonBody(Lists.of(1, 2, 3))
+        String text = Requests.post("http://127.0.0.1:8080/echo_body").jsonBody(Arrays.asList(1, 2, 3))
                 .send().readToText();
         assertTrue(text.startsWith("["));
         assertTrue(text.endsWith("]"));
@@ -110,7 +109,7 @@ public class RequestsTest {
 
     @Test
     public void receiveJson() {
-        List<Integer> list = Requests.post("http://127.0.0.1:8080/echo_body").jsonBody(Lists.of(1, 2, 3))
+        List<Integer> list = Requests.post("http://127.0.0.1:8080/echo_body").jsonBody(Arrays.asList(1, 2, 3))
                 .send().readAsJson(new TypeInfer<List<Integer>>() {});
         assertEquals(3, list.size());
     }
@@ -118,7 +117,7 @@ public class RequestsTest {
     @Test
     public void sendHeaders() {
         String text = Requests.get("http://127.0.0.1:8080/echo_header")
-                .headers(Pair.of("Host", "www.baidu.com"), Pair.of("TestHeader", 1))
+                .headers(Parameter.of("Host", "www.baidu.com"), Parameter.of("TestHeader", 1))
                 .send().readToText();
         assertTrue(text.contains("Host: www.baidu.com"));
         assertTrue(text.contains("TestHeader: 1"));

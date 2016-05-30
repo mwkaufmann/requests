@@ -1,7 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Lists;
-import net.dongliu.commons.collection.Pair;
 import net.dongliu.requests.body.Part;
 import net.dongliu.requests.body.RequestBody;
 
@@ -9,10 +7,7 @@ import java.io.InputStream;
 import java.net.Proxy;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Http Request builder
@@ -22,10 +17,10 @@ import java.util.Objects;
 public final class RequestBuilder {
     String method = "GET";
     String url;
-    Collection<Pair<String, String>> headers = Lists.of();
-    Collection<Pair<String, String>> cookies = Lists.of();
+    Collection<Map.Entry<String, String>> headers = Collections.emptyList();
+    Collection<Map.Entry<String, String>> cookies = Collections.emptyList();
     String userAgent = "Requests/4.0, Java " + System.getProperty("java.version");
-    Collection<Pair<String, String>> params = Lists.of();
+    Collection<Map.Entry<String, String>> params = Collections.emptyList();
     Charset requestCharset = StandardCharsets.UTF_8;
     RequestBody<?> body;
     int socksTimeout = HttpRequest.DEFAULT_TIMEOUT;
@@ -34,7 +29,7 @@ public final class RequestBuilder {
     boolean followRedirect = true;
     boolean compress = true;
     boolean verify = true;
-    List<CertificateInfo> certs = Lists.of();
+    List<CertificateInfo> certs = Collections.emptyList();
     BasicAuth basicAuth;
     Session session;
 
@@ -64,7 +59,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder headers(Map.Entry<String, ?>... headers) {
-        headers(Lists.of(headers));
+        headers(Arrays.asList(headers));
         return this;
     }
 
@@ -72,7 +67,7 @@ public final class RequestBuilder {
      * Set request headers.
      */
     public final RequestBuilder headers(Map<String, ?> map) {
-        this.headers = Lists.convert(map.entrySet(), e -> Pair.of(e.getKey(), String.valueOf(e.getValue())));
+        this.headers = Lists.convert(map.entrySet(), e -> Parameter.of(e.getKey(), String.valueOf(e.getValue())));
         return this;
     }
 
@@ -89,7 +84,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder cookies(Map.Entry<String, ?>... cookies) {
-        cookies(Lists.of(cookies));
+        cookies(Arrays.asList(cookies));
         return this;
     }
 
@@ -97,7 +92,7 @@ public final class RequestBuilder {
      * Set request cookies.
      */
     public final RequestBuilder cookies(Map<String, ?> map) {
-        this.cookies = Lists.convert(map.entrySet(), e -> Pair.of(e.getKey(), String.valueOf(e.getValue())));
+        this.cookies = Lists.convert(map.entrySet(), e -> Parameter.of(e.getKey(), String.valueOf(e.getValue())));
         return this;
     }
 
@@ -119,7 +114,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder params(Map.Entry<String, ?>... params) {
-        this.params = Lists.convert(Lists.of(params), this::toStringPair);
+        this.params = Lists.convert(Arrays.asList(params), this::toStringPair);
         return this;
     }
 
@@ -127,7 +122,7 @@ public final class RequestBuilder {
      * Set url query params.
      */
     public final RequestBuilder params(Map<String, ?> map) {
-        this.params = Lists.convert(map.entrySet(), e -> Pair.of(e.getKey(), String.valueOf(e.getValue())));
+        this.params = Lists.convert(map.entrySet(), e -> Parameter.of(e.getKey(), String.valueOf(e.getValue())));
         return this;
     }
 
@@ -160,7 +155,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder forms(Map.Entry<String, ?>... formBody) {
-        return forms(Lists.of(formBody));
+        return forms(Arrays.asList(formBody));
     }
 
     /**
@@ -294,11 +289,11 @@ public final class RequestBuilder {
 
     //TODO: auto handle datetime header here?
     @SuppressWarnings("unchecked")
-    private Pair<String, String> toStringPair(Map.Entry<String, ?> pair) {
+    private Map.Entry<String, String> toStringPair(Map.Entry<String, ?> pair) {
         if (pair.getValue() instanceof String) {
-            return (Pair<String, String>) pair;
+            return (Map.Entry<String, String>) pair;
         } else {
-            return Pair.of(pair.getKey(), pair.getValue().toString());
+            return Parameter.of(pair.getKey(), pair.getValue().toString());
         }
     }
 
@@ -313,7 +308,7 @@ public final class RequestBuilder {
      * Set multiPart body. Only form multi-part post
      */
     public final RequestBuilder multiPartBody(Part<?>... parts) {
-        return multiPartBody(Lists.of(parts));
+        return multiPartBody(Arrays.asList(parts));
     }
 
     /**

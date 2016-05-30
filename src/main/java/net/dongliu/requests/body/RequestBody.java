@@ -1,13 +1,12 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.commons.collection.Pair;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -80,8 +79,8 @@ public abstract class RequestBody<T> {
     /**
      * Create request body send x-www-form-encoded data
      */
-    public static RequestBody<Collection<? extends Pair<String, String>>>
-    form(Collection<? extends Pair<String, String>> value) {
+    public static RequestBody<Collection<? extends Map.Entry<String, String>>>
+    form(Collection<? extends Map.Entry<String, String>> value) {
         return new FormRequestBody(Objects.requireNonNull(value));
     }
 

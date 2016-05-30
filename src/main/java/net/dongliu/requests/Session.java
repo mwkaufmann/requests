@@ -1,7 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Sets;
-
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -11,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class Session {
 
-    private final AtomicReference<Set<Cookie>> cookies = new AtomicReference<>(Sets.of());
+    private final AtomicReference<Set<Cookie>> cookies = new AtomicReference<>(Collections.emptySet());
 
     Session() {
     }

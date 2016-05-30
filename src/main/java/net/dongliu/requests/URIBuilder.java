@@ -1,6 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Pair;
 import net.dongliu.requests.exception.RequestsException;
 
 import javax.annotation.Nullable;
@@ -8,10 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static java.util.Objects.requireNonNull;
 
@@ -32,7 +28,7 @@ public class URIBuilder {
     private String path;
     private String encodedPath;
     private String encodedQuery;
-    private List<Pair<String, String>> queryParams;
+    private List<Map.Entry<String, String>> queryParams;
     private String query;
     private Charset charset = StandardCharsets.UTF_8;
     private String fragment;
@@ -85,7 +81,7 @@ public class URIBuilder {
         return charset;
     }
 
-    private List<Pair<String, String>> parseQuery(@Nullable String query, final Charset charset) {
+    private List<Map.Entry<String, String>> parseQuery(@Nullable String query, final Charset charset) {
         if (query != null && !query.isEmpty()) {
             return URIEncoder.decodeQueries(query, charset);
         }
@@ -185,7 +181,7 @@ public class URIBuilder {
         return sb.toString();
     }
 
-    private String encodeQueries(final List<Pair<String, String>> params) {
+    private String encodeQueries(final List<Map.Entry<String, String>> params) {
         return URIEncoder.encodeQueries(params, this.charset);
     }
 
@@ -272,7 +268,7 @@ public class URIBuilder {
      *
      * @since 4.3
      */
-    public URIBuilder setParameters(final List<Pair<String, String>> nvps) {
+    public URIBuilder setParameters(final List<Map.Entry<String, String>> nvps) {
         if (this.queryParams == null) {
             this.queryParams = new ArrayList<>();
         } else {
@@ -295,7 +291,7 @@ public class URIBuilder {
      *
      * @since 4.3
      */
-    public URIBuilder addParameters(final List<Pair<String, String>> nvps) {
+    public URIBuilder addParameters(final List<Map.Entry<String, String>> nvps) {
         if (this.queryParams == null) {
             this.queryParams = new ArrayList<>();
         }
@@ -316,7 +312,7 @@ public class URIBuilder {
      *
      * @since 4.3
      */
-    public URIBuilder setParameters(final Pair<String, String>... nvps) {
+    public URIBuilder setParameters(final Map.Entry<String, String>... nvps) {
         if (this.queryParams == null) {
             this.queryParams = new ArrayList<>();
         } else {
@@ -341,7 +337,7 @@ public class URIBuilder {
         if (this.queryParams == null) {
             this.queryParams = new ArrayList<>();
         }
-        this.queryParams.add(Pair.of(param, value));
+        this.queryParams.add(Parameter.of(param, value));
         this.encodedQuery = null;
         this.encodedSchemeSpecificPart = null;
         this.query = null;
@@ -361,14 +357,14 @@ public class URIBuilder {
             this.queryParams = new ArrayList<>();
         }
         if (!this.queryParams.isEmpty()) {
-            for (final Iterator<Pair<String, String>> it = this.queryParams.iterator(); it.hasNext(); ) {
-                final Pair<String, String> nvp = it.next();
-                if (nvp.getName().equals(param)) {
+            for (final Iterator<Map.Entry<String, String>> it = this.queryParams.iterator(); it.hasNext(); ) {
+                final Map.Entry<String, String> nvp = it.next();
+                if (nvp.getKey().equals(param)) {
                     it.remove();
                 }
             }
         }
-        this.queryParams.add(Pair.of(param, value));
+        this.queryParams.add(Parameter.of(param, value));
         this.encodedQuery = null;
         this.encodedSchemeSpecificPart = null;
         this.query = null;
@@ -449,7 +445,7 @@ public class URIBuilder {
         return this.path;
     }
 
-    public List<Pair<String, String>> getQueryParams() {
+    public List<Map.Entry<String, String>> getQueryParams() {
         if (this.queryParams != null) {
             return new ArrayList<>(this.queryParams);
         } else {

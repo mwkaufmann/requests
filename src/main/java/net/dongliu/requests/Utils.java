@@ -1,7 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Pair;
-import net.dongliu.commons.collection.Sets;
 import net.dongliu.requests.exception.RequestsException;
 
 import java.net.MalformedURLException;
@@ -10,18 +8,20 @@ import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 class Utils {
 
     private static DateTimeFormatter rfc1123Formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
 
-    public static Pair<String, String> pairFrom(String str) {
+    public static Map.Entry<String, String> pairFrom(String str) {
         int idx = str.indexOf("=");
         if (idx < 0) {
-            return Pair.of("", str);
+            return Parameter.of("", str);
         } else {
-            return Pair.of(str.substring(0, idx), str.substring(idx + 1));
+            return Parameter.of(str.substring(0, idx), str.substring(idx + 1));
         }
     }
 
@@ -39,7 +39,7 @@ class Utils {
             return newCookies;
         }
         Instant now = Instant.now();
-        Set<Cookie> s = Sets.create();
+        Set<Cookie> s = new HashSet<>();
         for (Cookie c : originCookies) {
             if (!newCookies.contains(c) && !c.expired(now)) {
                 s.add(c);
@@ -53,7 +53,7 @@ class Utils {
         return s;
     }
 
-    public static URL joinUrl(String url, Collection<Pair<String, String>> params, Charset charset) {
+    public static URL joinUrl(String url, Collection<Map.Entry<String, String>> params, Charset charset) {
         String fullUrl;
         if (params.isEmpty()) {
             fullUrl = url;

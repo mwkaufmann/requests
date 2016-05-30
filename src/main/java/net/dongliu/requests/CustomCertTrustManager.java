@@ -1,6 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.exception.Exceptions;
+import net.dongliu.requests.exception.RequestsException;
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
@@ -34,7 +34,7 @@ class CustomCertTrustManager implements X509TrustManager {
         try {
             ks = KeyStore.getInstance("JKS");
         } catch (KeyStoreException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         }
         for (CertificateInfo cert : certs) {
             try {
@@ -42,7 +42,7 @@ class CustomCertTrustManager implements X509TrustManager {
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             } catch (NoSuchAlgorithmException | CertificateException e) {
-                throw Exceptions.sneakyThrow(e);
+                throw new RequestsException(e);
             }
         }
         TrustManagerFactory trustManagerFactory;
@@ -50,7 +50,7 @@ class CustomCertTrustManager implements X509TrustManager {
             trustManagerFactory = TrustManagerFactory.getInstance("SunX509", "SunJSSE");
             trustManagerFactory.init(ks);
         } catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         }
 
         for (TrustManager trustManger : trustManagerFactory.getTrustManagers()) {
