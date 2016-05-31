@@ -8,9 +8,7 @@ import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 class Utils {
 
@@ -31,26 +29,6 @@ class Utils {
 
     public static String formatDate(Instant instant) {
         return rfc1123Formatter.format(instant);
-    }
-
-
-    public static Set<Cookie> mergeCookie(Set<Cookie> originCookies, Set<Cookie> newCookies) {
-        if (originCookies.isEmpty()) {
-            return newCookies;
-        }
-        Instant now = Instant.now();
-        Set<Cookie> s = new HashSet<>();
-        for (Cookie c : originCookies) {
-            if (!newCookies.contains(c) && !c.expired(now)) {
-                s.add(c);
-            }
-        }
-        for (Cookie c : newCookies) {
-            if (!c.expired(now)) {
-                s.add(c);
-            }
-        }
-        return s;
     }
 
     public static URL joinUrl(String url, Collection<Map.Entry<String, String>> params, Charset charset) {

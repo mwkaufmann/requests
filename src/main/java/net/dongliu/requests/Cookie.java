@@ -1,32 +1,39 @@
 package net.dongliu.requests;
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Objects;
 
-public class Cookie implements Serializable {
+public class Cookie implements Serializable, Map.Entry<String, String> {
+    /**
+     * <p>
+     * If domain not start with ".",  means it is explicitly set and visible to it's sub-domains.
+     * </p>
+     * <p>
+     * If the Set-Cookie header field does not have a Domain attribute, the effective domain is the domain of the request.
+     * </p>
+     */
     private final String domain;
-    private final boolean bareDomain;
     private final String path;
     private final String name;
     private final String value;
-    private final Optional<Instant> expiry;
+    @Nullable
+    private final Instant expiry;
+    private final boolean secure;
 
-    public Cookie(String domain, boolean bareDomain, String path, String name, String value, Optional<Instant> expiry) {
-        this.domain = domain;
-        this.bareDomain = bareDomain;
-        this.path = path;
-        this.name = name;
-        this.value = value;
+    public Cookie(String domain, String path, String name, String value, @Nullable Instant expiry, boolean secure) {
+        this.domain = Objects.requireNonNull(domain);
+        this.path = Objects.requireNonNull(path);
+        this.name = Objects.requireNonNull(name);
+        this.value = Objects.requireNonNull(value);
         this.expiry = expiry;
+        this.secure = secure;
     }
 
     public String getDomain() {
         return domain;
-    }
-
-    public boolean isBareDomain() {
-        return bareDomain;
     }
 
     public String getPath() {
@@ -37,24 +44,47 @@ public class Cookie implements Serializable {
         return name;
     }
 
+    @Override
+    public String getKey() {
+        return name;
+    }
+
     public String getValue() {
         return value;
     }
 
-    public Optional<Instant> getExpiry() {
+    public boolean isSecure() {
+        return secure;
+    }
+
+    @Override
+    public String setValue(String value) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Nullable
+    public Instant getExpiry() {
         return expiry;
     }
 
     public boolean expired(Instant now) {
-        return expiry.isPresent() && expiry.get().isBefore(now);
+        return expiry != null && expiry.isBefore(now);
     }
 
-    public boolean match(String host, String path) {
-        if (!domain.equals(host)) {
-            if (bareDomain || !host.endsWith("." + domain)) {
+    public boolean match(String protocol, String host, String path) {
+        if (secure && !protocol.equalsIgnoreCase("https")) {
+            return false;
+        }
+        if (domain.startsWith(".")) {
+            if (!CookieUtils.isSubDomain(domain, host)) {
+                return false;
+            }
+        } else {
+            if (!host.equals(domain)) {
                 return false;
             }
         }
+
         if (!path.startsWith(this.path)) {
             return false;
         }
@@ -62,7 +92,7 @@ public class Cookie implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(@Nullable Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 

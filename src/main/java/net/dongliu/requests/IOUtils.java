@@ -3,6 +3,8 @@ package net.dongliu.requests;
 import java.io.*;
 
 /**
+ * Only for internal use
+ *
  * @author Liu Dong
  */
 public class IOUtils {
@@ -68,6 +70,30 @@ public class IOUtils {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             copy(input, bos);
             return bos.toByteArray();
+        }
+    }
+
+    /**
+     * Discard all input data, and close input.
+     *
+     * @return discarded byte num
+     */
+    public static long discard(InputStream input) throws IOException {
+        int read;
+        long total = 0;
+
+        try {
+            while ((read = (int) input.skip(BUFFER_SIZE)) != 0) {
+                total += read;
+            }
+
+            byte[] data = new byte[BUFFER_SIZE];
+            while ((read = input.read(data)) != -1) {
+                total += read;
+            }
+            return total;
+        } finally {
+            IOUtils.closeQuietly(input);
         }
     }
 }

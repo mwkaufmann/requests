@@ -1,16 +1,20 @@
 package net.dongliu.requests;
 
+import javax.annotation.concurrent.ThreadSafe;
+import java.time.Instant;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 /**
- * Http request share cookies, basic auths(?)
+ * Http request share cookies etc.
  * This class is thread-safe
  */
+@ThreadSafe
 public class Session {
 
-    private final AtomicReference<Set<Cookie>> cookies = new AtomicReference<>(Collections.emptySet());
+    private Set<Cookie> cookies = Collections.emptySet();
 
     Session() {
     }
@@ -21,22 +25,35 @@ public class Session {
         return session;
     }
 
-    void updateCookie(Set<Cookie> newCookies) {
-        if (newCookies.isEmpty()) {
+    synchronized void updateCookie(Set<Cookie> addCookies) {
+        if (addCookies.isEmpty()) {
             return;
         }
 
-        boolean success;
-        do {
-            Set<Cookie> oldCookies = cookies.get();
-            Set<Cookie> s = Utils.mergeCookie(oldCookies, newCookies);
-            success = cookies.compareAndSet(oldCookies, s);
-        } while (!success);
-
+        // new cookie will override old cookie with the same (name, domain, path) value, even it is expired
+        Instant now = Instant.now();
+        Set<Cookie> newCookies = new HashSet<>();
+        for (Cookie cookie : cookies) {
+            if (!cookie.expired(now) && !addCookies.contains(cookie)) {
+                newCookies.add(cookie);
+            }
+        }
+        for (Cookie cookie : addCookies) {
+            if (!cookie.expired(now)) {
+                newCookies.add(cookie);
+            }
+        }
+        cookies = Collections.unmodifiableSet(newCookies);
     }
 
-    Set<Cookie> getCookies() {
-        return cookies.get();
+    synchronized Set<Cookie> getCookies() {
+        return cookies;
+    }
+
+    Stream<Cookie> matchedCookies(String protocol, String domain, String path) {
+        Instant now = Instant.now();
+        return this.cookies.stream().filter(c -> c.match(protocol, domain, path))
+                .filter(c -> !c.expired(now));
     }
 
     public RequestBuilder get(String url) {

@@ -17,7 +17,6 @@ import java.nio.charset.Charset;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.DeflaterInputStream;
@@ -79,16 +78,6 @@ public class HttpRequest {
     RawResponse handleRequest() {
         RawResponse response = doRequest();
 
-        try {
-            if (session != null) {
-                session.updateCookie(response.cookieList);
-            }
-        } catch (RuntimeException ignore) {
-        } catch (Throwable e) {
-            response.close();
-            throw e;
-        }
-
         if (!followRedirect || !Utils.isRedirect(response.getStatusCode())) {
             return response;
         }
@@ -108,7 +97,7 @@ public class HttpRequest {
             } catch (MalformedURLException e) {
                 throw new RequestsException("Get redirect url error", e);
             }
-            response = Requests.get(redirectUrl.toExternalForm()).session(redirectSession)
+            response = redirectSession.get(redirectUrl.toExternalForm())
                     .proxy(proxy)
                     .followRedirect(false).send();
             if (!Utils.isRedirect(response.getStatusCode())) {
@@ -122,17 +111,16 @@ public class HttpRequest {
 
     private RawResponse doRequest() {
         Charset charset = requestCharset;
-        String host = fullUrl.getHost();
+        String protocol = fullUrl.getProtocol();
+        String host = fullUrl.getHost(); // only domain, do not have port
         String path = fullUrl.getPath();
+        String cookiePath;
         int idx = path.lastIndexOf('/');
         if (idx >= 0) {
-            path = path.substring(0, idx + 1);
+            cookiePath = path.substring(0, idx + 1);
         } else {
-            path = path + "/";
+            cookiePath = "/";
         }
-
-        //TODO: cookie path ?
-        String effectivePath = path;
 
         HttpURLConnection conn;
         try {
@@ -207,20 +195,20 @@ public class HttpRequest {
         }
 
         // set cookies
-        if (!cookies.isEmpty() || session != null) {
-            Stream<String> stream1 = cookies.stream().map(e -> e.getKey() + "=" + e.getValue());
-            Instant now = Instant.now();
-            Stream<String> stream2;
+        if (!cookies.isEmpty() || (session != null && !session.getCookies().isEmpty())) {
+            Stream<? extends Map.Entry<String, String>> stream1 = cookies.stream();
+            Stream<? extends Map.Entry<String, String>> stream2;
             if (session != null) {
-                stream2 = session.getCookies().stream()
-                        .filter(c -> !c.expired(now) && c.match(host, effectivePath))
-                        .map(c -> c.getName() + "=" + c.getValue());
+                stream2 = session.matchedCookies(protocol, host, cookiePath);
             } else {
                 stream2 = Stream.empty();
             }
 
-            String cookieStr = Stream.concat(stream1, stream2).collect(joining("; "));
-            conn.setRequestProperty(NAME_COOKIE, cookieStr);
+            String cookieStr = Stream.concat(stream1, stream2).map(c -> c.getKey() + "=" + c.getValue())
+                    .collect(joining("; "));
+            if (!cookieStr.isEmpty()) {
+                conn.setRequestProperty(NAME_COOKIE, cookieStr);
+            }
         }
 
         for (Map.Entry<String, String> header : headers) {
@@ -249,27 +237,11 @@ public class HttpRequest {
                     .flatMap(e -> e.getValue().stream().map(v -> Parameter.of(e.getKey(), v)))
                     .collect(toList());
             // cookies
-            List<SetCookie> setCookieList = conn.getHeaderFields().entrySet().stream()
+            Set<Cookie> cookieSet = conn.getHeaderFields().entrySet().stream()
                     .filter(e -> NAME_SET_COOKIE.equals(e.getKey()))
-                    .flatMap(e -> e.getValue().stream().map(SetCookie::parse))
-                    .collect(toList());
-            Set<Cookie> cookieSet = new HashSet<>();
-            for (SetCookie setCookie : setCookieList) {
-                // we do not check top domain here..
-                if (setCookie.getDomain() == null || !host.endsWith(setCookie.getDomain())) {
-                    setCookie.setDomain(host);
-                    setCookie.setBareDomain(true);
-                }
-                if (setCookie.getPath() == null) {
-                    setCookie.setPath(effectivePath);
-                }
-                List<Map.Entry<String, String>> respCookies = setCookie.getCookies();
-                for (Map.Entry<String, String> pair : respCookies) {
-                    cookieSet.add(new Cookie(setCookie.getDomain(), setCookie.isBareDomain(),
-                            setCookie.getPath(), pair.getKey(),
-                            pair.getValue(), setCookie.getExpiry()));
-                }
-            }
+                    .flatMap(e -> e.getValue().stream())
+                    .flatMap(v -> CookieUtils.parseCookieHeader(host, path, v).stream())
+                    .collect(toSet());
             InputStream input;
             if (status >= 200 && status < 400) {
                 input = conn.getInputStream();
@@ -277,6 +249,9 @@ public class HttpRequest {
                 input = conn.getErrorStream();
             }
             InputStream wrapIn = wrap(status, responseHeaders, input);
+            if (session != null) {
+                session.updateCookie(cookieSet);
+            }
             return new RawResponse(status, responseHeaders, cookieSet, wrapIn, conn);
         } catch (IOException e) {
             conn.disconnect();

@@ -191,30 +191,11 @@ public class RawResponse implements AutoCloseable {
      */
     public void discardBody() {
         try {
-            discard(in);
+            IOUtils.discard(in);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
             close();
-        }
-    }
-
-    /**
-     * Discard all input data, and close input.
-     *
-     * @return discarded byte num
-     */
-    private static int discard(InputStream input) throws IOException {
-        byte[] data = new byte[1024 * 4];
-        try {
-            int read;
-            int total = 0;
-            while ((read = input.read(data)) != -1) {
-                total += read;
-            }
-            return total;
-        } finally {
-            IOUtils.closeQuietly(input);
         }
     }
 
