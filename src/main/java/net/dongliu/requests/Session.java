@@ -19,12 +19,6 @@ public class Session {
     Session() {
     }
 
-    static Session create(Set<Cookie> cookies) {
-        Session session = new Session();
-        session.updateCookie(cookies);
-        return session;
-    }
-
     synchronized void updateCookie(Set<Cookie> addCookies) {
         if (addCookies.isEmpty()) {
             return;
@@ -57,26 +51,26 @@ public class Session {
     }
 
     public RequestBuilder get(String url) {
-        return HttpRequest.newBuilder(this).url(url).method("GET");
+        return new RequestBuilder(this).url(url).method("GET");
     }
 
     public RequestBuilder post(String url) {
-        return HttpRequest.newBuilder(this).url(url).method("POST");
+        return new RequestBuilder(this).url(url).method("POST");
     }
 
     public RequestBuilder put(String url) {
-        return HttpRequest.newBuilder(this).url(url).method("PUT");
+        return new RequestBuilder(this).url(url).method("PUT");
     }
 
     public RequestBuilder head(String url) {
-        return HttpRequest.newBuilder(this).url(url).method("HEAD");
+        return new RequestBuilder(this).url(url).method("HEAD");
     }
 
     public RequestBuilder delete(String url) {
-        return HttpRequest.newBuilder(this).url(url).method("DELETE");
+        return new RequestBuilder(this).url(url).method("DELETE");
     }
 
     public RequestBuilder patch(String url) {
-        return HttpRequest.newBuilder(this).url(url).method("PATCH");
+        return new RequestBuilder(this).url(url).method("PATCH");
     }
 }

@@ -3,13 +3,14 @@ package net.dongliu.requests;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -20,24 +21,24 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class RawResponse implements AutoCloseable {
     private final int statusCode;
-    final Set<Cookie> cookies;
-    private final List<Map.Entry<String, String>> headers;
-    private final InputStream in;
+    private final Set<Cookie> cookies;
+    private final ResponseHeaders headers;
+    private final InputStream input;
     private final HttpURLConnection conn;
     // redirect history
 
-    RawResponse(int statusCode, List<Map.Entry<String, String>> headers, Set<Cookie> cookies, InputStream in,
+    RawResponse(int statusCode, ResponseHeaders headers, Set<Cookie> cookies, InputStream input,
                 HttpURLConnection conn) {
         this.statusCode = statusCode;
-        this.headers = Collections.unmodifiableList(headers);
+        this.headers = headers;
         this.cookies = Collections.unmodifiableSet(cookies);
-        this.in = in;
+        this.input = input;
         this.conn = conn;
     }
 
     @Override
     public void close() {
-        IOUtils.closeQuietly(in);
+        IOUtils.closeQuietly(input);
         conn.disconnect();
     }
 
@@ -46,7 +47,7 @@ public class RawResponse implements AutoCloseable {
      * Read response body to string. return empty string if response has no body
      */
     public String readToText() {
-        Charset charset = getCharsetFromHeaders().orElse(UTF_8);
+        Charset charset = getCharsetFromHeaders(UTF_8);
         return readToText(charset);
     }
 
@@ -54,7 +55,7 @@ public class RawResponse implements AutoCloseable {
      * Read response body to string. return empty string if response has no body
      */
     public String readToText(Charset charset) {
-        try (Reader reader = new InputStreamReader(in, charset)) {
+        try (Reader reader = new InputStreamReader(input, charset)) {
             return IOUtils.readAll(reader);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -63,28 +64,12 @@ public class RawResponse implements AutoCloseable {
         }
     }
 
-    private Map<String, List<Cookie>> convertCookies(Set<Cookie> cookies) {
-        Map<String, List<Cookie>> map = new HashMap<>();
-        for (Cookie cookie : cookies) {
-            map.computeIfAbsent(cookie.getName(), name -> new LinkedList<>()).add(cookie);
-        }
-        return map;
-    }
-
-    private Map<String, List<String>> convertHeaders(List<Map.Entry<String, String>> headers) {
-        Map<String, List<String>> map = new HashMap<>();
-        for (Map.Entry<String, String> header : headers) {
-            map.computeIfAbsent(header.getKey(), name -> new LinkedList<>()).add(header.getValue());
-        }
-        return map;
-    }
-
     /**
      * Read response body to byte array. return empty byte array if response has no body
      */
     public byte[] readToBytes() {
         try {
-            return IOUtils.readAll(in);
+            return IOUtils.readAll(input);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -99,7 +84,7 @@ public class RawResponse implements AutoCloseable {
      */
     public <T> T readAsJson(Type type, Charset charset) {
         try {
-            return JsonLookup.getInstance().lookup().unmarshal(new InputStreamReader(in, charset), type);
+            return JsonLookup.getInstance().lookup().unmarshal(new InputStreamReader(input, charset), type);
         } finally {
             close();
         }
@@ -112,7 +97,7 @@ public class RawResponse implements AutoCloseable {
      */
     public <T> T readAsJson(Type type) {
         try {
-            Charset charset = getCharsetFromHeaders().orElse(StandardCharsets.UTF_8);
+            Charset charset = getCharsetFromHeaders(StandardCharsets.UTF_8);
             return readAsJson(type, charset);
         } finally {
             close();
@@ -161,7 +146,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(File path) {
         try {
             try (FileOutputStream fos = new FileOutputStream(path)) {
-                IOUtils.copy(in, fos);
+                IOUtils.copy(input, fos);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -175,7 +160,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void writeTo(OutputStream out) {
         try {
-            IOUtils.copy(in, out);
+            IOUtils.copy(input, out);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -188,7 +173,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void discardBody() {
         try {
-            IOUtils.discard(in);
+            IOUtils.discard(input);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -206,31 +191,32 @@ public class RawResponse implements AutoCloseable {
     /**
      * The response body input stream
      */
-    public InputStream getIn() {
-        return in;
+    public InputStream getInput() {
+        return input;
     }
 
     /**
-     * Get header value with name
+     * Get header value with name. If not exists, return null
      */
-    public Optional<String> getFirstHeader(String name) {
-        return this.headers.stream().filter(h -> h.getKey().equalsIgnoreCase(name))
-                .map(Map.Entry::getValue).findFirst();
+    @Nullable
+    public String getFirstHeader(String name) {
+        return this.headers.getFirstHeader(name);
     }
 
     /**
      * Return immutable response header list
      */
+    @Nonnull
     public List<Map.Entry<String, String>> getHeaders() {
-        return headers;
+        return headers.getHeaders();
     }
 
     /**
-     * Get all headers values with name
+     * Get all headers values with name. If not exists, return empty list
      */
+    @Nonnull
     public List<String> getHeaders(String name) {
-        return this.headers.stream().filter(h -> h.getKey().equalsIgnoreCase(name))
-                .map(Map.Entry::getValue).collect(Collectors.toList());
+        return this.headers.getHeaders(name);
     }
 
     /**
@@ -240,14 +226,22 @@ public class RawResponse implements AutoCloseable {
         return cookies;
     }
 
-    private Optional<Charset> getCharsetFromHeaders() {
-        Optional<String> contentType = getFirstHeader(HttpHeaders.NAME_CONTENT_TYPE);
-        if (!contentType.isPresent()) {
-            return Optional.empty();
+    private Charset getCharsetFromHeaders(Charset defaultCharset) {
+        String contentType = getFirstHeader(HttpHeaders.NAME_CONTENT_TYPE);
+        if (contentType == null) {
+            return defaultCharset;
         }
-        String[] items = contentType.get().split("; ");
-        return Arrays.stream(items).filter(it -> it.startsWith("charset="))
-                .map(it -> Charset.forName(it.substring("charset=".length()).trim()))
-                .findAny();
+        String[] items = contentType.split("; ");
+        for (String item : items) {
+            int idx = item.indexOf('=');
+            if (idx < 0) {
+                continue;
+            }
+            String key = item.substring(0, idx).trim();
+            if (key.equalsIgnoreCase("charset")) {
+                return Charset.forName(item.substring(idx + 1).trim());
+            }
+        }
+        return defaultCharset;
     }
 }

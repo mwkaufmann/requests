@@ -22,6 +22,18 @@ class CookieUtils {
     private static final char[] hexChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
     /**
+     * Get effective path from url path
+     */
+    static String effectivePath(String path) {
+        int idx = path.lastIndexOf('/');
+        if (idx >= 0) {
+            return path.substring(0, idx + 1);
+        } else {
+            return "/";
+        }
+    }
+
+    /**
      * Escape cookie value
      */
     static String escape(String value) {

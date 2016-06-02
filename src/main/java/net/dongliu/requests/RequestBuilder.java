@@ -53,7 +53,7 @@ public final class RequestBuilder {
      * Set request headers.
      */
     public RequestBuilder headers(Collection<? extends Map.Entry<String, ?>> headers) {
-        this.headers = Lists.convert(headers, this::toStringPair);
+        this.headers = toStringPairList(headers);
         return this;
     }
 
@@ -70,7 +70,7 @@ public final class RequestBuilder {
      * Set request headers.
      */
     public final RequestBuilder headers(Map<String, ?> map) {
-        this.headers = Lists.convert(map.entrySet(), e -> Parameter.of(e.getKey(), String.valueOf(e.getValue())));
+        this.headers = toStringPairList(map.entrySet());
         return this;
     }
 
@@ -78,7 +78,7 @@ public final class RequestBuilder {
      * Set request cookies.
      */
     public RequestBuilder cookies(Collection<? extends Map.Entry<String, ?>> cookies) {
-        this.cookies = Lists.convert(cookies, this::toStringPair);
+        this.cookies = toStringPairList(cookies);
         return this;
     }
 
@@ -95,7 +95,7 @@ public final class RequestBuilder {
      * Set request cookies.
      */
     public final RequestBuilder cookies(Map<String, ?> map) {
-        this.cookies = Lists.convert(map.entrySet(), e -> Parameter.of(e.getKey(), String.valueOf(e.getValue())));
+        this.cookies = toStringPairList(map.entrySet());
         return this;
     }
 
@@ -108,7 +108,7 @@ public final class RequestBuilder {
      * Set url query params.
      */
     public RequestBuilder params(Collection<? extends Map.Entry<String, ?>> params) {
-        this.cookies = Lists.convert(params, this::toStringPair);
+        this.cookies = toStringPairList(params);
         return this;
     }
 
@@ -117,7 +117,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder params(Map.Entry<String, ?>... params) {
-        this.params = Lists.convert(Arrays.asList(params), this::toStringPair);
+        this.params = toStringPairList(Arrays.asList(params));
         return this;
     }
 
@@ -125,7 +125,7 @@ public final class RequestBuilder {
      * Set url query params.
      */
     public final RequestBuilder params(Map<String, ?> map) {
-        this.params = Lists.convert(map.entrySet(), e -> Parameter.of(e.getKey(), String.valueOf(e.getValue())));
+        this.params = toStringPairList(map.entrySet());
         return this;
     }
 
@@ -149,7 +149,7 @@ public final class RequestBuilder {
      * Set www-form-encoded body. Only for Post
      */
     public RequestBuilder forms(Collection<? extends Map.Entry<String, ?>> params) {
-        body = RequestBody.form(Lists.convert(params, this::toStringPair));
+        body = RequestBody.form(toStringPairList(params));
         return this;
     }
 
@@ -293,6 +293,14 @@ public final class RequestBuilder {
         } else {
             return Parameter.of(pair.getKey(), pair.getValue().toString());
         }
+    }
+
+    private List<Map.Entry<String, String>> toStringPairList(Collection<? extends Map.Entry<String, ?>> values) {
+        List<Map.Entry<String, String>> list = new ArrayList<>(values.size());
+        for (Map.Entry<String, ?> value : values) {
+            list.add(toStringPair(value));
+        }
+        return list;
     }
 
     /**

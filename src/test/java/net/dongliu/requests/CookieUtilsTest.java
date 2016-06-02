@@ -23,4 +23,11 @@ public class CookieUtilsTest {
         assertEquals("test%3B_%2C%20", CookieUtils.escape("test;_, "));
         assertEquals("test_==", CookieUtils.escape("test_=="));
     }
+
+    @Test
+    public void effectivePath() {
+        assertEquals("/test/", CookieUtils.effectivePath("/test/123"));
+        assertEquals("/", CookieUtils.effectivePath("/"));
+        assertEquals("/", CookieUtils.effectivePath(""));
+    }
 }

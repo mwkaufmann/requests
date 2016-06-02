@@ -31,14 +31,12 @@ import static net.dongliu.requests.HttpHeaders.*;
  * @author Liu Dong
  */
 public class HttpRequest {
-    static final int DEFAULT_TIMEOUT = 3000;
+    static final int DEFAULT_TIMEOUT = 10_000;
 
     private final String method;
-    private final String url;
     private final Collection<Map.Entry<String, String>> headers;
     private final Collection<Map.Entry<String, String>> cookies;
     private final String userAgent;
-    private final Collection<Map.Entry<String, String>> params;
     private final Charset requestCharset;
     private final RequestBody<?> body;
     private final int readTimeout;
@@ -51,15 +49,13 @@ public class HttpRequest {
     private final BasicAuth basicAuth;
     @Nonnull
     private final Session session;
-    private final URL fullUrl;
+    private final URL url;
 
     HttpRequest(RequestBuilder builder) {
         method = builder.method;
-        url = builder.url;
         headers = builder.headers;
         cookies = builder.cookies;
         userAgent = builder.userAgent;
-        params = builder.params;
         requestCharset = builder.requestCharset;
         body = builder.body;
         readTimeout = builder.socksTimeout;
@@ -72,7 +68,7 @@ public class HttpRequest {
         basicAuth = builder.basicAuth;
         session = builder.session;
 
-        this.fullUrl = Utils.joinUrl(url, params, requestCharset);
+        this.url = Utils.joinUrl(builder.url, builder.params, requestCharset);
     }
 
     // handle redirect here
@@ -86,20 +82,18 @@ public class HttpRequest {
         // handle redirect
         response.discardBody();
         int redirectCount = 0;
-        URL redirectUrl = fullUrl;
+        URL redirectUrl = url;
         while (redirectCount++ < 5) {
-            Optional<String> location = response.getFirstHeader(NAME_LOCATION);
-            if (!location.isPresent()) {
+            String location = response.getFirstHeader(NAME_LOCATION);
+            if (location == null) {
                 throw new RequestsException("Redirect location not found");
             }
             try {
-                redirectUrl = new URL(redirectUrl, location.get());
+                redirectUrl = new URL(redirectUrl, location);
             } catch (MalformedURLException e) {
                 throw new RequestsException("Get redirect url error", e);
             }
-            response = session.get(redirectUrl.toExternalForm())
-                    .proxy(proxy)
-                    .followRedirect(false).send();
+            response = session.get(redirectUrl.toExternalForm()).proxy(proxy).followRedirect(false).send();
             if (!Utils.isRedirect(response.getStatusCode())) {
                 return response;
             }
@@ -111,23 +105,17 @@ public class HttpRequest {
 
     private RawResponse doRequest() {
         Charset charset = requestCharset;
-        String protocol = fullUrl.getProtocol();
-        String host = fullUrl.getHost(); // only domain, do not have port
-        String path = fullUrl.getPath();
-        String cookiePath;
-        int idx = path.lastIndexOf('/');
-        if (idx >= 0) {
-            cookiePath = path.substring(0, idx + 1);
-        } else {
-            cookiePath = "/";
-        }
+        String protocol = url.getProtocol();
+        String host = url.getHost(); // only domain, do not have port
+        // effective path for cookie
+        String effectivePath = CookieUtils.effectivePath(url.getPath());
 
         HttpURLConnection conn;
         try {
             if (proxy != null) {
-                conn = (HttpURLConnection) fullUrl.openConnection(proxy);
+                conn = (HttpURLConnection) url.openConnection(proxy);
             } else {
-                conn = (HttpURLConnection) fullUrl.openConnection();
+                conn = (HttpURLConnection) url.openConnection();
             }
         } catch (MalformedURLException e) {
             throw new RequestsException(e);
@@ -169,6 +157,13 @@ public class HttpRequest {
         conn.setInstanceFollowRedirects(false);
         if (body != null) {
             conn.setDoOutput(true);
+            String contentType = body.getContentType();
+            if (contentType != null) {
+                if (body.isIncludeCharset()) {
+                    contentType += "; charset=" + requestCharset.name().toLowerCase();
+                }
+                conn.setRequestProperty(NAME_CONTENT_TYPE, contentType);
+            }
         }
 
         // headers
@@ -188,23 +183,11 @@ public class HttpRequest {
             conn.setRequestProperty(NAME_PROXY_AUTHORIZATION, basicAuth.encode());
         }
 
-        // this should exists before set custom request contentType or headers,to make sure user can overwrite this
-        if (body != null) {
-            String contentType = body.getContentType();
-            if (contentType != null) {
-                if (body.isIncludeCharset()) {
-                    contentType += "; charset=" + requestCharset.name().toLowerCase();
-                }
-                conn.setRequestProperty(NAME_CONTENT_TYPE, contentType);
-            }
-        }
-
         // set cookies
         if (!cookies.isEmpty() || !session.getCookies().isEmpty()) {
             Stream<? extends Map.Entry<String, String>> stream1 = cookies.stream();
-            Stream<? extends Map.Entry<String, String>> stream2 = session.matchedCookies(protocol, host, cookiePath);
-            String cookieStr = Stream.concat(stream1, stream2)
-                    .map(c -> c.getKey() + "=" + c.getValue())
+            Stream<? extends Map.Entry<String, String>> stream2 = session.matchedCookies(protocol, host, effectivePath);
+            String cookieStr = Stream.concat(stream1, stream2).map(c -> c.getKey() + "=" + c.getValue())
                     .collect(joining("; "));
             if (!cookieStr.isEmpty()) {
                 conn.setRequestProperty(NAME_COOKIE, cookieStr);
@@ -226,7 +209,7 @@ public class HttpRequest {
             if (body != null) {
                 sendBody(body, conn, charset);
             }
-            return getResponse(conn, host, path);
+            return getResponse(conn, host, effectivePath);
         } catch (IOException e) {
             conn.disconnect();
             throw new UncheckedIOException(e);
@@ -246,7 +229,7 @@ public class HttpRequest {
         int status = conn.getResponseCode();
 
         // headers and cookies
-        List<Map.Entry<String, String>> headers = new ArrayList<>();
+        List<Map.Entry<String, String>> headerList = new ArrayList<>();
         Set<Cookie> cookies = new HashSet<>();
         int index = 0;
         while (true) {
@@ -260,11 +243,12 @@ public class HttpRequest {
             if (key == null) {
                 continue;
             }
-            headers.add(Parameter.of(key, value));
+            headerList.add(Parameter.of(key, value));
             if (key.equalsIgnoreCase(NAME_SET_COOKIE)) {
                 cookies.add(CookieUtils.parseCookieHeader(host, path, value));
             }
         }
+        ResponseHeaders headers = new ResponseHeaders(headerList);
 
         // deal with [compressed] input
         InputStream input;
@@ -283,23 +267,18 @@ public class HttpRequest {
     /**
      * Wrap response input stream if it is compressed, return input its self if not use compress
      */
-    private InputStream wrapCompressBody(int status, List<Map.Entry<String, String>> headers, InputStream input) {
-
-        // if has no boddy
-        if (method.equals("HEAD")) {
-            return input;
-        }
-        if ((status >= 100 && status < 200) || status == 304 || status == 204) {
+    private InputStream wrapCompressBody(int status, ResponseHeaders headers, InputStream input) {
+        // if has no body, some server still set content-encoding header,
+        // GZIPInputStream wrap empty input stream will cause exception. we should check this
+        if (method.equals("HEAD") || (status >= 100 && status < 200) || status == 304 || status == 204) {
             return input;
         }
 
-        Optional<String> encoding = headers.stream()
-                .filter(h -> h.getKey().equalsIgnoreCase(NAME_CONTENT_ENCODING))
-                .map(Map.Entry::getValue).findAny();
-        if (!encoding.isPresent()) {
+        String contentEncoding = headers.getFirstHeader(NAME_CONTENT_ENCODING);
+        if (contentEncoding == null) {
             return input;
         }
-        String contentEncoding = encoding.get();
+        //TODO: we should remove the content-encoding header here?
         switch (contentEncoding) {
             case "gzip":
                 try {
@@ -310,14 +289,12 @@ public class HttpRequest {
                 }
             case "deflate":
                 return new DeflaterInputStream(input);
-            //            "identity" -> input
-            //            "compress" -> input //historic; deprecated in most applications and replaced by gzip or deflate
+            case "identity":
+            case "compress": //historic; deprecated in most applications and replaced by gzip or deflate
             default:
                 return input;
         }
-
     }
-
 
     private void sendBody(RequestBody body, HttpURLConnection conn, Charset requestCharset) {
         try (OutputStream os = conn.getOutputStream()) {
@@ -325,9 +302,5 @@ public class HttpRequest {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    static RequestBuilder newBuilder(Session session) {
-        return new RequestBuilder(session);
     }
 }

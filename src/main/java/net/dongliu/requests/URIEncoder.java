@@ -8,6 +8,8 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -169,7 +171,7 @@ public class URIEncoder {
      */
     public static List<Map.Entry<String, String>> decodeQueries(String queryStr, Charset charset) {
         String[] queries = queryStr.split("&");
-        return Lists.convert(Arrays.asList(queries), query -> decodeQuery(query, charset));
+        return Stream.of(queries).map(query -> decodeQuery(query, charset)).collect(Collectors.toList());
     }
 
     /**
@@ -382,6 +384,6 @@ public class URIEncoder {
      */
     public static List<Map.Entry<String, String>> decodeForms(String queryStr, Charset charset) {
         String[] queries = queryStr.split("&");
-        return Lists.convert(Arrays.asList(queries), query -> decodeForm(query, charset));
+        return Stream.of(queries).map(query -> decodeForm(query, charset)).collect(Collectors.toList());
     }
 }
