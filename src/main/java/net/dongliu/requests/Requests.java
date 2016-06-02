@@ -18,27 +18,27 @@ public class Requests {
     }
 
     public static RequestBuilder get(String url) {
-        return HttpRequest.newBuilder().url(url).method("GET");
+        return session().get(url);
     }
 
     public static RequestBuilder post(String url) {
-        return HttpRequest.newBuilder().url(url).method("POST");
+        return session().post(url);
     }
 
     public static RequestBuilder put(String url) {
-        return HttpRequest.newBuilder().url(url).method("PUT");
+        return session().put(url);
     }
 
     public static RequestBuilder delete(String url) {
-        return HttpRequest.newBuilder().url(url).method("DELETE");
+        return session().delete(url);
     }
 
     public static RequestBuilder head(String url) {
-        return HttpRequest.newBuilder().url(url).method("HEAD");
+        return session().head(url);
     }
 
     public static RequestBuilder patch(String url) {
-        return HttpRequest.newBuilder().url(url).method("PATCH");
+        return session().patch(url);
     }
 
     public static Session session() {

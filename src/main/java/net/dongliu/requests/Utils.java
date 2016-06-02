@@ -14,15 +14,6 @@ class Utils {
 
     private static DateTimeFormatter rfc1123Formatter = DateTimeFormatter.RFC_1123_DATE_TIME;
 
-    public static Map.Entry<String, String> pairFrom(String str) {
-        int idx = str.indexOf("=");
-        if (idx < 0) {
-            return Parameter.of("", str);
-        } else {
-            return Parameter.of(str.substring(0, idx), str.substring(idx + 1));
-        }
-    }
-
     public static Instant parseDate(String dateStr) {
         return rfc1123Formatter.parse(dateStr, Instant::from);
     }

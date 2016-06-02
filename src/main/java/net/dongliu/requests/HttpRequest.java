@@ -3,7 +3,7 @@ package net.dongliu.requests;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -49,6 +49,7 @@ public class HttpRequest {
     private final boolean verify;
     private final List<CertificateInfo> certs;
     private final BasicAuth basicAuth;
+    @Nonnull
     private final Session session;
     private final URL fullUrl;
 
@@ -86,7 +87,6 @@ public class HttpRequest {
         response.discardBody();
         int redirectCount = 0;
         URL redirectUrl = fullUrl;
-        Session redirectSession = session == null ? Session.create(response.cookieList) : session;
         while (redirectCount++ < 5) {
             Optional<String> location = response.getFirstHeader(NAME_LOCATION);
             if (!location.isPresent()) {
@@ -97,7 +97,7 @@ public class HttpRequest {
             } catch (MalformedURLException e) {
                 throw new RequestsException("Get redirect url error", e);
             }
-            response = redirectSession.get(redirectUrl.toExternalForm())
+            response = session.get(redirectUrl.toExternalForm())
                     .proxy(proxy)
                     .followRedirect(false).send();
             if (!Utils.isRedirect(response.getStatusCode())) {
@@ -195,16 +195,11 @@ public class HttpRequest {
         }
 
         // set cookies
-        if (!cookies.isEmpty() || (session != null && !session.getCookies().isEmpty())) {
+        if (!cookies.isEmpty() || !session.getCookies().isEmpty()) {
             Stream<? extends Map.Entry<String, String>> stream1 = cookies.stream();
-            Stream<? extends Map.Entry<String, String>> stream2;
-            if (session != null) {
-                stream2 = session.matchedCookies(protocol, host, cookiePath);
-            } else {
-                stream2 = Stream.empty();
-            }
-
-            String cookieStr = Stream.concat(stream1, stream2).map(c -> c.getKey() + "=" + c.getValue())
+            Stream<? extends Map.Entry<String, String>> stream2 = session.matchedCookies(protocol, host, cookiePath);
+            String cookieStr = Stream.concat(stream1, stream2)
+                    .map(c -> c.getKey() + "=" + c.getValue())
                     .collect(joining("; "));
             if (!cookieStr.isEmpty()) {
                 conn.setRequestProperty(NAME_COOKIE, cookieStr);
@@ -226,33 +221,7 @@ public class HttpRequest {
             if (body != null) {
                 sendBody(body, conn, charset);
             }
-
-            // read result
-            int status = conn.getResponseCode();
-
-            // headers
-            List<Map.Entry<String, String>> responseHeaders = conn.getHeaderFields().entrySet().stream()
-                    // ignore status line
-                    .filter(it -> it.getKey() != null)
-                    .flatMap(e -> e.getValue().stream().map(v -> Parameter.of(e.getKey(), v)))
-                    .collect(toList());
-            // cookies
-            Set<Cookie> cookieSet = conn.getHeaderFields().entrySet().stream()
-                    .filter(e -> NAME_SET_COOKIE.equals(e.getKey()))
-                    .flatMap(e -> e.getValue().stream())
-                    .flatMap(v -> CookieUtils.parseCookieHeader(host, path, v).stream())
-                    .collect(toSet());
-            InputStream input;
-            if (status >= 200 && status < 400) {
-                input = conn.getInputStream();
-            } else {
-                input = conn.getErrorStream();
-            }
-            InputStream wrapIn = wrap(status, responseHeaders, input);
-            if (session != null) {
-                session.updateCookie(cookieSet);
-            }
-            return new RawResponse(status, responseHeaders, cookieSet, wrapIn, conn);
+            return getResponse(conn, host, path);
         } catch (IOException e) {
             conn.disconnect();
             throw new UncheckedIOException(e);
@@ -262,7 +231,54 @@ public class HttpRequest {
         }
     }
 
-    private InputStream wrap(int status, List<Map.Entry<String, String>> headers, InputStream input) {
+    /**
+     * Wrap response, deal with headers and cookies
+     *
+     * @throws IOException
+     */
+    private RawResponse getResponse(HttpURLConnection conn, String host, String path) throws IOException {
+        // read result
+        int status = conn.getResponseCode();
+
+        // headers and cookies
+        List<Map.Entry<String, String>> headers = new ArrayList<>();
+        Set<Cookie> cookies = new HashSet<>();
+        int index = 0;
+        while (true) {
+            String key = conn.getHeaderFieldKey(index);
+            String value = conn.getHeaderField(index);
+            if (value == null) {
+                break;
+            }
+            index++;
+            //status line
+            if (key == null) {
+                continue;
+            }
+            headers.add(Parameter.of(key, value));
+            if (key.equalsIgnoreCase(NAME_SET_COOKIE)) {
+                cookies.add(CookieUtils.parseCookieHeader(host, path, value));
+            }
+        }
+
+        // deal with [compressed] input
+        InputStream input;
+        if (status >= 200 && status < 400) {
+            input = conn.getInputStream();
+        } else {
+            input = conn.getErrorStream();
+        }
+        input = wrapCompressBody(status, headers, input);
+
+        // update session
+        session.updateCookie(cookies);
+        return new RawResponse(status, headers, cookies, input, conn);
+    }
+
+    /**
+     * Wrap response input stream if it is compressed, return input its self if not use compress
+     */
+    private InputStream wrapCompressBody(int status, List<Map.Entry<String, String>> headers, InputStream input) {
 
         // if has no boddy
         if (method.equals("HEAD")) {
@@ -272,10 +288,13 @@ public class HttpRequest {
             return input;
         }
 
-        String contentEncoding = getHeaderValue(headers, NAME_CONTENT_ENCODING);
-        if (contentEncoding == null) {
+        Optional<String> encoding = headers.stream()
+                .filter(h -> h.getKey().equalsIgnoreCase(NAME_CONTENT_ENCODING))
+                .map(Map.Entry::getValue).findAny();
+        if (!encoding.isPresent()) {
             return input;
         }
+        String contentEncoding = encoding.get();
         switch (contentEncoding) {
             case "gzip":
                 try {
@@ -294,13 +313,6 @@ public class HttpRequest {
 
     }
 
-    private
-    @Nullable
-    String getHeaderValue(List<Map.Entry<String, String>> headers, String name) {
-        return headers.stream().filter(h -> h.getKey().equalsIgnoreCase(name))
-                .map(Map.Entry::getValue).findAny().orElse(null);
-    }
-
 
     private void sendBody(RequestBody body, HttpURLConnection conn, Charset requestCharset) {
         try (OutputStream os = conn.getOutputStream()) {
@@ -310,7 +322,7 @@ public class HttpRequest {
         }
     }
 
-    static RequestBuilder newBuilder() {
-        return new RequestBuilder();
+    static RequestBuilder newBuilder(Session session) {
+        return new RequestBuilder(session);
     }
 }

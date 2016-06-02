@@ -9,6 +9,7 @@ import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -19,21 +20,17 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class RawResponse implements AutoCloseable {
     private final int statusCode;
-    private final List<Map.Entry<String, String>> headerList;
-    final Set<Cookie> cookieList;
-    private final Map<String, List<String>> headerMap;
-    private final Map<String, List<Cookie>> cookieMap;
+    final Set<Cookie> cookies;
+    private final List<Map.Entry<String, String>> headers;
     private final InputStream in;
     private final HttpURLConnection conn;
     // redirect history
 
-    RawResponse(int statusCode, List<Map.Entry<String, String>> headerMap, Set<Cookie> cookieList, InputStream in,
+    RawResponse(int statusCode, List<Map.Entry<String, String>> headers, Set<Cookie> cookies, InputStream in,
                 HttpURLConnection conn) {
         this.statusCode = statusCode;
-        this.headerList = headerMap;
-        this.cookieList = cookieList;
-        this.headerMap = convertHeaders(headerMap);
-        this.cookieMap = convertCookies(cookieList);
+        this.headers = Collections.unmodifiableList(headers);
+        this.cookies = Collections.unmodifiableSet(cookies);
         this.in = in;
         this.conn = conn;
     }
@@ -217,54 +214,29 @@ public class RawResponse implements AutoCloseable {
      * Get header value with name
      */
     public Optional<String> getFirstHeader(String name) {
-        List<String> values = headerMap.get(name);
-        if (values == null || values.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(values.get(0));
+        return this.headers.stream().filter(h -> h.getKey().equalsIgnoreCase(name))
+                .map(Map.Entry::getValue).findFirst();
     }
 
+    /**
+     * Return immutable response header list
+     */
     public List<Map.Entry<String, String>> getHeaders() {
-        return headerList;
+        return headers;
     }
 
     /**
      * Get all headers values with name
      */
     public List<String> getHeaders(String name) {
-        List<String> headers = headerMap.get(name);
-        if (headers == null) {
-            headers = Collections.emptyList();
-        }
-        return headers;
-    }
-
-    /**
-     * Get cookie with name
-     */
-    public Optional<Cookie> getFirstCookie(String name) {
-        List<Cookie> values = cookieMap.get(name);
-        if (values == null || values.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(values.get(0));
+        return this.headers.stream().filter(h -> h.getKey().equalsIgnoreCase(name))
+                .map(Map.Entry::getValue).collect(Collectors.toList());
     }
 
     /**
      * Get all cookies
      */
     public Collection<Cookie> getCookies() {
-        return cookieList;
-    }
-
-    /**
-     * Get all cookies with name
-     */
-    public List<Cookie> getCookies(String name) {
-        List<Cookie> cookies = cookieMap.get(name);
-        if (cookies == null) {
-            cookies = Collections.emptyList();
-        }
         return cookies;
     }
 

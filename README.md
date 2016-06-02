@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.0.3</version>
+    <version>4.0.4</version>
 </dependency>
 ```
 
@@ -37,8 +37,8 @@ The response object have several common http response fields can be used:
 ```java
 RawResponse resp = Requests.get(url).send();
 int statusCode = resp.getStatusCode();
-List<Header> headers = resp.getHeaders();
-List<Cookie> cookies = resp.getCookies();
+List<Map.Entry<String, String>> headers = resp.getHeaders();
+Collection<Cookie> cookies = resp.getCookies();
 String body = resp.readToText();
 ```
 Make sure call readToText or other methods to consume resp, or call close method to close resp.

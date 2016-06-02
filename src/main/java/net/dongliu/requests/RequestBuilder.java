@@ -3,6 +3,7 @@ package net.dongliu.requests;
 import net.dongliu.requests.body.Part;
 import net.dongliu.requests.body.RequestBody;
 
+import javax.annotation.Nonnull;
 import java.io.InputStream;
 import java.net.Proxy;
 import java.nio.charset.Charset;
@@ -31,9 +32,11 @@ public final class RequestBuilder {
     boolean verify = true;
     List<CertificateInfo> certs = Collections.emptyList();
     BasicAuth basicAuth;
+    @Nonnull
     Session session;
 
-    RequestBuilder() {
+    RequestBuilder(Session session) {
+        this.session = Objects.requireNonNull(session);
     }
 
     public RequestBuilder method(String method) {
@@ -267,11 +270,6 @@ public final class RequestBuilder {
      */
     public RequestBuilder basicAuth(BasicAuth basicAuth) {
         this.basicAuth = basicAuth;
-        return this;
-    }
-
-    RequestBuilder session(Session session) {
-        this.session = session;
         return this;
     }
 

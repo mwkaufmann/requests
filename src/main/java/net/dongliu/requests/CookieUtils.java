@@ -3,8 +3,6 @@ package net.dongliu.requests;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,6 +18,35 @@ import java.util.Map;
  * -- the cookie's domain must not be a TLD, a public suffix, or a parent of a public suffix.
  */
 class CookieUtils {
+
+    private static final char[] hexChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+    /**
+     * Escape cookie value
+     */
+    static String escape(String value) {
+        int count = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == ' ' || c == ';' || c == ',') {
+                count++;
+            }
+        }
+        if (count == 0) {
+            return value;
+        }
+        StringBuilder sb = new StringBuilder(value.length() + count * 2);
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == ' ' || c == ';' || c == ',') {
+                sb.append('%').append(hexChars[c >> 4]).append(hexChars[c & 0xF]);
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
 
     /**
      * If subDomain is sub of domain
@@ -37,32 +64,34 @@ class CookieUtils {
     }
 
 
-    static List<Cookie> parseCookieHeader(String originDomain, String originPath,
-                                          String headerValue) {
-        List<Map.Entry<String, String>> nameValues = new ArrayList<>();
+    static Cookie parseCookieHeader(String originDomain, String originPath,
+                                    String headerValue) {
+        String[] items = headerValue.split("; ");
+        Map.Entry<String, String> nameValue = parseCookieNameValue(items[0]);
+
         String domain = null;
         String path = null;
         Instant expiry = null;
         boolean secure = false;
-        for (String item : headerValue.split("; ")) {
-            Map.Entry<String, String> pair = Utils.pairFrom(item);
-            switch (pair.getKey().toLowerCase()) {
+        for (int i = 1; i < items.length - 1; i++) {
+            Map.Entry<String, String> attribute = parseCookieAttribute(items[i]);
+            switch (attribute.getKey().toLowerCase()) {
                 case "domain":
-                    domain = parseDomain(originDomain, pair);
+                    domain = parseDomain(originDomain, attribute);
                     break;
                 case "path":
-                    path = pair.getValue().endsWith("/") ? pair.getValue() : pair.getValue() + "/";
+                    path = attribute.getValue().endsWith("/") ? attribute.getValue() : attribute.getValue() + "/";
                     break;
                 case "expires":
                     try {
-                        expiry = Utils.parseDate(pair.getValue());
+                        expiry = Utils.parseDate(attribute.getValue());
                     } catch (DateTimeParseException ignore) {
                         //TODO: we should ignore this cookie?
                     }
                     break;
                 case "max-age":
                     try {
-                        int seconds = Integer.parseInt(pair.getValue());
+                        int seconds = Integer.parseInt(attribute.getValue());
                         if (seconds >= 0) {
                             expiry = Instant.now().plusSeconds(seconds);
                         }
@@ -70,27 +99,38 @@ class CookieUtils {
                         //TODO: we should ignore this cookie?
                     }
                     break;
-                case "":
-                    if (headerValue.equalsIgnoreCase("Secure")) {
-                        secure = true;
-                        break;
-                    }
+                case "secure":
+                    secure = true;
+                    break;
+                case "httponly":
                     // ignore http only
-                    if (headerValue.equalsIgnoreCase("HttpOnly")) {
-                        break;
-                    }
+                    break;
                 default:
-                    nameValues.add(pair);
             }
         }
 
-        List<Cookie> cookies = new ArrayList<>(nameValues.size());
-        for (Map.Entry<String, String> nameValue : nameValues) {
-            cookies.add(new Cookie(domain == null ? originDomain : domain, path == null ? originPath : path,
-                    nameValue.getKey(), nameValue.getValue(), expiry, secure));
-        }
+        return new Cookie(domain == null ? originDomain : domain, path == null ? originPath : path,
+                nameValue.getKey(), nameValue.getValue(), expiry, secure);
+    }
 
-        return cookies;
+    private static Map.Entry<String, String> parseCookieNameValue(String str) {
+        // Browsers always split the name and value on the first = symbol in the string
+        int idx = str.indexOf("=");
+        if (idx < 0) {
+            // If there is no = symbol in the string at all, browsers treat it as the cookie with the empty-string name
+            return Parameter.of("", str);
+        } else {
+            return Parameter.of(str.substring(0, idx), str.substring(idx + 1));
+        }
+    }
+
+    private static Map.Entry<String, String> parseCookieAttribute(String str) {
+        int idx = str.indexOf("=");
+        if (idx < 0) {
+            return Parameter.of(str, "");
+        } else {
+            return Parameter.of(str.substring(0, idx), str.substring(idx + 1));
+        }
     }
 
     /**
@@ -105,7 +145,7 @@ class CookieUtils {
      * We still use "." prefix to identity a explicitly set domain, if a domain without "." prefix is set, append one
      * </p>
      *
-     * @return
+     * @return the final domain
      */
     @Nullable
     private static String parseDomain(String currentDomain, Map.Entry<String, String> pair) {

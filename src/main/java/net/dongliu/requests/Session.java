@@ -57,28 +57,26 @@ public class Session {
     }
 
     public RequestBuilder get(String url) {
-        return Requests.get(url).session(this);
+        return HttpRequest.newBuilder(this).url(url).method("GET");
     }
 
     public RequestBuilder post(String url) {
-        return Requests.post(url).session(this);
+        return HttpRequest.newBuilder(this).url(url).method("POST");
     }
 
     public RequestBuilder put(String url) {
-        return Requests.put(url).session(this);
+        return HttpRequest.newBuilder(this).url(url).method("PUT");
     }
 
     public RequestBuilder head(String url) {
-        return Requests.head(url).session(this);
+        return HttpRequest.newBuilder(this).url(url).method("HEAD");
     }
 
     public RequestBuilder delete(String url) {
-        return Requests.delete(url).session(this);
+        return HttpRequest.newBuilder(this).url(url).method("DELETE");
     }
 
     public RequestBuilder patch(String url) {
-        return Requests.patch(url).session(this);
+        return HttpRequest.newBuilder(this).url(url).method("PATCH");
     }
-
-
 }
