@@ -182,6 +182,11 @@ public class HttpRequest {
         if (basicAuth != null) {
             conn.setRequestProperty(NAME_AUTHORIZATION, basicAuth.encode());
         }
+        // http proxy authentication
+        if (proxy != null && proxy instanceof Proxies.AuthenticationHttpProxy) {
+            BasicAuth basicAuth = ((Proxies.AuthenticationHttpProxy) proxy).getBasicAuth();
+            conn.setRequestProperty(NAME_PROXY_AUTHORIZATION, basicAuth.encode());
+        }
 
         // this should exists before set custom request contentType or headers,to make sure user can overwrite this
         if (body != null) {

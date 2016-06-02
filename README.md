@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.0.4</version>
+    <version>4.0.5</version>
 </dependency>
 ```
 
@@ -187,7 +187,8 @@ Requests.get(url).verify(false).send();
 Set proxy by proxy method:
 
 ```java
-Requests.get(url).proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8080))).send();
+Requests.get(url).proxy(Proxies.httpProxy("127.0.0.1", 8081).send(); // http proxy
+Requests.get(url).proxy(Proxies.socksProxy("127.0.0.1", 1080).send(); // socks proxy proxy
 ```
 
 #Session

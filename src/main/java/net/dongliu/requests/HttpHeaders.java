@@ -7,6 +7,7 @@ package net.dongliu.requests;
  */
 public class HttpHeaders {
     public static final String NAME_AUTHORIZATION = "Authorization";
+    public static final String NAME_PROXY_AUTHORIZATION = "Proxy-Authorization";
     public static final String NAME_USER_AGENT = "User-Agent";
     public static final String NAME_ACCEPT_ENCODING = "Accept-Encoding";
     public static final String NAME_CONTENT_TYPE = "Content-Type";

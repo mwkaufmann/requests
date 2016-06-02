@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 import java.util.Base64;
+import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -14,8 +15,8 @@ public class BasicAuth {
     private final String password;
 
     public BasicAuth(String user, String password) {
-        this.user = user;
-        this.password = password;
+        this.user = Objects.requireNonNull(user);
+        this.password = Objects.requireNonNull(password);
     }
 
     public String getUser() {
