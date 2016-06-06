@@ -18,10 +18,10 @@ import java.util.*;
 public final class RequestBuilder {
     String method = "GET";
     String url;
-    Collection<Map.Entry<String, String>> headers = Collections.emptyList();
-    Collection<Map.Entry<String, String>> cookies = Collections.emptyList();
+    Collection<? extends Map.Entry<String, ?>> headers = Collections.emptyList();
+    Collection<? extends Map.Entry<String, ?>> cookies = Collections.emptyList();
     String userAgent = "Requests/4.0, Java " + System.getProperty("java.version");
-    Collection<Map.Entry<String, String>> params = Collections.emptyList();
+    Collection<? extends Map.Entry<String, ?>> params = Collections.emptyList();
     Charset requestCharset = StandardCharsets.UTF_8;
     RequestBody<?> body;
     int socksTimeout = HttpRequest.DEFAULT_TIMEOUT;
@@ -34,6 +34,8 @@ public final class RequestBuilder {
     BasicAuth basicAuth;
     @Nonnull
     Session session;
+
+    private List<? extends Interceptor> interceptors = Collections.emptyList();
 
     RequestBuilder(Session session) {
         this.session = Objects.requireNonNull(session);
@@ -53,7 +55,7 @@ public final class RequestBuilder {
      * Set request headers.
      */
     public RequestBuilder headers(Collection<? extends Map.Entry<String, ?>> headers) {
-        this.headers = toStringPairList(headers);
+        this.headers = headers;
         return this;
     }
 
@@ -70,7 +72,7 @@ public final class RequestBuilder {
      * Set request headers.
      */
     public final RequestBuilder headers(Map<String, ?> map) {
-        this.headers = toStringPairList(map.entrySet());
+        this.headers = map.entrySet();
         return this;
     }
 
@@ -78,7 +80,7 @@ public final class RequestBuilder {
      * Set request cookies.
      */
     public RequestBuilder cookies(Collection<? extends Map.Entry<String, ?>> cookies) {
-        this.cookies = toStringPairList(cookies);
+        this.cookies = cookies;
         return this;
     }
 
@@ -95,7 +97,7 @@ public final class RequestBuilder {
      * Set request cookies.
      */
     public final RequestBuilder cookies(Map<String, ?> map) {
-        this.cookies = toStringPairList(map.entrySet());
+        this.cookies = map.entrySet();
         return this;
     }
 
@@ -108,7 +110,7 @@ public final class RequestBuilder {
      * Set url query params.
      */
     public RequestBuilder params(Collection<? extends Map.Entry<String, ?>> params) {
-        this.cookies = toStringPairList(params);
+        this.cookies = params;
         return this;
     }
 
@@ -117,7 +119,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder params(Map.Entry<String, ?>... params) {
-        this.params = toStringPairList(Arrays.asList(params));
+        this.params = Arrays.asList(params);
         return this;
     }
 
@@ -125,7 +127,7 @@ public final class RequestBuilder {
      * Set url query params.
      */
     public final RequestBuilder params(Map<String, ?> map) {
-        this.params = toStringPairList(map.entrySet());
+        this.params = map.entrySet();
         return this;
     }
 
@@ -149,7 +151,7 @@ public final class RequestBuilder {
      * Set www-form-encoded body. Only for Post
      */
     public RequestBuilder forms(Collection<? extends Map.Entry<String, ?>> params) {
-        body = RequestBody.form(toStringPairList(params));
+        body = RequestBody.form(params);
         return this;
     }
 
@@ -282,25 +284,8 @@ public final class RequestBuilder {
      */
     public RawResponse send() {
         HttpRequest request = build();
-        return request.handleRequest();
-    }
-
-    //TODO: auto handle datetime header here?
-    @SuppressWarnings("unchecked")
-    private Map.Entry<String, String> toStringPair(Map.Entry<String, ?> pair) {
-        if (pair.getValue() instanceof String) {
-            return (Map.Entry<String, String>) pair;
-        } else {
-            return Parameter.of(pair.getKey(), pair.getValue().toString());
-        }
-    }
-
-    private List<Map.Entry<String, String>> toStringPairList(Collection<? extends Map.Entry<String, ?>> values) {
-        List<Map.Entry<String, String>> list = new ArrayList<>(values.size());
-        for (Map.Entry<String, ?> value : values) {
-            list.add(toStringPair(value));
-        }
-        return list;
+        HttpExecutor executor = new URLConnectionExecutor();
+        return new InterceptorChain(interceptors, executor).proceed(request);
     }
 
     /**
@@ -320,7 +305,22 @@ public final class RequestBuilder {
     /**
      * Set multiPart body. Only form multi-part post
      */
-    public final RequestBuilder multiPartBody(Collection<Part<?>> parts) {
+    public RequestBuilder multiPartBody(Collection<Part<?>> parts) {
         return body(RequestBody.multiPart(parts));
+    }
+
+    /**
+     * Set interceptors
+     */
+    public RequestBuilder interceptors(List<? extends Interceptor> interceptors) {
+        this.interceptors = interceptors;
+        return this;
+    }
+
+    /**
+     * Set interceptors
+     */
+    public RequestBuilder interceptors(Interceptor... interceptors) {
+        return interceptors(Arrays.asList(interceptors));
     }
 }

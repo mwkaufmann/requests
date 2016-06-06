@@ -7,7 +7,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -124,11 +123,26 @@ public class RequestsTest {
     }
 
     @Test
-    public void testHttps() throws IOException {
+    public void testHttps() {
         RawResponse response = Requests.get("https://127.0.0.1:8443/https")
                 .verify(false).send();
         String s = response.readToText();
         assertEquals(200, response.getStatusCode());
         assertFalse(s.isEmpty());
+    }
+
+    @Test
+    public void testInterceptor() {
+        long[] elapsed = {0};
+        Interceptor interceptor = (target, request) -> {
+            long start = System.nanoTime();
+            RawResponse response = target.proceed(request);
+            elapsed[0] = System.nanoTime() - start;
+            return response;
+        };
+        String text = Requests.get("http://127.0.0.1:8080/echo_header")
+                .interceptors(interceptor)
+                .send().readToText();
+        assertTrue(elapsed[0] > 0);
     }
 }

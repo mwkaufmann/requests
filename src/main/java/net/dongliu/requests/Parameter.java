@@ -40,10 +40,7 @@ public class Parameter<V> implements Map.Entry<String, V> {
 
     @Override
     public String toString() {
-        return "Parameter{" +
-                "key='" + key + '\'' +
-                ", value=" + value +
-                '}';
+        return key + "=" + value;
     }
 
     @Override

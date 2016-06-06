@@ -22,7 +22,7 @@ class Utils {
         return rfc1123Formatter.format(instant);
     }
 
-    public static URL joinUrl(String url, Collection<Map.Entry<String, String>> params, Charset charset) {
+    public static URL joinUrl(String url, Collection<? extends Map.Entry<String, ?>> params, Charset charset) {
         String fullUrl;
         if (params.isEmpty()) {
             fullUrl = url;

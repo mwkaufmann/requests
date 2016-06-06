@@ -141,12 +141,12 @@ public class URIEncoder {
     /**
      * Encode multi queries
      */
-    public static String encodeQueries(Collection<? extends Map.Entry<String, String>> queries, Charset charset) {
+    public static String encodeQueries(Collection<? extends Map.Entry<String, ?>> queries, Charset charset) {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> query : queries) {
+        for (Map.Entry<String, ?> query : queries) {
             sb.append(encodeParam(query.getKey(), charset));
             sb.append('=');
-            sb.append(encodeParam(query.getValue(), charset));
+            sb.append(encodeParam(String.valueOf(query.getValue()), charset));
             sb.append('&');
         }
         if (sb.length() > 0) {
@@ -345,13 +345,13 @@ public class URIEncoder {
     /**
      * Encode multi form parameters
      */
-    public static String encodeForms(Collection<? extends Map.Entry<String, String>> queries, Charset charset) {
+    public static String encodeForms(Collection<? extends Map.Entry<String, ?>> queries, Charset charset) {
         StringBuilder sb = new StringBuilder();
         try {
-            for (Map.Entry<String, String> query : queries) {
+            for (Map.Entry<String, ?> query : queries) {
                 sb.append(URLEncoder.encode(query.getKey(), charset.name()));
                 sb.append('=');
-                sb.append(URLEncoder.encode(query.getValue(), charset.name()));
+                sb.append(URLEncoder.encode(String.valueOf(query.getValue()), charset.name()));
                 sb.append('&');
             }
         } catch (UnsupportedEncodingException e) {

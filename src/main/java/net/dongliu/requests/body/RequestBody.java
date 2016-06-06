@@ -79,8 +79,8 @@ public abstract class RequestBody<T> {
     /**
      * Create request body send x-www-form-encoded data
      */
-    public static RequestBody<Collection<? extends Map.Entry<String, String>>>
-    form(Collection<? extends Map.Entry<String, String>> value) {
+    public static RequestBody<Collection<? extends Map.Entry<String, ?>>>
+    form(Collection<? extends Map.Entry<String, ?>> value) {
         return new FormRequestBody(Objects.requireNonNull(value));
     }
 
