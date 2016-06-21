@@ -1,12 +1,14 @@
 package net.dongliu.requests;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 
-public class Cookie implements Serializable, Map.Entry<String, String> {
+@Immutable
+public class Cookie implements Serializable {
     /**
      * <p>
      * If domain not start with ".",  means it is explicitly set and visible to it's sub-domains.
@@ -44,22 +46,12 @@ public class Cookie implements Serializable, Map.Entry<String, String> {
         return name;
     }
 
-    @Override
-    public String getKey() {
-        return name;
-    }
-
     public String getValue() {
         return value;
     }
 
     public boolean isSecure() {
         return secure;
-    }
-
-    @Override
-    public String setValue(String value) {
-        throw new UnsupportedOperationException();
     }
 
     @Nullable

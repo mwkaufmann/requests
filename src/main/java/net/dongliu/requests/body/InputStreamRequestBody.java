@@ -1,6 +1,6 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.requests.IOUtils;
+import net.dongliu.commons.io.InputOutputs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +19,6 @@ class InputStreamRequestBody extends RequestBody<InputStream> {
 
     @Override
     public void writeBody(OutputStream os, Charset charset) throws IOException {
-        IOUtils.copy(getBody(), os);
+        InputOutputs.copy(getBody(), os);
     }
 }

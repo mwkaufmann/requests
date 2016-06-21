@@ -1,5 +1,8 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.io.Closables;
+import net.dongliu.commons.io.InputOutputs;
+import net.dongliu.commons.io.ReaderWriters;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
 
@@ -38,7 +41,7 @@ public class RawResponse implements AutoCloseable {
 
     @Override
     public void close() {
-        IOUtils.closeQuietly(input);
+        Closables.closeQuietly(input);
         conn.disconnect();
     }
 
@@ -56,7 +59,7 @@ public class RawResponse implements AutoCloseable {
      */
     public String readToText(Charset charset) {
         try (Reader reader = new InputStreamReader(input, charset)) {
-            return IOUtils.readAll(reader);
+            return ReaderWriters.readAll(reader);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -69,7 +72,7 @@ public class RawResponse implements AutoCloseable {
      */
     public byte[] readToBytes() {
         try {
-            return IOUtils.readAll(input);
+            return InputOutputs.readAll(input);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -146,7 +149,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(File path) {
         try {
             try (FileOutputStream fos = new FileOutputStream(path)) {
-                IOUtils.copy(input, fos);
+                InputOutputs.copy(input, fos);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -160,7 +163,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void writeTo(OutputStream out) {
         try {
-            IOUtils.copy(input, out);
+            InputOutputs.copy(input, out);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -173,7 +176,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void discardBody() {
         try {
-            IOUtils.discard(input);
+            InputOutputs.skipAll(input);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {

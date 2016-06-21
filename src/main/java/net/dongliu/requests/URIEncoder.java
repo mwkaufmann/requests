@@ -1,5 +1,7 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.collection.Pair;
+
 import java.io.CharArrayWriter;
 import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
@@ -161,9 +163,9 @@ public class URIEncoder {
     public static Map.Entry<String, String> decodeQuery(String s, Charset charset) {
         int idx = s.indexOf("=");
         if (idx < 0) {
-            return Parameter.of("", decodeParam(s, charset));
+            return Pair.of("", decodeParam(s, charset));
         }
-        return Parameter.of(decodeParam(s.substring(0, idx), charset), decodeParam(s.substring(idx + 1), charset));
+        return Pair.of(decodeParam(s.substring(0, idx), charset), decodeParam(s.substring(idx + 1), charset));
     }
 
     /**
@@ -370,9 +372,9 @@ public class URIEncoder {
         int idx = s.indexOf("=");
         try {
             if (idx < 0) {
-                return Parameter.of("", URLDecoder.decode(s, charset.name()));
+                return Pair.of("", URLDecoder.decode(s, charset.name()));
             }
-            return Parameter.of(URLDecoder.decode(s.substring(0, idx), charset.name()),
+            return Pair.of(URLDecoder.decode(s.substring(0, idx), charset.name()),
                     URLDecoder.decode(s.substring(idx + 1), charset.name()));
         } catch (UnsupportedEncodingException e) {
             throw new UncheckedIOException(e);

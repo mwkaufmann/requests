@@ -1,5 +1,7 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.collection.Pair;
+import net.dongliu.commons.io.Closables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
@@ -151,7 +153,8 @@ public class URLConnectionExecutor implements HttpExecutor {
         // set cookies
         if (!request.getCookies().isEmpty() || !session.getCookies().isEmpty()) {
             Stream<? extends Map.Entry<String, ?>> stream1 = request.getCookies().stream();
-            Stream<? extends Map.Entry<String, ?>> stream2 = session.matchedCookies(protocol, host, effectivePath);
+            Stream<? extends Map.Entry<String, ?>> stream2 = session.matchedCookies(protocol, host, effectivePath)
+                    .map(c -> Pair.of(c.getName(), c.getValue()));
             String cookieStr = Stream.concat(stream1, stream2).map(c -> c.getKey() + "=" + c.getValue())
                     .collect(joining("; "));
             if (!cookieStr.isEmpty()) {
@@ -209,7 +212,7 @@ public class URLConnectionExecutor implements HttpExecutor {
             if (key == null) {
                 continue;
             }
-            headerList.add(Parameter.of(key, value));
+            headerList.add(Pair.of(key, value));
             if (key.equalsIgnoreCase(NAME_SET_COOKIE)) {
                 cookies.add(CookieUtils.parseCookieHeader(host, path, value));
             }
@@ -250,7 +253,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                 try {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
-                    IOUtils.closeQuietly(input);
+                    Closables.closeQuietly(input);
                     throw new UncheckedIOException(e);
                 }
             case "deflate":
