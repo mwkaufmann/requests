@@ -1,10 +1,10 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.io.Closables;
+import net.dongliu.commons.io.Closeables;
 import net.dongliu.commons.io.InputOutputs;
 import net.dongliu.commons.io.ReaderWriters;
-import net.dongliu.requests.json.JsonLookup;
-import net.dongliu.requests.json.TypeInfer;
+import net.dongliu.commons.json.JsonLookup;
+import net.dongliu.commons.json.TypeInfer;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,7 +41,7 @@ public class RawResponse implements AutoCloseable {
 
     @Override
     public void close() {
-        Closables.closeQuietly(input);
+        Closeables.closeQuietly(input);
         conn.disconnect();
     }
 

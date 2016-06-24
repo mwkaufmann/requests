@@ -1,8 +1,8 @@
 package net.dongliu.requests.body;
 
 import net.dongliu.requests.Requests;
-import net.dongliu.requests.json.JsonLookup;
-import net.dongliu.requests.json.JsonProvider;
+import net.dongliu.commons.json.JsonLookup;
+import net.dongliu.commons.json.JsonProvider;
 
 import java.io.IOException;
 import java.io.OutputStream;
