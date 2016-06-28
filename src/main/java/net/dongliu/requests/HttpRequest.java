@@ -3,9 +3,12 @@ package net.dongliu.requests;
 import net.dongliu.requests.body.RequestBody;
 
 import javax.annotation.Nonnull;
-import java.net.*;
+import java.net.Proxy;
+import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Http request
@@ -32,6 +35,7 @@ public class HttpRequest {
     @Nonnull
     private final Session session;
     private final URL url;
+    private final boolean keepAlive;
 
     HttpRequest(RequestBuilder builder) {
         method = builder.method;
@@ -49,6 +53,7 @@ public class HttpRequest {
         certs = builder.certs;
         basicAuth = builder.basicAuth;
         session = builder.session;
+        keepAlive = builder.keepAlive;
 
         this.url = Utils.joinUrl(builder.url, builder.params, charset);
     }
@@ -116,5 +121,9 @@ public class HttpRequest {
 
     public URL getUrl() {
         return url;
+    }
+
+    public boolean isKeepAlive() {
+        return keepAlive;
     }
 }

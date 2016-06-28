@@ -34,6 +34,7 @@ public final class RequestBuilder {
     BasicAuth basicAuth;
     @Nonnull
     Session session;
+    boolean keepAlive = true;
 
     private List<? extends Interceptor> interceptors = Collections.emptyList();
 
@@ -248,6 +249,14 @@ public final class RequestBuilder {
      */
     public RequestBuilder verify(boolean verify) {
         this.verify = verify;
+        return this;
+    }
+
+    /**
+     * If reuse http connection. default true
+     */
+    public RequestBuilder keepAlive(boolean keepAlive) {
+        this.keepAlive = keepAlive;
         return this;
     }
 

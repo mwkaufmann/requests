@@ -6,18 +6,10 @@ import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Stream;
 import java.util.zip.DeflaterInputStream;
@@ -92,23 +84,13 @@ public class URLConnectionExecutor implements HttpExecutor {
 
         // deal with https
         if (conn instanceof HttpsURLConnection) {
-            // do not check cert
-            TrustManager trustManager = null;
+            SSLSocketFactory ssf = null;
             if (!request.isVerify()) {
-                trustManager = new TrustAllTrustManager();
+                ssf = SSLSocketFactories.getTrustAllSSLSocketFactory();
             } else if (!request.getCerts().isEmpty()) {
-                trustManager = new CustomCertTrustManager(request.getCerts());
+                ssf = SSLSocketFactories.getCustomSSLSocketFactory(request.getCerts());
             }
-            if (trustManager != null) {
-                SSLContext sslContext;
-                try {
-                    sslContext = SSLContext.getInstance("SSL");
-                    sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
-                } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                    throw new RequestsException(e);
-                }
-
-                SSLSocketFactory ssf = sslContext.getSocketFactory();
+            if (ssf != null) {
                 ((HttpsURLConnection) conn).setSSLSocketFactory(ssf);
             }
         }
@@ -162,8 +144,14 @@ public class URLConnectionExecutor implements HttpExecutor {
             }
         }
 
+        // set user custom headers
         for (Map.Entry<String, ?> header : request.getHeaders()) {
             conn.setRequestProperty(header.getKey(), String.valueOf(header.getValue()));
+        }
+
+        // disable keep alive
+        if (!request.isKeepAlive()) {
+            conn.setRequestProperty("Connection", "close");
         }
 
         try {
@@ -219,14 +207,18 @@ public class URLConnectionExecutor implements HttpExecutor {
         }
         ResponseHeaders headers = new ResponseHeaders(headerList);
 
-        // deal with [compressed] input
         InputStream input;
-        if (status >= 200 && status < 400) {
+        try {
             input = conn.getInputStream();
-        } else {
+        } catch (IOException e) {
             input = conn.getErrorStream();
         }
-        input = wrapCompressBody(status, method, headers, input);
+        if (input != null) {
+            // deal with [compressed] input
+            input = wrapCompressBody(status, method, headers, input);
+        } else {
+            input = new ByteArrayInputStream(new byte[0]);
+        }
 
         // update session
         session.updateCookie(cookies);
@@ -236,7 +228,8 @@ public class URLConnectionExecutor implements HttpExecutor {
     /**
      * Wrap response input stream if it is compressed, return input its self if not use compress
      */
-    private InputStream wrapCompressBody(int status, String method, ResponseHeaders headers, InputStream input) {
+    private InputStream wrapCompressBody(int status, String method, ResponseHeaders headers,
+                                         InputStream input) {
         // if has no body, some server still set content-encoding header,
         // GZIPInputStream wrap empty input stream will cause exception. we should check this
         if (method.equals("HEAD") || (status >= 100 && status < 200) || status == 304 || status == 204) {
