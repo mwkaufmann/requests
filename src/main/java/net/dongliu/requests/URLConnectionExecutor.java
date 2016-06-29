@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 import net.dongliu.commons.collection.Pair;
+import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.commons.io.Closeables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
@@ -76,10 +77,8 @@ public class URLConnectionExecutor implements HttpExecutor {
             } else {
                 conn = (HttpURLConnection) url.openConnection();
             }
-        } catch (MalformedURLException e) {
-            throw new RequestsException(e);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
 
         // deal with https
@@ -98,7 +97,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.setRequestMethod(request.getMethod());
         } catch (ProtocolException e) {
-            throw new RequestsException(e);
+            throw Exceptions.sneakyThrow(e);
         }
         conn.setReadTimeout(request.getSocksTimeout());
         conn.setConnectTimeout(request.getConnectTimeout());
@@ -157,7 +156,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.connect();
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
 
         try {
@@ -168,7 +167,7 @@ public class URLConnectionExecutor implements HttpExecutor {
             return getResponse(conn, session, request.getMethod(), host, effectivePath);
         } catch (IOException e) {
             conn.disconnect();
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } catch (Throwable e) {
             conn.disconnect();
             throw e;
@@ -247,7 +246,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
                     Closeables.closeQuietly(input);
-                    throw new UncheckedIOException(e);
+                    throw Exceptions.sneakyThrow(e);
                 }
             case "deflate":
                 return new DeflaterInputStream(input);
@@ -262,7 +261,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try (OutputStream os = conn.getOutputStream()) {
             body.writeBody(os, requestCharset);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
     }
 }

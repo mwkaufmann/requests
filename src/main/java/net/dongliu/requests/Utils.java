@@ -1,6 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.RequestsException;
+import net.dongliu.commons.exception.Exceptions;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,7 +22,8 @@ class Utils {
         return rfc1123Formatter.format(instant);
     }
 
-    public static URL joinUrl(String url, Collection<? extends Map.Entry<String, ?>> params, Charset charset) {
+    public static URL joinUrl(String url, Collection<? extends Map.Entry<String, ?>> params,
+                              Charset charset) {
         String fullUrl;
         if (params.isEmpty()) {
             fullUrl = url;
@@ -32,7 +33,7 @@ class Utils {
         try {
             return new URL(fullUrl);
         } catch (MalformedURLException e) {
-            throw new RequestsException(e);
+            throw Exceptions.sneakyThrow(e);
         }
     }
 

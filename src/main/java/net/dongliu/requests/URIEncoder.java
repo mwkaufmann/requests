@@ -1,15 +1,18 @@
 package net.dongliu.requests;
 
 import net.dongliu.commons.collection.Pair;
+import net.dongliu.commons.exception.Exceptions;
 
 import java.io.CharArrayWriter;
-import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -338,9 +341,10 @@ public class URIEncoder {
      */
     public static String encodeForm(Map.Entry<String, String> query, Charset charset) {
         try {
-            return URLEncoder.encode(query.getKey(), charset.name()) + "=" + URLEncoder.encode(query.getValue(), charset.name());
+            return URLEncoder.encode(query.getKey(), charset.name()) + "="
+                    + URLEncoder.encode(query.getValue(), charset.name());
         } catch (UnsupportedEncodingException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
     }
 
@@ -357,7 +361,7 @@ public class URIEncoder {
                 sb.append('&');
             }
         } catch (UnsupportedEncodingException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
         if (sb.length() > 0) {
             sb.deleteCharAt(sb.length() - 1);
@@ -377,7 +381,7 @@ public class URIEncoder {
             return Pair.of(URLDecoder.decode(s.substring(0, idx), charset.name()),
                     URLDecoder.decode(s.substring(idx + 1), charset.name()));
         } catch (UnsupportedEncodingException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
     }
 

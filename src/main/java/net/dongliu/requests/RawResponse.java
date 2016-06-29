@@ -1,5 +1,6 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.commons.io.Closeables;
 import net.dongliu.commons.io.InputOutputs;
 import net.dongliu.commons.io.ReaderWriters;
@@ -61,7 +62,7 @@ public class RawResponse implements AutoCloseable {
         try (Reader reader = new InputStreamReader(input, charset)) {
             return ReaderWriters.readAll(reader);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -74,7 +75,7 @@ public class RawResponse implements AutoCloseable {
         try {
             return InputOutputs.readAll(input);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -152,7 +153,7 @@ public class RawResponse implements AutoCloseable {
                 InputOutputs.copy(input, fos);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -165,7 +166,7 @@ public class RawResponse implements AutoCloseable {
         try {
             InputOutputs.copy(input, out);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -178,7 +179,7 @@ public class RawResponse implements AutoCloseable {
         try {
             InputOutputs.skipAll(input);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }

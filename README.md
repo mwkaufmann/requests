@@ -11,7 +11,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.1.0</version>
+    <version>4.3.0</version>
 </dependency>
 ```
 
@@ -199,14 +199,4 @@ Session maintains cookies, basic auth and maybe other http context for you, usef
 Session session = Requests.session();
 String resp1 = session.get(url1).send().readToText();
 String resp2 = session.get(url2).send().readToText();
-```
-
-Session do not need to be closed. 
-
-#Exceptions 
-
-Requests wrapped all checked exceptions into corresponding unchecked exceptions:
-```
- IOException -> UncheckedIOException
- URISyntaxException/... -> RequestsException
 ```

@@ -2,12 +2,11 @@ package net.dongliu.requests;
 
 import net.dongliu.commons.concurrent.Lazy;
 import net.dongliu.commons.concurrent.WeakLoader;
-import net.dongliu.requests.exception.RequestsException;
+import net.dongliu.commons.exception.Exceptions;
 
 import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -29,7 +28,7 @@ class SSLSocketFactories {
             sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw new RequestsException(e);
+            throw Exceptions.sneakyThrow(e);
         }
 
         return sslContext.getSocketFactory();
@@ -47,7 +46,7 @@ class SSLSocketFactories {
                     sslContext = SSLContext.getInstance("SSL");
                     sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
                 } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                    throw new RequestsException(e);
+                    throw Exceptions.sneakyThrow(e);
                 }
 
                 return sslContext.getSocketFactory();
@@ -91,16 +90,14 @@ class SSLSocketFactories {
             try {
                 ks = KeyStore.getInstance("JKS");
             } catch (KeyStoreException e) {
-                throw new RequestsException(e);
+                throw Exceptions.sneakyThrow(e);
             }
             for (CertificateInfo cert : certs) {
                 try {
                     ks.load(new FileInputStream(cert.getPath()), cert.getPassword() == null ?
                             null : cert.getPassword().toCharArray());
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                } catch (NoSuchAlgorithmException | CertificateException e) {
-                    throw new RequestsException(e);
+                } catch (IOException | NoSuchAlgorithmException | CertificateException e) {
+                    throw Exceptions.sneakyThrow(e);
                 }
             }
             TrustManagerFactory trustManagerFactory;
@@ -108,7 +105,7 @@ class SSLSocketFactories {
                 trustManagerFactory = TrustManagerFactory.getInstance("SunX509", "SunJSSE");
                 trustManagerFactory.init(ks);
             } catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException e) {
-                throw new RequestsException(e);
+                throw Exceptions.sneakyThrow(e);
             }
 
             for (TrustManager trustManger : trustManagerFactory.getTrustManagers()) {
