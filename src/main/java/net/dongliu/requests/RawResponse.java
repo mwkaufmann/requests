@@ -74,8 +74,6 @@ public class RawResponse implements AutoCloseable {
     public byte[] readToBytes() {
         try {
             return InputOutputs.readAll(input);
-        } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -165,8 +163,6 @@ public class RawResponse implements AutoCloseable {
     public void writeTo(OutputStream out) {
         try {
             InputOutputs.copy(input, out);
-        } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -178,8 +174,6 @@ public class RawResponse implements AutoCloseable {
     public void discardBody() {
         try {
             InputOutputs.skipAll(input);
-        } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }

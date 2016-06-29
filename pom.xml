@@ -14,7 +14,7 @@
     <artifactId>requests</artifactId>
     <name>requests</name>
     <packaging>jar</packaging>
-    <version>4.3.0</version>
+    <version>4.3.1</version>
     <url>https://github.com/caoqianli/requests</url>
 
     <distributionManagement>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>net.dongliu</groupId>
             <artifactId>commons</artifactId>
-            <version>4.5.2</version>
+            <version>4.6.1</version>
         </dependency>
 
         <dependency>
