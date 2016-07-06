@@ -1,8 +1,8 @@
 package net.dongliu.requests;
 
 import net.dongliu.commons.collection.Pair;
-import net.dongliu.requests.body.Part;
 import net.dongliu.commons.json.TypeInfer;
+import net.dongliu.requests.body.Part;
 import net.dongliu.requests.mock.MockServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

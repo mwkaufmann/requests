@@ -1,7 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.concurrent.Lazy;
-import net.dongliu.commons.concurrent.WeakLoader;
 import net.dongliu.commons.exception.Exceptions;
 
 import javax.net.ssl.*;
@@ -11,6 +9,8 @@ import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Utils method for ssl socket factory
@@ -21,7 +21,9 @@ class SSLSocketFactories {
 
     // To reuse the connection, settings on the underlying socket must use the exact same objects.
 
-    private static Lazy<SSLSocketFactory> sslSocketFactoryLazy = Lazy.create(() -> {
+    private static final SSLSocketFactory sslSocketFactoryLazy = _getTrustAllSSLSocketFactory();
+
+    public static SSLSocketFactory _getTrustAllSSLSocketFactory() {
         TrustManager trustManager = new TrustAllTrustManager();
         SSLContext sslContext;
         try {
@@ -32,29 +34,31 @@ class SSLSocketFactories {
         }
 
         return sslContext.getSocketFactory();
-    });
-
-    public static SSLSocketFactory getTrustAllSSLSocketFactory() {
-        return sslSocketFactoryLazy.get();
     }
 
-    private static final WeakLoader<Collection<CertificateInfo>, SSLSocketFactory> loader = WeakLoader.create(
-            certs -> {
-                TrustManager trustManager = new CustomCertTrustManager(certs);
-                SSLContext sslContext;
-                try {
-                    sslContext = SSLContext.getInstance("SSL");
-                    sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
-                } catch (NoSuchAlgorithmException | KeyManagementException e) {
-                    throw Exceptions.sneakyThrow(e);
-                }
 
-                return sslContext.getSocketFactory();
-            }
-    );
+    public static SSLSocketFactory getTrustAllSSLSocketFactory() {
+        return sslSocketFactoryLazy;
+    }
+
+    private static final ConcurrentMap<Collection<CertificateInfo>, SSLSocketFactory> map =
+            new ConcurrentHashMap<>();
+
+    private static SSLSocketFactory _getCustomSSLSocketFactory(Collection<CertificateInfo> certs) {
+        TrustManager trustManager = new CustomCertTrustManager(certs);
+        SSLContext sslContext;
+        try {
+            sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw Exceptions.sneakyThrow(e);
+        }
+
+        return sslContext.getSocketFactory();
+    }
 
     public static SSLSocketFactory getCustomSSLSocketFactory(Collection<CertificateInfo> certs) {
-        return loader.get(certs);
+        return map.computeIfAbsent(certs, SSLSocketFactories::_getCustomSSLSocketFactory);
     }
 
     static class TrustAllTrustManager implements X509TrustManager {

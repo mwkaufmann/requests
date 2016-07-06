@@ -1,7 +1,5 @@
 package net.dongliu.requests.exception;
 
-import java.net.MalformedURLException;
-
 /**
  * @author Liu Dong
  */
