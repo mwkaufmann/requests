@@ -1,4 +1,4 @@
-package net.dongliu.commons.exception;
+package net.dongliu.requests.exception;
 
 import java.io.IOException;
 import java.io.PrintWriter;

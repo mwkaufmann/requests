@@ -1,4 +1,4 @@
-package net.dongliu.commons.json;
+package net.dongliu.requests.json;
 
 /**
  * @author Liu Dong

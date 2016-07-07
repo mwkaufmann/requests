@@ -1,4 +1,4 @@
-package net.dongliu.commons.json;
+package net.dongliu.requests.json;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

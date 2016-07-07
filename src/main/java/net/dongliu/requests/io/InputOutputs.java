@@ -1,6 +1,6 @@
-package net.dongliu.commons.io;
+package net.dongliu.requests.io;
 
-import net.dongliu.commons.exception.Exceptions;
+import net.dongliu.requests.exception.Exceptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

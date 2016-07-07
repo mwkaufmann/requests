@@ -1,4 +1,4 @@
-package net.dongliu.commons.json;
+package net.dongliu.requests.json;
 
 
 import javax.annotation.Nonnull;

@@ -1,11 +1,11 @@
-package net.dongliu.commons.json;
+package net.dongliu.requests.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonNull;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.stream.JsonWriter;
-import net.dongliu.commons.exception.Exceptions;
+import net.dongliu.requests.exception.Exceptions;
 
 import javax.annotation.Nullable;
 import java.io.IOException;

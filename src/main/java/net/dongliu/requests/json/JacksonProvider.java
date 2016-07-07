@@ -1,8 +1,8 @@
-package net.dongliu.commons.json;
+package net.dongliu.requests.json;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.dongliu.commons.exception.Exceptions;
+import net.dongliu.requests.exception.Exceptions;
 
 import javax.annotation.Nullable;
 import java.io.IOException;

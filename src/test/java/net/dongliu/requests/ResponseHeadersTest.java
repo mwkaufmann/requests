@@ -1,6 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Pair;
 import org.junit.Test;
 
 import java.util.Arrays;

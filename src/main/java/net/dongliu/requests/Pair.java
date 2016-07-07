@@ -1,4 +1,4 @@
-package net.dongliu.commons.collection;
+package net.dongliu.requests;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;

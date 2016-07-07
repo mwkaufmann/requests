@@ -1,7 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Pair;
-import net.dongliu.commons.exception.Exceptions;
+import net.dongliu.requests.exception.Exceptions;
 
 import java.io.CharArrayWriter;
 import java.io.UnsupportedEncodingException;
