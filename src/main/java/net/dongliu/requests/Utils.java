@@ -1,6 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.Exceptions;
+import net.dongliu.commons.exception.Exceptions;
 
 import java.net.MalformedURLException;
 import java.net.URL;

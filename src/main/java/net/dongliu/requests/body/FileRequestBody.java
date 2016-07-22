@@ -1,6 +1,6 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.requests.io.InputOutputs;
+import net.dongliu.commons.io.InputOutputs;
 
 import java.io.File;
 import java.io.FileInputStream;

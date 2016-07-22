@@ -1,5 +1,7 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.collection.Pair;
+
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;

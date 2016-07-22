@@ -1,9 +1,9 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.Exceptions;
-import net.dongliu.requests.io.Closeables;
-import net.dongliu.requests.io.InputOutputs;
-import net.dongliu.requests.io.ReaderWriters;
+import net.dongliu.commons.exception.Exceptions;
+import net.dongliu.commons.io.Closeables;
+import net.dongliu.commons.io.InputOutputs;
+import net.dongliu.commons.io.ReaderWriters;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
 

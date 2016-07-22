@@ -1,6 +1,6 @@
 package net.dongliu.requests.json;
 
-import net.dongliu.requests.exception.Exceptions;
+import net.dongliu.commons.exception.Exceptions;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

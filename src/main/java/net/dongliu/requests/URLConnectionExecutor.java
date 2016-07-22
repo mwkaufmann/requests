@@ -1,7 +1,8 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.Exceptions;
-import net.dongliu.requests.io.Closeables;
+import net.dongliu.commons.collection.Pair;
+import net.dongliu.commons.exception.Exceptions;
+import net.dongliu.commons.io.Closeables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
