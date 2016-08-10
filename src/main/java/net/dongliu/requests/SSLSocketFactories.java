@@ -30,7 +30,7 @@ class SSLSocketFactories {
             sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
 
         return sslContext.getSocketFactory();
@@ -51,7 +51,7 @@ class SSLSocketFactories {
             sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, new TrustManager[]{trustManager}, new SecureRandom());
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
 
         return sslContext.getSocketFactory();
@@ -94,7 +94,7 @@ class SSLSocketFactories {
             try {
                 ks = KeyStore.getInstance("JKS");
             } catch (KeyStoreException e) {
-                throw Exceptions.sneakyThrow(e);
+                throw Exceptions.uncheck(e);
             }
             for (CertificateInfo cert : certs) {
                 try {
@@ -109,7 +109,7 @@ class SSLSocketFactories {
                 trustManagerFactory = TrustManagerFactory.getInstance("SunX509", "SunJSSE");
                 trustManagerFactory.init(ks);
             } catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException e) {
-                throw Exceptions.sneakyThrow(e);
+                throw Exceptions.uncheck(e);
             }
 
             for (TrustManager trustManger : trustManagerFactory.getTrustManagers()) {

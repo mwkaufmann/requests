@@ -67,7 +67,7 @@ public class GsonProvider implements JsonProvider {
         try {
             jsonWriter = gson.newJsonWriter(writer);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
         jsonWriter.setIndent("  ");
         gson.toJson(value, value.getClass(), jsonWriter);

@@ -344,7 +344,7 @@ public class URIEncoder {
             return URLEncoder.encode(query.getKey(), charset.name()) + "="
                     + URLEncoder.encode(query.getValue(), charset.name());
         } catch (UnsupportedEncodingException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
     }
 
@@ -361,7 +361,7 @@ public class URIEncoder {
                 sb.append('&');
             }
         } catch (UnsupportedEncodingException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
         if (sb.length() > 0) {
             sb.deleteCharAt(sb.length() - 1);
@@ -381,7 +381,7 @@ public class URIEncoder {
             return Pair.of(URLDecoder.decode(s.substring(0, idx), charset.name()),
                     URLDecoder.decode(s.substring(idx + 1), charset.name()));
         } catch (UnsupportedEncodingException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
     }
 

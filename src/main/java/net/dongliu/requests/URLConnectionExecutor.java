@@ -81,7 +81,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                 conn = (HttpURLConnection) url.openConnection();
             }
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
 
         // deal with https
@@ -100,7 +100,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.setRequestMethod(request.getMethod());
         } catch (ProtocolException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
         conn.setReadTimeout(request.getSocksTimeout());
         conn.setConnectTimeout(request.getConnectTimeout());
@@ -159,7 +159,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.connect();
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
 
         try {
@@ -170,7 +170,7 @@ public class URLConnectionExecutor implements HttpExecutor {
             return getResponse(conn, session, request.getMethod(), host, effectivePath);
         } catch (IOException e) {
             conn.disconnect();
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         } catch (Throwable e) {
             conn.disconnect();
             throw e;
@@ -249,7 +249,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
                     Closeables.closeQuietly(input);
-                    throw Exceptions.sneakyThrow(e);
+                    throw Exceptions.uncheck(e);
                 }
             case "deflate":
                 return new DeflaterInputStream(input);
@@ -264,7 +264,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try (OutputStream os = conn.getOutputStream()) {
             body.writeBody(os, requestCharset);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
     }
 }

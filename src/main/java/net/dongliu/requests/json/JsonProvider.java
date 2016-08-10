@@ -33,7 +33,7 @@ public interface JsonProvider {
             marshal(sw, value);
             return sw.toString();
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
     }
 
@@ -46,7 +46,7 @@ public interface JsonProvider {
             prettyMarshal(sw, value);
             return sw.toString();
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
     }
 

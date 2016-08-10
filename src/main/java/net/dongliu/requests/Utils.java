@@ -33,7 +33,7 @@ class Utils {
         try {
             return new URL(fullUrl);
         } catch (MalformedURLException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
     }
 

@@ -32,11 +32,11 @@ public class JacksonProvider implements JsonProvider {
     }
 
     @Override
-    public void marshal(Writer writer, Object value) {
+    public void marshal(Writer writer, @Nullable Object value) {
         try {
             objectMapper.writeValue(writer, value);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
     }
 
@@ -45,7 +45,7 @@ public class JacksonProvider implements JsonProvider {
         try {
             objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, value);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
     }
 
@@ -55,7 +55,7 @@ public class JacksonProvider implements JsonProvider {
         try {
             return objectMapper.readValue(reader, javaType);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         }
     }
 }

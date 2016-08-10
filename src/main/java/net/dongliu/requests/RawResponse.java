@@ -62,7 +62,7 @@ public class RawResponse implements AutoCloseable {
         try (Reader reader = new InputStreamReader(input, charset)) {
             return ReaderWriters.readAll(reader);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         } finally {
             close();
         }
@@ -151,7 +151,7 @@ public class RawResponse implements AutoCloseable {
                 InputOutputs.copy(input, fos);
             }
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw Exceptions.uncheck(e);
         } finally {
             close();
         }
