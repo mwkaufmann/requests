@@ -2,13 +2,8 @@ package net.dongliu.requests.json;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonNull;
 import com.google.gson.TypeAdapterFactory;
-import com.google.gson.stream.JsonWriter;
-import net.dongliu.commons.exception.Exceptions;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
@@ -55,22 +50,6 @@ public class GsonProvider implements JsonProvider {
     @Override
     public void marshal(Writer writer, Object value) {
         gson.toJson(value, writer);
-    }
-
-    @Override
-    public void prettyMarshal(Writer writer, @Nullable Object value) {
-        if (value == null) {
-            gson.toJson(JsonNull.INSTANCE);
-            return;
-        }
-        JsonWriter jsonWriter;
-        try {
-            jsonWriter = gson.newJsonWriter(writer);
-        } catch (IOException e) {
-            throw Exceptions.uncheck(e);
-        }
-        jsonWriter.setIndent("  ");
-        gson.toJson(value, value.getClass(), jsonWriter);
     }
 
     @Override

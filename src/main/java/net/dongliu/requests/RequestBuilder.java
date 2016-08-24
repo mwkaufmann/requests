@@ -208,6 +208,7 @@ public final class RequestBuilder {
      * Set tcp socks timeout in mills
      */
     public RequestBuilder socksTimeout(int timeout) {
+        checkTimeout(timeout);
         this.socksTimeout = timeout;
         return this;
     }
@@ -215,16 +216,23 @@ public final class RequestBuilder {
     /**
      * Set tcp connect timeout in mills
      */
-    public RequestBuilder connectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
+    public RequestBuilder connectTimeout(int timeout) {
+        checkTimeout(timeout);
+        this.connectTimeout = timeout;
         return this;
+    }
+
+    private static void checkTimeout(int timeout) {
+        if (timeout < 0) {
+            throw new IllegalArgumentException("Timeout should not less than 0");
+        }
     }
 
     /**
      * set proxy
      */
     public RequestBuilder proxy(Proxy proxy) {
-        this.proxy = proxy;
+        this.proxy = Objects.requireNonNull(proxy);
         return this;
     }
 
@@ -301,6 +309,7 @@ public final class RequestBuilder {
      * Set connect timeout and socket time out
      */
     public RequestBuilder timeout(int timeout) {
+        checkTimeout(timeout);
         return connectTimeout(timeout).socksTimeout(timeout);
     }
 

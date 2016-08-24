@@ -3,6 +3,8 @@ package net.dongliu.requests;
 import net.dongliu.requests.body.RequestBody;
 
 import javax.annotation.Nonnull;
+import java.io.UncheckedIOException;
+import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -55,7 +57,22 @@ public class HttpRequest {
         session = builder.session;
         keepAlive = builder.keepAlive;
 
-        this.url = Utils.joinUrl(builder.url, builder.params, charset);
+        this.url = joinUrl(builder.url, builder.params, charset);
+    }
+
+    private static URL joinUrl(String url, Collection<? extends Map.Entry<String, ?>> params,
+                               Charset charset) {
+        String fullUrl;
+        if (params.isEmpty()) {
+            fullUrl = url;
+        } else {
+            fullUrl = url + "?" + URIEncoder.encodeQueries(params, charset);
+        }
+        try {
+            return new URL(fullUrl);
+        } catch (MalformedURLException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     public String getMethod() {

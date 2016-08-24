@@ -1,7 +1,5 @@
 package net.dongliu.requests.json;
 
-import net.dongliu.commons.exception.Exceptions;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
@@ -20,11 +18,6 @@ public interface JsonProvider {
     void marshal(Writer writer, @Nullable Object value);
 
     /**
-     * Serialize value to json, with necessary indents
-     */
-    void prettyMarshal(Writer writer, @Nullable Object value);
-
-    /**
      * Marshal json to string
      */
     @Nonnull
@@ -33,20 +26,7 @@ public interface JsonProvider {
             marshal(sw, value);
             return sw.toString();
         } catch (IOException e) {
-            throw Exceptions.uncheck(e);
-        }
-    }
-
-    /**
-     * Marshal json to string
-     */
-    @Nonnull
-    default String prettyMarshal(Object value) {
-        try (StringWriter sw = new StringWriter()) {
-            prettyMarshal(sw, value);
-            return sw.toString();
-        } catch (IOException e) {
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
         }
     }
 

@@ -4,6 +4,7 @@ import net.dongliu.commons.collection.Pair;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Map;
 
@@ -98,7 +99,7 @@ class CookieUtils {
                     break;
                 case "expires":
                     try {
-                        expiry = Utils.parseDate(attribute.getValue());
+                        expiry = DateTimeFormatter.RFC_1123_DATE_TIME.parse(attribute.getValue(), Instant::from);
                     } catch (DateTimeParseException ignore) {
                         //TODO: we should ignore this cookie?
                     }

@@ -2,11 +2,11 @@ package net.dongliu.requests.json;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.dongliu.commons.exception.Exceptions;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
 
@@ -36,16 +36,7 @@ public class JacksonProvider implements JsonProvider {
         try {
             objectMapper.writeValue(writer, value);
         } catch (IOException e) {
-            throw Exceptions.uncheck(e);
-        }
-    }
-
-    @Override
-    public void prettyMarshal(Writer writer, @Nullable Object value) {
-        try {
-            objectMapper.writerWithDefaultPrettyPrinter().writeValue(writer, value);
-        } catch (IOException e) {
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -55,7 +46,7 @@ public class JacksonProvider implements JsonProvider {
         try {
             return objectMapper.readValue(reader, javaType);
         } catch (IOException e) {
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
         }
     }
 }

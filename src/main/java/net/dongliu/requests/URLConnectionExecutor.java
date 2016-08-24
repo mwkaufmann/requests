@@ -1,17 +1,13 @@
 package net.dongliu.requests;
 
 import net.dongliu.commons.collection.Pair;
-import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.commons.io.Closeables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -32,7 +28,7 @@ public class URLConnectionExecutor implements HttpExecutor {
     public RawResponse proceed(HttpRequest request) {
         RawResponse response = doRequest(request);
 
-        if (!request.isFollowRedirect() || !Utils.isRedirect(response.getStatusCode())) {
+        if (!request.isFollowRedirect() || !isRedirect(response.getStatusCode())) {
             return response;
         }
 
@@ -50,14 +46,23 @@ public class URLConnectionExecutor implements HttpExecutor {
             } catch (MalformedURLException e) {
                 throw new RequestsException("Get redirect url error", e);
             }
-            response = request.getSession().get(redirectUrl.toExternalForm())
-                    .proxy(request.getProxy()).followRedirect(false).send();
-            if (!Utils.isRedirect(response.getStatusCode())) {
+            RequestBuilder builder = request.getSession().get(redirectUrl.toExternalForm())
+                    .followRedirect(false);
+            if (request.getProxy() != null) {
+                builder.proxy(request.getProxy());
+            }
+            response = builder.send();
+            if (!isRedirect(response.getStatusCode())) {
                 return response;
             }
             response.discardBody();
         }
         throw new RequestsException("Too many redirect");
+    }
+
+    private static boolean isRedirect(int status) {
+        return status == 300 || status == 301 || status == 302 || status == 303 || status == 307
+                || status == 308;
     }
 
 
@@ -81,7 +86,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                 conn = (HttpURLConnection) url.openConnection();
             }
         } catch (IOException e) {
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
         }
 
         // deal with https
@@ -100,7 +105,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.setRequestMethod(request.getMethod());
         } catch (ProtocolException e) {
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
         }
         conn.setReadTimeout(request.getSocksTimeout());
         conn.setConnectTimeout(request.getConnectTimeout());
@@ -159,7 +164,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.connect();
         } catch (IOException e) {
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
         }
 
         try {
@@ -170,7 +175,7 @@ public class URLConnectionExecutor implements HttpExecutor {
             return getResponse(conn, session, request.getMethod(), host, effectivePath);
         } catch (IOException e) {
             conn.disconnect();
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
         } catch (Throwable e) {
             conn.disconnect();
             throw e;
@@ -179,8 +184,6 @@ public class URLConnectionExecutor implements HttpExecutor {
 
     /**
      * Wrap response, deal with headers and cookies
-     *
-     * @throws IOException
      */
     private RawResponse getResponse(HttpURLConnection conn, Session session,
                                     String method, String host, String path) throws IOException {
@@ -249,7 +252,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
                     Closeables.closeQuietly(input);
-                    throw Exceptions.uncheck(e);
+                    throw new UncheckedIOException(e);
                 }
             case "deflate":
                 return new DeflaterInputStream(input);
@@ -264,7 +267,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try (OutputStream os = conn.getOutputStream()) {
             body.writeBody(os, requestCharset);
         } catch (IOException e) {
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
         }
     }
 }

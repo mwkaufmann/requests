@@ -1,6 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.commons.io.Closeables;
 import net.dongliu.commons.io.InputOutputs;
 import net.dongliu.commons.io.ReaderWriters;
@@ -14,6 +13,8 @@ import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -62,7 +63,7 @@ public class RawResponse implements AutoCloseable {
         try (Reader reader = new InputStreamReader(input, charset)) {
             return ReaderWriters.readAll(reader);
         } catch (IOException e) {
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
         } finally {
             close();
         }
@@ -84,7 +85,7 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    public <T> T readAsJson(Type type, Charset charset) {
+    public <T> T readToJson(Type type, Charset charset) {
         try {
             return JsonLookup.getInstance().lookup().unmarshal(new InputStreamReader(input, charset), type);
         } finally {
@@ -97,10 +98,10 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    public <T> T readAsJson(Type type) {
+    public <T> T readToJson(Type type) {
         try {
             Charset charset = getCharsetFromHeaders(StandardCharsets.UTF_8);
-            return readAsJson(type, charset);
+            return readToJson(type, charset);
         } finally {
             close();
         }
@@ -111,8 +112,8 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    public <T> T readAsJson(TypeInfer<T> typeInfer, Charset charset) {
-        return readAsJson(typeInfer.getType(), charset);
+    public <T> T readToJson(TypeInfer<T> typeInfer, Charset charset) {
+        return readToJson(typeInfer.getType(), charset);
     }
 
     /**
@@ -120,8 +121,8 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    public <T> T readAsJson(TypeInfer<T> typeInfer) {
-        return readAsJson(typeInfer.getType());
+    public <T> T readToJson(TypeInfer<T> typeInfer) {
+        return readToJson(typeInfer.getType());
     }
 
     /**
@@ -129,8 +130,8 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    public <T> T readAsJson(Class<T> cls, Charset charset) {
-        return readAsJson((Type) cls, charset);
+    public <T> T readToJson(Class<T> cls, Charset charset) {
+        return readToJson((Type) cls, charset);
     }
 
     /**
@@ -138,8 +139,8 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    public <T> T readAsJson(Class<T> cls) {
-        return readAsJson((Type) cls);
+    public <T> T readToJson(Class<T> cls) {
+        return readToJson((Type) cls);
     }
 
     /**
@@ -147,11 +148,41 @@ public class RawResponse implements AutoCloseable {
      */
     public void writeToFile(File path) {
         try {
-            try (FileOutputStream fos = new FileOutputStream(path)) {
-                InputOutputs.copy(input, fos);
+            try (OutputStream os = new FileOutputStream(path)) {
+                InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
-            throw Exceptions.uncheck(e);
+            throw new UncheckedIOException(e);
+        } finally {
+            close();
+        }
+    }
+
+    /**
+     * Write response body to file
+     */
+    public void writeToFile(Path path) {
+        try {
+            try (OutputStream os = Files.newOutputStream(path)) {
+                InputOutputs.copy(input, os);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            close();
+        }
+    }
+
+    /**
+     * Write response body to file
+     */
+    public void writeToFile(String path) {
+        try {
+            try (OutputStream os = new FileOutputStream(path)) {
+                InputOutputs.copy(input, os);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         } finally {
             close();
         }
