@@ -1,6 +1,6 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.commons.io.InputOutputs;
+import net.dongliu.requests.InternalIOUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +34,6 @@ class FileRequestBody extends RequestBody<File> {
 
     @Override
     public void writeBody(OutputStream os, Charset charset) throws IOException {
-        InputOutputs.copy(new FileInputStream(getBody()), os);
+        InternalIOUtils.copy(new FileInputStream(getBody()), os);
     }
 }

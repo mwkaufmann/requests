@@ -1,7 +1,6 @@
 package net.dongliu.requests;
 
 import net.dongliu.commons.collection.Pair;
-import net.dongliu.commons.io.Closeables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
@@ -251,7 +250,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                 try {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
-                    Closeables.closeQuietly(input);
+                    InternalIOUtils.closeQuietly(input);
                     throw new UncheckedIOException(e);
                 }
             case "deflate":

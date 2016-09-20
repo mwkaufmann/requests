@@ -1,8 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.io.Closeables;
-import net.dongliu.commons.io.InputOutputs;
-import net.dongliu.commons.io.ReaderWriters;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
 
@@ -43,7 +40,7 @@ public class RawResponse implements AutoCloseable {
 
     @Override
     public void close() {
-        Closeables.closeQuietly(input);
+        InternalIOUtils.closeQuietly(input);
         conn.disconnect();
     }
 
@@ -61,7 +58,7 @@ public class RawResponse implements AutoCloseable {
      */
     public String readToText(Charset charset) {
         try (Reader reader = new InputStreamReader(input, charset)) {
-            return ReaderWriters.readAll(reader);
+            return InternalIOUtils.readAll(reader);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -74,7 +71,7 @@ public class RawResponse implements AutoCloseable {
      */
     public byte[] readToBytes() {
         try {
-            return InputOutputs.readAll(input);
+            return InternalIOUtils.readAll(input);
         } finally {
             close();
         }
@@ -149,7 +146,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(File path) {
         try {
             try (OutputStream os = new FileOutputStream(path)) {
-                InputOutputs.copy(input, os);
+                InternalIOUtils.copy(input, os);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -164,7 +161,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(Path path) {
         try {
             try (OutputStream os = Files.newOutputStream(path)) {
-                InputOutputs.copy(input, os);
+                InternalIOUtils.copy(input, os);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -179,7 +176,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(String path) {
         try {
             try (OutputStream os = new FileOutputStream(path)) {
-                InputOutputs.copy(input, os);
+                InternalIOUtils.copy(input, os);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -193,7 +190,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void writeTo(OutputStream out) {
         try {
-            InputOutputs.copy(input, out);
+            InternalIOUtils.copy(input, out);
         } finally {
             close();
         }
@@ -204,7 +201,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void discardBody() {
         try {
-            InputOutputs.skipAll(input);
+            InternalIOUtils.skipAll(input);
         } finally {
             close();
         }
