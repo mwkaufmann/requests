@@ -1,6 +1,3 @@
-[![](https://travis-ci.org/caoqianli/requests.svg)](https://travis-ci.org/caoqianli/requests) 
-![License](https://img.shields.io/badge/licence-Simplified%20BSD-blue.svg?style=flat)
-
 Requests is a http request lib with fluent api for java, inspired by the python request module. From version 3.0, requests required java8.
 
 #Maven Setting
