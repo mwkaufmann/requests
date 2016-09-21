@@ -1,7 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Pair;
-
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
@@ -133,18 +131,18 @@ class CookieUtils {
         int idx = str.indexOf("=");
         if (idx < 0) {
             // If there is no = symbol in the string at all, browsers treat it as the cookie with the empty-string name
-            return Pair.of("", str);
+            return Parameter.of("", str);
         } else {
-            return Pair.of(str.substring(0, idx), str.substring(idx + 1));
+            return Parameter.of(str.substring(0, idx), str.substring(idx + 1));
         }
     }
 
     private static Map.Entry<String, String> parseCookieAttribute(String str) {
         int idx = str.indexOf("=");
         if (idx < 0) {
-            return Pair.of(str, "");
+            return Parameter.of(str, "");
         } else {
-            return Pair.of(str.substring(0, idx), str.substring(idx + 1));
+            return Parameter.of(str.substring(0, idx), str.substring(idx + 1));
         }
     }
 

@@ -1,6 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Pair;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -14,9 +13,9 @@ public class ResponseHeadersTest {
     @Test
     public void getHeaders() throws Exception {
         ResponseHeaders headers = new ResponseHeaders(Arrays.asList(
-                Pair.of("Location", "www"),
-                Pair.of("Location", "www2"),
-                Pair.of("Content-Length", "100")
+                Parameter.of("Location", "www"),
+                Parameter.of("Location", "www2"),
+                Parameter.of("Content-Length", "100")
         ));
         assertEquals(Arrays.asList("www", "www2"), headers.getHeaders("Location"));
     }
@@ -24,9 +23,9 @@ public class ResponseHeadersTest {
     @Test
     public void getFirstHeader() throws Exception {
         ResponseHeaders headers = new ResponseHeaders(Arrays.asList(
-                Pair.of("Location", "www"),
-                Pair.of("Location", "www2"),
-                Pair.of("Content-Length", "100")
+                Parameter.of("Location", "www"),
+                Parameter.of("Location", "www2"),
+                Parameter.of("Content-Length", "100")
         ));
         assertEquals("www", headers.getFirstHeader("Location"));
         assertEquals("www", headers.getFirstHeader("location"));
@@ -35,9 +34,9 @@ public class ResponseHeadersTest {
     @Test
     public void getLongHeader() throws Exception {
         ResponseHeaders headers = new ResponseHeaders(Arrays.asList(
-                Pair.of("Location", "www"),
-                Pair.of("Location", "www2"),
-                Pair.of("Content-Length", "100")
+                Parameter.of("Location", "www"),
+                Parameter.of("Location", "www2"),
+                Parameter.of("Content-Length", "100")
         ));
         assertEquals(100, headers.getLongHeader("Content-Length", -1));
     }

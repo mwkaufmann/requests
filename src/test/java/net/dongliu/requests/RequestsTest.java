@@ -1,6 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.collection.Pair;
 import net.dongliu.requests.json.TypeInfer;
 import net.dongliu.requests.body.Part;
 import net.dongliu.requests.mock.MockServer;
@@ -60,7 +59,7 @@ public class RequestsTest {
     public void testPost() {
         // form encoded post
         String text = Requests.post("http://127.0.0.1:8080/post")
-                .forms(Pair.of("wd", "test"))
+                .forms(Parameter.of("wd", "test"))
                 .send().readToText();
         assertTrue(text.contains("wd=test"));
     }
@@ -68,7 +67,7 @@ public class RequestsTest {
     @Test
     public void testCookie() {
         RawResponse response = Requests.get("http://127.0.0.1:8080/cookie")
-                .cookies(Pair.of("test", "value")).send();
+                .cookies(Parameter.of("test", "value")).send();
         assertTrue(response.getCookies().stream().filter(c -> c.getName().equals("test")).findFirst().isPresent());
     }
 
@@ -117,7 +116,7 @@ public class RequestsTest {
     @Test
     public void sendHeaders() {
         String text = Requests.get("http://127.0.0.1:8080/echo_header")
-                .headers(Pair.of("Host", "www.baidu.com"), Pair.of("TestHeader", 1))
+                .headers(Parameter.of("Host", "www.baidu.com"), Parameter.of("TestHeader", 1))
                 .send().readToText();
         assertTrue(text.contains("Host: www.baidu.com"));
         assertTrue(text.contains("TestHeader: 1"));

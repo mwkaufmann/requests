@@ -8,7 +8,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.4.7</version>
+    <version>4.5.0</version>
 </dependency>
 ```
 
@@ -73,7 +73,7 @@ params.put("k1", "v1");
 params.put("k2", "v2");
 String resp = Requests.get(url).params(params).send().readToText();
 // set multi params
-String resp = Requests.get(url).params(Pair.of("k1", "v1"), Pair.of("k2", "v2"))
+String resp = Requests.get(url).params(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 ```
 
@@ -86,7 +86,7 @@ headers.put("k1", "v1");
 headers.put("k2", "v2");
 String resp = Requests.get(url).headers(headers).send().readToText();
 // set multi headers
-String resp = Requests.get(url).headers(Pair.of("k1", "v1"), Pair.of("k2", "v2"))
+String resp = Requests.get(url).headers(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 ```
 
@@ -100,7 +100,7 @@ cookies.put("k2", "v2");
 // set cookies by map
 String resp = Requests.get(url).cookies(cookies).send().readToText();
 // set cookies
-String resp = Requests.get(url).cookies(Pair.of("k1", "v1"), Pair.of("k2", "v2"))
+String resp = Requests.get(url).cookies(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 ```
 
@@ -109,7 +109,7 @@ String resp = Requests.get(url).cookies(Pair.of("k1", "v1"), Pair.of("k2", "v2")
 Http Post, Put, Patch method can send request body. Take Post for example:
 ```java
 // set post form data
-String resp = Requests.post(url).forms(Pair.of("k1", "v1"), Pair.of("k2", "v2"))
+String resp = Requests.post(url).forms(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 // set post form data by map
 Map<String, Object> formData = new HashMap<>();
