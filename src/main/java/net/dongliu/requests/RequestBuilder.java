@@ -24,8 +24,8 @@ public final class RequestBuilder {
     Collection<? extends Map.Entry<String, ?>> params = Collections.emptyList();
     Charset requestCharset = StandardCharsets.UTF_8;
     RequestBody<?> body;
-    int socksTimeout = HttpRequest.DEFAULT_TIMEOUT;
-    int connectTimeout = HttpRequest.DEFAULT_TIMEOUT;
+    int socksTimeout = Request.DEFAULT_TIMEOUT;
+    int connectTimeout = Request.DEFAULT_TIMEOUT;
     Proxy proxy;
     boolean followRedirect = true;
     boolean compress = true;
@@ -292,15 +292,15 @@ public final class RequestBuilder {
         return this;
     }
 
-    HttpRequest build() {
-        return new HttpRequest(this);
+    Request build() {
+        return new Request(this);
     }
 
     /**
      * build http request, and send out
      */
     public RawResponse send() {
-        HttpRequest request = build();
+        Request request = build();
         HttpExecutor executor = new URLConnectionExecutor();
         return new InterceptorChain(interceptors, executor).proceed(request);
     }

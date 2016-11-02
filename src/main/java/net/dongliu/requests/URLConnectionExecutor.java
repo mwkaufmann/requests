@@ -1,5 +1,6 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.io.Closeables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
@@ -23,7 +24,7 @@ import static net.dongliu.requests.HttpHeaders.*;
  */
 public class URLConnectionExecutor implements HttpExecutor {
     @Override
-    public RawResponse proceed(HttpRequest request) {
+    public RawResponse proceed(Request request) {
         RawResponse response = doRequest(request);
 
         if (!request.isFollowRedirect() || !isRedirect(response.getStatusCode())) {
@@ -64,7 +65,7 @@ public class URLConnectionExecutor implements HttpExecutor {
     }
 
 
-    private RawResponse doRequest(HttpRequest request) {
+    private RawResponse doRequest(Request request) {
         Charset charset = request.getCharset();
         URL url = request.getUrl();
         Proxy proxy = request.getProxy();
@@ -249,7 +250,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                 try {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
-                    InternalIOUtils.closeQuietly(input);
+                    Closeables.closeQuietly(input);
                     throw new UncheckedIOException(e);
                 }
             case "deflate":

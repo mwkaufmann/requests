@@ -17,7 +17,7 @@ class InterceptorChain implements Interceptor.InvocationTarget {
     }
 
     @Override
-    public RawResponse proceed(HttpRequest request) {
+    public RawResponse proceed(Request request) {
         if (index == interceptorList.size()) {
             return httpExecutor.proceed(request);
         }

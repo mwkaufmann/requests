@@ -8,7 +8,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.5.0</version>
+    <version>4.6.0</version>
 </dependency>
 ```
 
@@ -58,9 +58,9 @@ Requests default use UTF-8 to encode parameters, post forms or request string bo
 String resp = Requests.get(url).requestCharset(StandardCharsets.ISO_8859_1).send().readToText();
 ```
 When read response to text-based result, use charset get from http response header, or UTF-8 if not found.
-Can force use other charset by:
+You can force use specified charset by:
 ```
-String resp = Requests.get(url).send().readToText(StandardCharsets.ISO_8859_1);
+String resp = Requests.get(url).send().withCharset(StandardCharsets.ISO_8859_1).readToText();
 ```
 
 ##Passing Parameters 

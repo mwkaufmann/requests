@@ -1,5 +1,8 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.io.Closeables;
+import net.dongliu.commons.io.InputOutputs;
+import net.dongliu.commons.io.ReaderWriters;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
 
@@ -14,10 +17,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
- * Raw http response
+ * Raw http response.
+ * It you do not consume http response body, with readToText, readToBytes, writeToFile, toTextResponse,
+ * toJsonResponse, etc.., you need to close this raw response manually
  *
  * @author Liu Dong
  */
@@ -27,7 +30,8 @@ public class RawResponse implements AutoCloseable {
     private final ResponseHeaders headers;
     private final InputStream input;
     private final HttpURLConnection conn;
-    // redirect history
+    @Nullable
+    private Charset charset;
 
     RawResponse(int statusCode, ResponseHeaders headers, Set<Cookie> cookies, InputStream input,
                 HttpURLConnection conn) {
@@ -40,8 +44,17 @@ public class RawResponse implements AutoCloseable {
 
     @Override
     public void close() {
-        InternalIOUtils.closeQuietly(input);
+        Closeables.closeQuietly(input);
         conn.disconnect();
+    }
+
+    /**
+     * Set response read charset.
+     * If not set, will get charset from response headers.
+     */
+    public RawResponse withCharset(Charset charset) {
+        this.charset = Objects.requireNonNull(charset);
+        return this;
     }
 
 
@@ -49,16 +62,9 @@ public class RawResponse implements AutoCloseable {
      * Read response body to string. return empty string if response has no body
      */
     public String readToText() {
-        Charset charset = getCharsetFromHeaders(UTF_8);
-        return readToText(charset);
-    }
-
-    /**
-     * Read response body to string. return empty string if response has no body
-     */
-    public String readToText(Charset charset) {
+        Charset charset = getCharset();
         try (Reader reader = new InputStreamReader(input, charset)) {
-            return InternalIOUtils.readAll(reader);
+            return ReaderWriters.readAll(reader);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } finally {
@@ -67,27 +73,28 @@ public class RawResponse implements AutoCloseable {
     }
 
     /**
+     * Convert to response, with body as text. The origin raw response will be closed
+     */
+    public Response<String> toTextResponse() {
+        return new Response<>(this.statusCode, this.cookies, this.headers, readToText());
+    }
+
+    /**
      * Read response body to byte array. return empty byte array if response has no body
      */
     public byte[] readToBytes() {
         try {
-            return InternalIOUtils.readAll(input);
+            return InputOutputs.readAll(input);
         } finally {
             close();
         }
     }
 
     /**
-     * Deserialize response content as json
-     *
-     * @return null if json value is null or empty
+     * Convert to response, with body as byte array
      */
-    public <T> T readToJson(Type type, Charset charset) {
-        try {
-            return JsonLookup.getInstance().lookup().unmarshal(new InputStreamReader(input, charset), type);
-        } finally {
-            close();
-        }
+    public Response<byte[]> toBytesResponse() {
+        return new Response<>(this.statusCode, this.cookies, this.headers, readToBytes());
     }
 
     /**
@@ -97,20 +104,10 @@ public class RawResponse implements AutoCloseable {
      */
     public <T> T readToJson(Type type) {
         try {
-            Charset charset = getCharsetFromHeaders(StandardCharsets.UTF_8);
-            return readToJson(type, charset);
+            return JsonLookup.getInstance().lookup().unmarshal(new InputStreamReader(input, getCharset()), type);
         } finally {
             close();
         }
-    }
-
-    /**
-     * Deserialize response content as json
-     *
-     * @return null if json value is null or empty
-     */
-    public <T> T readToJson(TypeInfer<T> typeInfer, Charset charset) {
-        return readToJson(typeInfer.getType(), charset);
     }
 
     /**
@@ -127,17 +124,22 @@ public class RawResponse implements AutoCloseable {
      *
      * @return null if json value is null or empty
      */
-    public <T> T readToJson(Class<T> cls, Charset charset) {
-        return readToJson((Type) cls, charset);
+    public <T> T readToJson(Class<T> cls) {
+        return readToJson((Type) cls);
     }
 
     /**
-     * Deserialize response content as json
-     *
-     * @return null if json value is null or empty
+     * Convert http response body to json result
      */
-    public <T> T readToJson(Class<T> cls) {
-        return readToJson((Type) cls);
+    public <T> Response<T> toJsonResponse(TypeInfer<T> typeInfer) {
+        return new Response<>(this.statusCode, this.cookies, this.headers, readToJson(typeInfer));
+    }
+
+    /**
+     * Convert http response body to json result
+     */
+    public <T> Response<T> toJsonResponse(Class<T> cls) {
+        return new Response<>(this.statusCode, this.cookies, this.headers, readToJson(cls));
     }
 
     /**
@@ -146,7 +148,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(File path) {
         try {
             try (OutputStream os = new FileOutputStream(path)) {
-                InternalIOUtils.copy(input, os);
+                InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -161,7 +163,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(Path path) {
         try {
             try (OutputStream os = Files.newOutputStream(path)) {
-                InternalIOUtils.copy(input, os);
+                InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -170,13 +172,14 @@ public class RawResponse implements AutoCloseable {
         }
     }
 
+
     /**
      * Write response body to file
      */
     public void writeToFile(String path) {
         try {
             try (OutputStream os = new FileOutputStream(path)) {
-                InternalIOUtils.copy(input, os);
+                InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -190,7 +193,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void writeTo(OutputStream out) {
         try {
-            InternalIOUtils.copy(input, out);
+            InputOutputs.copy(input, out);
         } finally {
             close();
         }
@@ -201,7 +204,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void discardBody() {
         try {
-            InternalIOUtils.skipAll(input);
+            InputOutputs.skipAll(input);
         } finally {
             close();
         }
@@ -252,10 +255,13 @@ public class RawResponse implements AutoCloseable {
         return cookies;
     }
 
-    private Charset getCharsetFromHeaders(Charset defaultCharset) {
+    private Charset getCharset() {
+        if (this.charset != null) {
+            return this.charset;
+        }
         String contentType = getFirstHeader(HttpHeaders.NAME_CONTENT_TYPE);
         if (contentType == null) {
-            return defaultCharset;
+            return StandardCharsets.UTF_8;
         }
         String[] items = contentType.split("; ");
         for (String item : items) {
@@ -268,6 +274,6 @@ public class RawResponse implements AutoCloseable {
                 return Charset.forName(item.substring(idx + 1).trim());
             }
         }
-        return defaultCharset;
+        return StandardCharsets.UTF_8;
     }
 }

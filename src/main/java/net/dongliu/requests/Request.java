@@ -1,8 +1,11 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.codec.URIEncoder;
+import net.dongliu.commons.collection.Lists;
 import net.dongliu.requests.body.RequestBody;
 
 import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -17,7 +20,8 @@ import java.util.Map;
  *
  * @author Liu Dong
  */
-public class HttpRequest {
+@Immutable
+public class Request {
     static final int DEFAULT_TIMEOUT = 10_000;
 
     private final String method;
@@ -39,7 +43,7 @@ public class HttpRequest {
     private final URL url;
     private final boolean keepAlive;
 
-    HttpRequest(RequestBuilder builder) {
+    Request(RequestBuilder builder) {
         method = builder.method;
         headers = builder.headers;
         cookies = builder.cookies;
@@ -66,7 +70,9 @@ public class HttpRequest {
         if (params.isEmpty()) {
             fullUrl = url;
         } else {
-            fullUrl = url + "?" + URIEncoder.encodeQueries(params, charset);
+            fullUrl = url + "?" + URIEncoder.encodeQueries(
+                    Lists.map(params, p -> Parameter.of(p.getKey(), String.valueOf(p.getValue()))),
+                    charset);
         }
         try {
             return new URL(fullUrl);
