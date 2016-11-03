@@ -8,7 +8,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.6.0</version>
+    <version>4.6.1</version>
 </dependency>
 ```
 
@@ -54,18 +54,22 @@ boolean result = Requests.get(url).send().writeToFile("/path/to/save/file");
 ##Charset 
 
 Requests default use UTF-8 to encode parameters, post forms or request string body, you can set other charset by:
-```
+
+```java
 String resp = Requests.get(url).requestCharset(StandardCharsets.ISO_8859_1).send().readToText();
 ```
+
 When read response to text-based result, use charset get from http response header, or UTF-8 if not found.
 You can force use specified charset by:
-```
+
+```java
 String resp = Requests.get(url).send().withCharset(StandardCharsets.ISO_8859_1).readToText();
 ```
 
 ##Passing Parameters 
 
 Pass parameters in urls using param or params method:
+
 ```java
 // set params by map
 Map<String, Object> params = new HashMap<>();
@@ -93,6 +97,7 @@ String resp = Requests.get(url).headers(Parameter.of("k1", "v1"), Parameter.of("
 ##Cookies 
 
 Cookies can be add by:
+
 ```java
 Map<String, Object> cookies = new HashMap<>();
 cookies.put("k1", "v1");
@@ -107,6 +112,7 @@ String resp = Requests.get(url).cookies(Parameter.of("k1", "v1"), Parameter.of("
 ##Request with data 
 
 Http Post, Put, Patch method can send request body. Take Post for example:
+
 ```java
 // set post form data
 String resp = Requests.post(url).forms(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
@@ -141,6 +147,7 @@ String resp = Requests.post(url)
 ##Basic Auth 
 
 Set http basic auth param by auth method:
+
 ```java
 String resp = Requests.get(url).basicAuth("user", "passwd").send().readToText();
 ```
