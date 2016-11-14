@@ -45,7 +45,7 @@ public class Requests {
     /**
      * Create new request with method and url
      */
-    public RequestBuilder newRequest(String method, String url) {
+    public static RequestBuilder newRequest(String method, String url) {
         return session().newRequest(method, url);
     }
 
