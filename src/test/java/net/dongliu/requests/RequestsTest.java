@@ -51,6 +51,8 @@ public class RequestsTest {
         RawResponse resp = Requests.head("http://127.0.0.1:8080")
                 .requestCharset(StandardCharsets.UTF_8).send();
         assertEquals(200, resp.getStatusCode());
+        String statusLine = resp.getStatusLine();
+        assertEquals("HTTP/1.1 200 OK", statusLine);
         String text = resp.readToText();
         assertTrue(text.isEmpty());
     }

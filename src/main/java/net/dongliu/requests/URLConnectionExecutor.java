@@ -4,6 +4,7 @@ import net.dongliu.commons.io.Closeables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
+import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
@@ -189,6 +190,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         // read result
         int status = conn.getResponseCode();
 
+        String statusLine = null;
         // headers and cookies
         List<Map.Entry<String, String>> headerList = new ArrayList<>();
         Set<Cookie> cookies = new HashSet<>();
@@ -202,6 +204,7 @@ public class URLConnectionExecutor implements HttpExecutor {
             index++;
             //status line
             if (key == null) {
+                statusLine = value;
                 continue;
             }
             headerList.add(Parameter.of(key, value));
@@ -226,7 +229,7 @@ public class URLConnectionExecutor implements HttpExecutor {
 
         // update session
         session.updateCookie(cookies);
-        return new RawResponse(status, headers, cookies, input, conn);
+        return new RawResponse(status, statusLine, headers, cookies, input, conn);
     }
 
     /**

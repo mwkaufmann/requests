@@ -26,6 +26,7 @@ import java.util.*;
  */
 public class RawResponse implements AutoCloseable {
     private final int statusCode;
+    private final String statusLine;
     private final Set<Cookie> cookies;
     private final ResponseHeaders headers;
     private final InputStream input;
@@ -33,9 +34,10 @@ public class RawResponse implements AutoCloseable {
     @Nullable
     private Charset charset;
 
-    RawResponse(int statusCode, ResponseHeaders headers, Set<Cookie> cookies, InputStream input,
+    RawResponse(int statusCode, String statusLine, ResponseHeaders headers, Set<Cookie> cookies, InputStream input,
                 HttpURLConnection conn) {
         this.statusCode = statusCode;
+        this.statusLine = statusLine;
         this.headers = headers;
         this.cookies = Collections.unmodifiableSet(cookies);
         this.input = input;
@@ -215,6 +217,13 @@ public class RawResponse implements AutoCloseable {
      */
     public int getStatusCode() {
         return statusCode;
+    }
+
+    /**
+     * Get the status line
+     */
+    public String getStatusLine() {
+        return statusLine;
     }
 
     /**
