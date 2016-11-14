@@ -42,6 +42,13 @@ public class Requests {
         return session().patch(url);
     }
 
+    /**
+     * Create new request with method and url
+     */
+    public RequestBuilder newRequest(String method, String url) {
+        return session().newRequest(method, url);
+    }
+
     public static Session session() {
         return new Session();
     }

@@ -73,4 +73,8 @@ public class Session {
     public RequestBuilder patch(String url) {
         return new RequestBuilder(this).url(url).method("PATCH");
     }
+
+    public RequestBuilder newRequest(String method, String url) {
+        return new RequestBuilder(this).url(url).method(method);
+    }
 }
