@@ -2,6 +2,7 @@ package net.dongliu.requests;
 
 import net.dongliu.commons.codec.URIEncoder;
 import net.dongliu.commons.collection.Lists;
+import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.requests.body.RequestBody;
 
 import javax.annotation.Nonnull;
@@ -77,7 +78,7 @@ public class Request {
         try {
             return new URL(fullUrl);
         } catch (MalformedURLException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
     }
 

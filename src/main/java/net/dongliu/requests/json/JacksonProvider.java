@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.Reader;
-import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
 
@@ -32,21 +31,13 @@ public class JacksonProvider implements JsonProvider {
     }
 
     @Override
-    public void marshal(Writer writer, @Nullable Object value) {
-        try {
-            objectMapper.writeValue(writer, value);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public void marshal(Writer writer, @Nullable Object value) throws IOException {
+        objectMapper.writeValue(writer, value);
     }
 
     @Override
-    public <T> T unmarshal(Reader reader, Type type) {
+    public <T> T unmarshal(Reader reader, Type type) throws IOException {
         JavaType javaType = objectMapper.getTypeFactory().constructType(type);
-        try {
-            return objectMapper.readValue(reader, javaType);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+        return objectMapper.readValue(reader, javaType);
     }
 }

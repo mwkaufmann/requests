@@ -1,5 +1,6 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.requests.exception.RequestsException;
 
 import javax.net.ssl.*;
@@ -102,7 +103,7 @@ class SSLSocketFactories {
                     ks.load(new FileInputStream(cert.getPath()), cert.getPassword() == null ?
                             null : cert.getPassword().toCharArray());
                 } catch (IOException e) {
-                    throw new UncheckedIOException(e);
+                    throw Exceptions.sneakyThrow(e);
                 } catch (NoSuchAlgorithmException | CertificateException e) {
                     throw new RequestsException(e);
                 }

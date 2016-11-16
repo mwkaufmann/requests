@@ -1,12 +1,15 @@
 package net.dongliu.requests.json;
 
 
+import net.dongliu.commons.concurrent.Lazy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Optional;
 
 /**
  * Lookup json, from classpath
@@ -15,7 +18,7 @@ import java.util.logging.Logger;
  */
 @ThreadSafe
 public class JsonLookup {
-    private static final Logger logger = Logger.getLogger(JsonLookup.class.getName());
+    private static final Logger logger = LogManager.getLogger();
     private static JsonLookup instance = new JsonLookup();
     @Nullable
     private volatile JsonProvider registeredJsonProvider;
@@ -36,9 +39,7 @@ public class JsonLookup {
      */
     public void register(JsonProvider jsonProvider) {
         this.registeredJsonProvider = Objects.requireNonNull(jsonProvider);
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Set json provider to " + jsonProvider.getClass().getName());
-        }
+        logger.debug(() -> "Set json provider to " + jsonProvider.getClass().getName());
     }
 
     /**
@@ -86,32 +87,29 @@ public class JsonLookup {
      */
     @Nonnull
     public JsonProvider lookup() {
-        JsonProvider jsonProvider = registeredJsonProvider;
-        if (jsonProvider == null) {
-            jsonProvider = lookedJsonProvider;
+        if (registeredJsonProvider != null) {
+            return registeredJsonProvider;
         }
-
-        if (jsonProvider != null) {
-            return jsonProvider;
+        Optional<JsonProvider> jsonProvider = lookedJsonProvider.get();
+        if (jsonProvider.isPresent()) {
+            return jsonProvider.get();
         }
         throw new ProviderNotFoundException("Json Provider not found");
     }
 
 
-    private final JsonProvider lookedJsonProvider = this.lookupInClasspath();
+    private final Lazy<Optional<JsonProvider>> lookedJsonProvider = Lazy.create(this::lookupInClasspath);
 
     @Nullable
-    private JsonProvider lookupInClasspath() {
+    private Optional<JsonProvider> lookupInClasspath() {
         if (hasJackson()) {
-            logger.fine("Use default jackson provider to deal with json");
-            this.registeredJsonProvider = jacksonProvider();
-            return registeredJsonProvider;
+            logger.debug("Use default jackson provider to deal with json");
+            return Optional.of(jacksonProvider());
         }
         if (hasGson()) {
-            logger.fine("Use default gson provider to deal with json");
-            registeredJsonProvider = gsonProvider();
-            return registeredJsonProvider;
+            logger.debug("Use default gson provider to deal with json");
+            return Optional.of(gsonProvider());
         }
-        return null;
+        return Optional.empty();
     }
 }

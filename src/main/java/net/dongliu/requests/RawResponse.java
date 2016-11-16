@@ -1,5 +1,6 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.commons.io.Closeables;
 import net.dongliu.commons.io.InputOutputs;
 import net.dongliu.commons.io.ReaderWriters;
@@ -68,7 +69,7 @@ public class RawResponse implements AutoCloseable {
         try (Reader reader = new InputStreamReader(input, charset)) {
             return ReaderWriters.readAll(reader);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -87,6 +88,8 @@ public class RawResponse implements AutoCloseable {
     public byte[] readToBytes() {
         try {
             return InputOutputs.readAll(input);
+        } catch (IOException e) {
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -106,7 +109,9 @@ public class RawResponse implements AutoCloseable {
      */
     public <T> T readToJson(Type type) {
         try {
-            return JsonLookup.getInstance().lookup().unmarshal(new InputStreamReader(input, getCharset()), type);
+            return JsonLookup.getInstance().lookup().unmarshal(input, getCharset(), type);
+        } catch (IOException e) {
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -153,7 +158,7 @@ public class RawResponse implements AutoCloseable {
                 InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -168,7 +173,7 @@ public class RawResponse implements AutoCloseable {
                 InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -184,7 +189,7 @@ public class RawResponse implements AutoCloseable {
                 InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -196,6 +201,8 @@ public class RawResponse implements AutoCloseable {
     public void writeTo(OutputStream out) {
         try {
             InputOutputs.copy(input, out);
+        } catch (IOException e) {
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }
@@ -207,6 +214,8 @@ public class RawResponse implements AutoCloseable {
     public void discardBody() {
         try {
             InputOutputs.skipAll(input);
+        } catch (IOException e) {
+            throw Exceptions.sneakyThrow(e);
         } finally {
             close();
         }

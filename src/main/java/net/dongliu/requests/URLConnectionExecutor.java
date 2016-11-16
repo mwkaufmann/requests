@@ -1,10 +1,10 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.commons.io.Closeables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
-import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.*;
@@ -86,7 +86,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                 conn = (HttpURLConnection) url.openConnection();
             }
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
 
         // deal with https
@@ -105,7 +105,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.setRequestMethod(request.getMethod());
         } catch (ProtocolException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
         conn.setReadTimeout(request.getSocksTimeout());
         conn.setConnectTimeout(request.getConnectTimeout());
@@ -164,7 +164,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.connect();
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
 
         try {
@@ -172,10 +172,10 @@ public class URLConnectionExecutor implements HttpExecutor {
             if (body != null) {
                 sendBody(body, conn, charset);
             }
-            return getResponse(conn, session, request.getMethod(), host, effectivePath);
+            return getResponse(conn, session, request.isCompress(), request.getMethod(), host, effectivePath);
         } catch (IOException e) {
             conn.disconnect();
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         } catch (Throwable e) {
             conn.disconnect();
             throw e;
@@ -185,7 +185,7 @@ public class URLConnectionExecutor implements HttpExecutor {
     /**
      * Wrap response, deal with headers and cookies
      */
-    private RawResponse getResponse(HttpURLConnection conn, Session session,
+    private RawResponse getResponse(HttpURLConnection conn, Session session, boolean compress,
                                     String method, String host, String path) throws IOException {
         // read result
         int status = conn.getResponseCode();
@@ -222,7 +222,9 @@ public class URLConnectionExecutor implements HttpExecutor {
         }
         if (input != null) {
             // deal with [compressed] input
-            input = wrapCompressBody(status, method, headers, input);
+            if (compress) {
+                input = wrapCompressBody(status, method, headers, input);
+            }
         } else {
             input = new ByteArrayInputStream(new byte[0]);
         }
@@ -254,7 +256,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
                     Closeables.closeQuietly(input);
-                    throw new UncheckedIOException(e);
+                    throw Exceptions.sneakyThrow(e);
                 }
             case "deflate":
                 return new DeflaterInputStream(input);
@@ -269,7 +271,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try (OutputStream os = conn.getOutputStream()) {
             body.writeBody(os, requestCharset);
         } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            throw Exceptions.sneakyThrow(e);
         }
     }
 }
