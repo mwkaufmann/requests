@@ -73,11 +73,24 @@ public class JsonLookup {
         }
     }
 
+    boolean hasFastJson() {
+        try {
+            Class.forName("com.alibaba.fastjson.JSON");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     /**
      * Create Jackson Provider
      */
     JsonProvider jacksonProvider() {
         return new JacksonProvider();
+    }
+
+    JsonProvider fastJsonProvider() {
+        return new FastJsonProvider();
     }
 
     /**
@@ -109,6 +122,10 @@ public class JsonLookup {
         if (hasGson()) {
             logger.debug("Use default gson provider to deal with json");
             return Optional.of(gsonProvider());
+        }
+        if (hasFastJson()) {
+            logger.debug("Use default fastJson provider to deal with json");
+            return Optional.of(fastJsonProvider());
         }
         return Optional.empty();
     }
