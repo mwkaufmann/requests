@@ -7,7 +7,7 @@
     <artifactId>requests</artifactId>
     <name>Convenient http client for java</name>
     <packaging>jar</packaging>
-    <version>4.6.6</version>
+    <version>4.7.0</version>
     <url>https://github.com/caoqianli/requests</url>
 
     <parent>
@@ -45,11 +45,6 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>net.dongliu</groupId>
-            <artifactId>commons</artifactId>
-            <version>4.8.11</version>
-        </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>

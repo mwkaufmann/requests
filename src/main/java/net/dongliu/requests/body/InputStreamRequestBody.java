@@ -1,6 +1,6 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.commons.io.InputOutputs;
+import net.dongliu.requests.utils.InputOutputs;
 
 import java.io.IOException;
 import java.io.InputStream;

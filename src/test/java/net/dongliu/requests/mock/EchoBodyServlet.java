@@ -1,7 +1,7 @@
 package net.dongliu.requests.mock;
 
 
-import net.dongliu.commons.io.ReaderWriters;
+import net.dongliu.requests.utils.ReaderWriters;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

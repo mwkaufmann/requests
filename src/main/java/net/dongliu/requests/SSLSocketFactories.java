@@ -1,12 +1,11 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.requests.exception.RequestsException;
+import net.dongliu.requests.utils.Exceptions;
 
 import javax.net.ssl.*;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;

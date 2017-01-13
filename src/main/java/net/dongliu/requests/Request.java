@@ -1,13 +1,12 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.codec.URIEncoder;
-import net.dongliu.commons.collection.Lists;
-import net.dongliu.commons.exception.Exceptions;
 import net.dongliu.requests.body.RequestBody;
+import net.dongliu.requests.utils.Exceptions;
+import net.dongliu.requests.utils.Lists;
+import net.dongliu.requests.utils.URIEncoder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
-import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;

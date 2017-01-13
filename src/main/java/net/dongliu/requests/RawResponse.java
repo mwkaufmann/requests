@@ -1,11 +1,11 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.exception.Exceptions;
-import net.dongliu.commons.io.Closeables;
-import net.dongliu.commons.io.InputOutputs;
-import net.dongliu.commons.io.ReaderWriters;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
+import net.dongliu.requests.utils.Closeables;
+import net.dongliu.requests.utils.Exceptions;
+import net.dongliu.requests.utils.InputOutputs;
+import net.dongliu.requests.utils.ReaderWriters;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

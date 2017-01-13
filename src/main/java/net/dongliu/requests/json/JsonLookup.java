@@ -1,7 +1,6 @@
 package net.dongliu.requests.json;
 
 
-import net.dongliu.commons.concurrent.Lazy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,7 +8,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Lookup json, from classpath
@@ -103,30 +101,40 @@ public class JsonLookup {
         if (registeredJsonProvider != null) {
             return registeredJsonProvider;
         }
-        Optional<JsonProvider> jsonProvider = lookedJsonProvider.get();
-        if (jsonProvider.isPresent()) {
-            return jsonProvider.get();
+
+        if (!init) {
+            synchronized (this) {
+                if (!init) {
+                    lookedJsonProvider = lookupInClasspath();
+                    init = true;
+                }
+            }
+        }
+
+        if (lookedJsonProvider != null) {
+            return lookedJsonProvider;
         }
         throw new ProviderNotFoundException("Json Provider not found");
     }
 
-
-    private final Lazy<Optional<JsonProvider>> lookedJsonProvider = Lazy.create(this::lookupInClasspath);
+    @Nullable
+    private JsonProvider lookedJsonProvider;
+    private boolean init;
 
     @Nullable
-    private Optional<JsonProvider> lookupInClasspath() {
+    private JsonProvider lookupInClasspath() {
         if (hasJackson()) {
             logger.debug("Use default jackson provider to deal with json");
-            return Optional.of(jacksonProvider());
+            return jacksonProvider();
         }
         if (hasGson()) {
             logger.debug("Use default gson provider to deal with json");
-            return Optional.of(gsonProvider());
+            return gsonProvider();
         }
         if (hasFastJson()) {
             logger.debug("Use default fastJson provider to deal with json");
-            return Optional.of(fastJsonProvider());
+            return fastJsonProvider();
         }
-        return Optional.empty();
+        return null;
     }
 }

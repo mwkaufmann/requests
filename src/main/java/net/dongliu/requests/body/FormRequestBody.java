@@ -1,8 +1,8 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.commons.codec.URIEncoder;
-import net.dongliu.commons.collection.Lists;
 import net.dongliu.requests.Parameter;
+import net.dongliu.requests.utils.Lists;
+import net.dongliu.requests.utils.URIEncoder;
 
 import java.io.IOException;
 import java.io.OutputStream;

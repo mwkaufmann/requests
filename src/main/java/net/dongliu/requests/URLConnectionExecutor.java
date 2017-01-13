@@ -1,9 +1,9 @@
 package net.dongliu.requests;
 
-import net.dongliu.commons.exception.Exceptions;
-import net.dongliu.commons.io.Closeables;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
+import net.dongliu.requests.utils.Closeables;
+import net.dongliu.requests.utils.Exceptions;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
