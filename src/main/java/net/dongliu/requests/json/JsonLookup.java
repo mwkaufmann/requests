@@ -1,9 +1,6 @@
 package net.dongliu.requests.json;
 
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
@@ -16,7 +13,6 @@ import java.util.Objects;
  */
 @ThreadSafe
 public class JsonLookup {
-    private static final Logger logger = LogManager.getLogger();
     private static JsonLookup instance = new JsonLookup();
     @Nullable
     private volatile JsonProvider registeredJsonProvider;
@@ -37,7 +33,6 @@ public class JsonLookup {
      */
     public void register(JsonProvider jsonProvider) {
         this.registeredJsonProvider = Objects.requireNonNull(jsonProvider);
-        logger.debug(() -> "Set json provider to " + jsonProvider.getClass().getName());
     }
 
     /**
@@ -124,15 +119,12 @@ public class JsonLookup {
     @Nullable
     private JsonProvider lookupInClasspath() {
         if (hasJackson()) {
-            logger.debug("Use default jackson provider to deal with json");
             return jacksonProvider();
         }
         if (hasGson()) {
-            logger.debug("Use default gson provider to deal with json");
             return gsonProvider();
         }
         if (hasFastJson()) {
-            logger.debug("Use default fastJson provider to deal with json");
             return fastJsonProvider();
         }
         return null;

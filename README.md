@@ -1,4 +1,5 @@
-Requests is a http request lib with fluent api for java, inspired by the python request module. From version 3.0, requests required java8.
+Requests is a http request lib with fluent api for java, inspired by the python request module. 
+From version 3.0, requests required java8.
 
 #Maven Setting
 
@@ -8,7 +9,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.7.0</version>
+    <version>4.7.1</version>
 </dependency>
 ```
 
@@ -180,7 +181,8 @@ Requests.get(url).compress(false).send();
 
 ##Https Verification 
 
-Some https sites do not have trusted http certificate, Exception will be thrown when request. You can disable https certificate verify by:
+Some https sites do not have trusted http certificate, Exception will be thrown when request. 
+You can disable https certificate verify by:
 
 ```java
 Requests.get(url).verify(false).send();
@@ -197,7 +199,8 @@ Requests.get(url).proxy(Proxies.socksProxy("127.0.0.1", 1080).send(); // socks p
 
 #Session
 
-Session maintains cookies, basic auth and maybe other http context for you, useful when need login or other situations. Session have the same usage as Requests.
+Session maintains cookies, basic auth and maybe other http context for you, useful when need login or other situations. 
+Session have the same usage as Requests.
 
 ```java
 Session session = Requests.session();

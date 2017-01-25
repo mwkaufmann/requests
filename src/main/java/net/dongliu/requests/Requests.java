@@ -1,17 +1,12 @@
 package net.dongliu.requests;
 
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Http request
  *
  * @author Liu Dong
  */
 public class Requests {
-
-    private static Logger logger = LogManager.getLogger();
 
     static {
         // we can modify Host, and other restricted headers
