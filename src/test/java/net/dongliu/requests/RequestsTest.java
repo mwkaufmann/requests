@@ -70,7 +70,7 @@ public class RequestsTest {
     public void testCookie() {
         RawResponse response = Requests.get("http://127.0.0.1:8080/cookie")
                 .cookies(Parameter.of("test", "value")).send();
-        assertTrue(response.getCookies().stream().filter(c -> c.getName().equals("test")).findFirst().isPresent());
+        assertTrue(response.getCookies().stream().anyMatch(c -> c.getName().equals("test")));
     }
 
     @Test
@@ -84,10 +84,11 @@ public class RequestsTest {
 
     @Test
     public void testRedirect() {
-        RawResponse resp = Requests.get("http://127.0.0.1:8080/redirect").send();
+        RawResponse resp = Requests.get("http://127.0.0.1:8080/redirect").userAgent("my-user-agent").send();
+        String text = resp.readToText();
         assertEquals(200, resp.getStatusCode());
-//        assertEquals("/", resp.getRedirectLocations().get(0).getPath());
-        resp.readToText();
+        assertTrue(text.contains("/redirected"));   
+        assertTrue(text.contains("my-user-agent"));
     }
 
     @Test
@@ -118,9 +119,9 @@ public class RequestsTest {
     @Test
     public void sendHeaders() {
         String text = Requests.get("http://127.0.0.1:8080/echo_header")
-                .headers(Parameter.of("Host", "www.baidu.com"), Parameter.of("TestHeader", 1))
+                .headers(Parameter.of("Host", "www.test.com"), Parameter.of("TestHeader", 1))
                 .send().readToText();
-        assertTrue(text.contains("Host: www.baidu.com"));
+        assertTrue(text.contains("Host: www.test.com"));
         assertTrue(text.contains("TestHeader: 1"));
     }
 

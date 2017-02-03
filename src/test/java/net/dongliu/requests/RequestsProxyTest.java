@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
  * @author Liu Dong
  */
 @Ignore
-public class RequestsTest2 {
+public class RequestsProxyTest {
 
     private static MockServer server = new MockServer();
 

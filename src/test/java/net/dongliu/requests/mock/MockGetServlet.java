@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Enumeration;
 
 /**
  * @author Liu Dong {@literal <im@dongliu.net>}
@@ -18,6 +19,22 @@ public class MockGetServlet extends HttpServlet {
             throws ServletException, IOException {
         String uri = request.getRequestURI();
         String queryStr = request.getQueryString();
+
+        StringBuilder sb = new StringBuilder();
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            sb.append(headerName).append('=');
+            Enumeration<String> headerValues = request.getHeaders(headerName);
+            while (headerValues.hasMoreElements()) {
+                String headerValue = headerValues.nextElement();
+                sb.append(headerValue).append(';');
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append('\n');
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        String headers = sb.toString();
 
         response.setContentType("text/plain");
         response.setCharacterEncoding("UTF-8");
@@ -33,11 +50,12 @@ public class MockGetServlet extends HttpServlet {
 
         switch (uri) {
             case "/redirect":
-                response.sendRedirect("/");
+                response.sendRedirect("/redirected");
                 break;
             default:
                 out.println(uri);
                 out.println(queryStr);
+                out.println(sb.toString());
         }
     }
 }
