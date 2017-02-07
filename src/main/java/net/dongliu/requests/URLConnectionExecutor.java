@@ -47,7 +47,13 @@ public class URLConnectionExecutor implements HttpExecutor {
                 throw new RequestsException("Get redirect url error", e);
             }
             RequestBuilder builder = request.getSession().get(redirectUrl.toExternalForm())
+                    .socksTimeout(request.getSocksTimeout()).connectTimeout(request.getConnectTimeout())
+                    .basicAuth(request.getBasicAuth())
                     .userAgent(request.getUserAgent())
+                    .compress(request.isCompress())
+                    .verify(request.isVerify())
+                    .certs(request.getCerts())
+                    .keepAlive(request.isKeepAlive())
                     .followRedirect(false);
             if (request.getProxy() != null) {
                 builder.proxy(request.getProxy());
