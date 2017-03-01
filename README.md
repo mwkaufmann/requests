@@ -82,7 +82,21 @@ String resp = Requests.get(url).params(Parameter.of("k1", "v1"), Parameter.of("k
         .send().readToText();
 ```
 
-If you want to send post form-encoded paramters, use form()/forms() methods ##Custom Headers Http request headers can be set by header or headers method:
+If you want to send post www-form-encoded parameters, use forms() methods:
+
+```java
+// set params by map
+Map<String, Object> params = new HashMap<>();
+params.put("k1", "v1");
+params.put("k2", "v2");
+String resp = Requests.post(url).forms(params).send().readToText();
+// set multi params
+String resp = Requests.post(url).forms(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
+        .send().readToText();
+```
+The forms parameter should only works with post method.
+
+##Custom Headers Http request headers can be set by header or headers method:
 
 ```java
 // set headers by map
