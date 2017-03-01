@@ -7,7 +7,7 @@
     <artifactId>requests</artifactId>
     <name>Convenient http client for java</name>
     <packaging>jar</packaging>
-    <version>4.7.3</version>
+    <version>4.7.4</version>
     <url>https://github.com/caoqianli/requests</url>
 
     <parent>

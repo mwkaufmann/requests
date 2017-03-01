@@ -30,11 +30,11 @@ class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
                 writeBoundary(writer);
 
                 writer.write("Content-Disposition: form-data; name=\"" + name + "\"");
-                if (fileName != null) {
+                if (fileName != null && !fileName.isEmpty()) {
                     writer.write("; filename=\"" + fileName + '"');
                 }
                 writer.write(LINE_END);
-                if (body.getContentType() != null) {
+                if (body.getContentType() != null && !body.getContentType().isEmpty()) {
                     writer.write("Content-Type: " + body.getContentType());
                     if (body.isIncludeCharset()) {
                         writer.write("; charset=" + charset.name().toLowerCase());

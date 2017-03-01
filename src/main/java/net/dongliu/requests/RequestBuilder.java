@@ -150,8 +150,41 @@ public final class RequestBuilder {
 
     /**
      * Set www-form-encoded body. Only for Post
+     *
+     * @deprecated use {@link #body(Collection)} instead
      */
+    @Deprecated
     public RequestBuilder forms(Collection<? extends Map.Entry<String, ?>> params) {
+        body = RequestBody.form(params);
+        return this;
+    }
+
+    /**
+     * Set www-form-encoded body. Only for Post
+     *
+     * @deprecated use {@link #body(Map.Entry[])} instead
+     */
+    @Deprecated
+    @SafeVarargs
+    public final RequestBuilder forms(Map.Entry<String, ?>... formBody) {
+        return forms(Arrays.asList(formBody));
+    }
+
+    /**
+     * Set www-form-encoded body. Only for Post
+     *
+     * @deprecated use {@link #body(Map)} instead
+     */
+    @Deprecated
+    public RequestBuilder forms(Map<String, ?> formBody) {
+        return forms(formBody.entrySet());
+    }
+
+
+    /**
+     * Set www-form-encoded body. Only for Post
+     */
+    public RequestBuilder body(Collection<? extends Map.Entry<String, ?>> params) {
         body = RequestBody.form(params);
         return this;
     }
@@ -160,14 +193,14 @@ public final class RequestBuilder {
      * Set www-form-encoded body. Only for Post
      */
     @SafeVarargs
-    public final RequestBuilder forms(Map.Entry<String, ?>... formBody) {
+    public final RequestBuilder body(Map.Entry<String, ?>... formBody) {
         return forms(Arrays.asList(formBody));
     }
 
     /**
      * Set www-form-encoded body. Only for Post
      */
-    public RequestBuilder forms(Map<String, ?> formBody) {
+    public RequestBuilder body(Map<String, ?> formBody) {
         return forms(formBody.entrySet());
     }
 
@@ -314,18 +347,21 @@ public final class RequestBuilder {
     }
 
     /**
-     * Set multiPart body. Only form multi-part post
+     * Set multiPart body. Only form multi-part post.
+     *
+     * @see #multiPartBody(Collection)
      */
     public final RequestBuilder multiPartBody(Part<?>... parts) {
         return multiPartBody(Arrays.asList(parts));
     }
 
     /**
-     * Set multiPart body. Only form multi-part post
+     * Set multiPart body. Only form multi-part post.
      */
     public RequestBuilder multiPartBody(Collection<Part<?>> parts) {
         return body(RequestBody.multiPart(parts));
     }
+
 
     /**
      * Set interceptors

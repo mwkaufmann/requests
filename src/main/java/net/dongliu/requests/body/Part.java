@@ -38,7 +38,7 @@ public class Part<T> {
     /**
      * Set content type for this part. Default content-type will be set automatically
      */
-    public Part contentType(String contentType) {
+    public Part<T> contentType(String contentType) {
         this.requestBody.setContentType(contentType);
         return this;
     }
@@ -69,6 +69,15 @@ public class Part<T> {
      */
     public static Part<String> text(String name, String value) {
         return new Part<>(name, null, RequestBody.text(value));
+    }
+
+    /**
+     * Create a (name, value) param multi-part field
+     */
+    public static Part<String> param(String name, String value) {
+        RequestBody<String> body = RequestBody.text(value);
+        body.setContentType("");
+        return new Part<>(name, null, body);
     }
 
     public String getName() {
