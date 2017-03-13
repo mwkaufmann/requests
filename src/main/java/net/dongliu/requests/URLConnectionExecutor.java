@@ -7,7 +7,10 @@ import net.dongliu.requests.utils.Exceptions;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -100,7 +103,10 @@ public class URLConnectionExecutor implements HttpExecutor {
         if (conn instanceof HttpsURLConnection) {
             SSLSocketFactory ssf = null;
             if (!request.isVerify()) {
+                // trust all certificates
                 ssf = SSLSocketFactories.getTrustAllSSLSocketFactory();
+                // do not verify host of certificate
+                ((HttpsURLConnection) conn).setHostnameVerifier(NopHostnameVerifier.getInstance());
             } else if (!request.getCerts().isEmpty()) {
                 ssf = SSLSocketFactories.getCustomSSLSocketFactory(request.getCerts());
             }
