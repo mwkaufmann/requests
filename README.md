@@ -15,7 +15,9 @@ Requests is now in maven central repo.
 
 #Requests
 
-A Requests class is provided to make plain, simple http requests ##Simple http request Simple example that do http get request:
+A Requests class is provided to make plain, simple http requests 
+
+##Simple http request Simple example that do http get request:
 
 ```java
 String url = ...;
