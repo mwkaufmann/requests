@@ -13,11 +13,10 @@ Requests is now in maven central repo.
 </dependency>
 ```
 
-#Requests
+#Usage
 
-A Requests class is provided to make plain, simple http requests 
-
-##Simple http request Simple example that do http get request:
+##Simple Case
+One simple http request example that do http get request and read response as string:
 
 ```java
 String url = ...;
