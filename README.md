@@ -1,6 +1,6 @@
 Requests is a http request lib with fluent api for java, inspired by the python request module. 
 
-#Maven Setting
+# Maven Setting
 
 Requests is now in maven central repo.
 
@@ -12,9 +12,9 @@ Requests is now in maven central repo.
 </dependency>
 ```
 
-#Usage
+# Usage
 
-##Simple Case
+## Simple Case
 One simple http request example that do http get request and read response as string:
 
 ```java
@@ -52,7 +52,7 @@ byte[] resp1 = Requests.get(url).send().readToBytes();
 boolean result = Requests.get(url).send().writeToFile("/path/to/save/file");
 ```
 
-##Charset 
+## Charset 
 
 Requests default use UTF-8 to encode parameters, post forms or request string body, you can set other charset by:
 
@@ -67,7 +67,7 @@ You can force use specified charset by:
 String resp = Requests.get(url).send().withCharset(StandardCharsets.ISO_8859_1).readToText();
 ```
 
-##Passing Parameters 
+## Passing Parameters 
 
 Pass parameters in urls using param or params method:
 
@@ -96,7 +96,7 @@ String resp = Requests.post(url).forms(Parameter.of("k1", "v1"), Parameter.of("k
 ```
 The forms parameter should only works with post method.
 
-##Custom Headers Http request headers can be set by header or headers method:
+## Custom Headers Http request headers can be set by header or headers method:
 
 ```java
 // set headers by map
@@ -109,7 +109,7 @@ String resp = Requests.get(url).headers(Parameter.of("k1", "v1"), Parameter.of("
         .send().readToText();
 ```
 
-##Cookies 
+## Cookies 
 
 Cookies can be add by:
 
@@ -124,7 +124,7 @@ String resp = Requests.get(url).cookies(Parameter.of("k1", "v1"), Parameter.of("
         .send().readToText();
 ```
 
-##Request with data 
+## Request with data 
 
 Http Post, Put, Patch method can send request body. Take Post for example:
 
@@ -160,7 +160,7 @@ String resp = Requests.post(url)
         .send().readToText();
 ```
 
-##Basic Auth 
+## Basic Auth 
 
 Set http basic auth param by auth method:
 
@@ -168,7 +168,7 @@ Set http basic auth param by auth method:
 String resp = Requests.get(url).basicAuth("user", "passwd").send().readToText();
 ```
 
-##Redirection 
+## Redirection 
 
 Requests will handle 30x http redirect automatically, you can disable it by:
 
@@ -176,7 +176,7 @@ Requests will handle 30x http redirect automatically, you can disable it by:
 Requests.get(url).followRedirect(false).send();
 ```
 
-##Timeout
+## Timeout
 
 There are two timeout parameters you can set, connect timeout, and socket timeout. The timeout value default to 10_000 milliseconds.
 
@@ -187,14 +187,14 @@ Requests.get(url).timeout(30_000).send();
 Requests.get(url).socketTimeout(20_000).connectTimeout(30_000).send();
 ```
 
-##Response compress 
+## Response compress 
 Requests send Accept-Encoding: gzip, deflate, and handle gzipped response in default. You can disable this by:
 
 ```java
 Requests.get(url).compress(false).send();
 ```
 
-##Https Verification 
+## Https Verification 
 
 Some https sites do not have trusted http certificate, Exception will be thrown when request. 
 You can disable https certificate verify by:
@@ -203,7 +203,7 @@ You can disable https certificate verify by:
 Requests.get(url).verify(false).send();
 ```
 
-##Proxy 
+## Proxy 
 
 Set proxy by proxy method:
 
@@ -212,7 +212,7 @@ Requests.get(url).proxy(Proxies.httpProxy("127.0.0.1", 8081).send(); // http pro
 Requests.get(url).proxy(Proxies.socksProxy("127.0.0.1", 1080).send(); // socks proxy proxy
 ```
 
-#Session
+# Session
 
 Session maintains cookies, basic auth and maybe other http context for you, useful when need login or other situations. 
 Session have the same usage as Requests.
