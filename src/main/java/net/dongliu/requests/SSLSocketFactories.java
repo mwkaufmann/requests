@@ -59,7 +59,10 @@ class SSLSocketFactories {
     }
 
     public static SSLSocketFactory getCustomSSLSocketFactory(Collection<CertificateInfo> certs) {
-        return map.computeIfAbsent(certs, SSLSocketFactories::_getCustomSSLSocketFactory);
+        if (!map.containsKey(certs)) {
+            map.put(certs, _getCustomSSLSocketFactory(certs));
+        }
+        return map.get(certs);
     }
 
     static class TrustAllTrustManager implements X509TrustManager {

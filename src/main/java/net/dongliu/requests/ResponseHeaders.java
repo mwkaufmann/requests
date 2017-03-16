@@ -13,12 +13,12 @@ class ResponseHeaders {
     private final List<Map.Entry<String, String>> headers;
     private final Map<String, List<String>> map;
 
-    public ResponseHeaders(List<Map.Entry<String, String>> headers) {
+    public ResponseHeaders(List<? extends Map.Entry<String, String>> headers) {
         this.headers = Collections.unmodifiableList(Objects.requireNonNull(headers));
         this.map = collectToMap(headers);
     }
 
-    private Map<String, List<String>> collectToMap(List<Map.Entry<String, String>> headers) {
+    private Map<String, List<String>> collectToMap(List<? extends Map.Entry<String, String>> headers) {
         Map<String, List<String>> map = new HashMap<>();
         for (Map.Entry<String, String> header : headers) {
             String key = header.getKey().toLowerCase();

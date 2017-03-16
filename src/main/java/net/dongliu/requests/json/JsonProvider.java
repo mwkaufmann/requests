@@ -1,7 +1,10 @@
 package net.dongliu.requests.json;
 
 import javax.annotation.Nullable;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 
@@ -28,10 +31,6 @@ public interface JsonProvider {
      * This method is for FastJson due it has no api to unmarshal from Reader
      */
     @Nullable
-    default <T> T unmarshal(InputStream inputStream, Charset charset, Type type) throws IOException {
-        try (Reader reader = new InputStreamReader(inputStream, charset)) {
-            return unmarshal(reader, type);
-        }
-    }
+    <T> T unmarshal(InputStream inputStream, Charset charset, Type type) throws IOException;
 
 }

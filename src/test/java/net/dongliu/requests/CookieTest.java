@@ -11,11 +11,11 @@ import static org.junit.Assert.assertTrue;
 public class CookieTest {
     @Test
     public void match() throws Exception {
-        Cookie cookie = new Cookie("test.com", "/", "test", "value", null, false);
+        Cookie cookie = new Cookie("test.com", "/", "test", "value", 0, false);
         assertTrue(cookie.match("http", "test.com", "/test/"));
 
         // https
-        cookie = new Cookie("test.com", "/", "test", "value", null, true);
+        cookie = new Cookie("test.com", "/", "test", "value", 0, true);
         assertFalse(cookie.match("http", "test.com", "/test/"));
         assertTrue(cookie.match("https", "test.com", "/test/"));
     }

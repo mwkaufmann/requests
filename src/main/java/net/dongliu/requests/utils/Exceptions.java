@@ -17,7 +17,7 @@ public class Exceptions {
      */
     @Nonnull
     public static RuntimeException sneakyThrow(Throwable throwable) {
-        Exceptions._sneakyThrow(throwable);
+        Exceptions.<RuntimeException>_sneakyThrow(throwable);
         return null;
     }
 

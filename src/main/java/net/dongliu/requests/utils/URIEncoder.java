@@ -2,16 +2,14 @@ package net.dongliu.requests.utils;
 
 import net.dongliu.requests.Parameter;
 
+import javax.annotation.Nonnull;
 import java.io.CharArrayWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * <p>
@@ -59,7 +57,8 @@ public class URIEncoder {
     static {
 
         // Use of the format "user:password" in the userinfo field is deprecated.
-        // Applications should not render as clear text any data  after the first colon (":") character found within a userinfo subcomponent unless the data after the colon is the empty string (indicating no password).
+        // Applications should not render as clear text any data  after the first colon (":") character found within 
+        // a userinfo subcomponent unless the data after the colon is the empty string (indicating no password).
         userInfoWhiteSet = createBasicSet();
         for (char c : subDelims) {
             userInfoWhiteSet.set(c);
@@ -80,7 +79,8 @@ public class URIEncoder {
         queryWhiteSet.set('/');
         queryWhiteSet.set('?');
 
-        // URI reference may be a relative-path reference, in which case the first path segment cannot contain a colon (":") character.
+        // URI reference may be a relative-path reference, in which case the first path segment cannot contain a 
+        // colon (":") character.
         segmentWhiteSet = createBasicSet();
         for (char c : subDelims) {
             segmentWhiteSet.set(c);
@@ -173,7 +173,11 @@ public class URIEncoder {
      */
     public static List<Parameter<String>> decodeQueries(String queryStr, Charset charset) {
         String[] queries = queryStr.split("&");
-        return Lists.map(Arrays.asList(queries), query -> decodeQuery(query, charset));
+        List<Parameter<String>> list = new ArrayList<>(queries.length);
+        for (String query : queries) {
+            list.add(decodeQuery(query, charset));
+        }
+        return list;
     }
 
     /**
@@ -303,7 +307,8 @@ public class URIEncoder {
                                 (c == '%')) {
                             int v = Integer.parseInt(s.substring(i + 1, i + 3), 16);
                             if (v < 0)
-                                throw new IllegalArgumentException("Illegal hex characters in escape (%) pattern - negative value");
+                                throw new IllegalArgumentException("Illegal hex characters in escape (%) pattern - " +
+                                        "negative value");
                             bytes[pos++] = (byte) v;
                             i += 3;
                             if (i < numChars)
@@ -318,7 +323,8 @@ public class URIEncoder {
 
                         sb.append(new String(bytes, 0, pos, charset));
                     } catch (NumberFormatException e) {
-                        throw new IllegalArgumentException("Illegal hex characters in escape (%) pattern - " + e.getMessage());
+                        throw new IllegalArgumentException("Illegal hex characters in escape (%) pattern - " + e
+                                .getMessage());
                     }
                     needToChange = true;
                     break;
@@ -338,7 +344,8 @@ public class URIEncoder {
      */
     public static String encodeForm(Parameter<String> query, Charset charset) {
         try {
-            return URLEncoder.encode(query.getName(), charset.name()) + "=" + URLEncoder.encode(query.getValue(), charset.name());
+            return URLEncoder.encode(query.getName(), charset.name()) + "=" + URLEncoder.encode(query.getValue(),
+                    charset.name());
         } catch (UnsupportedEncodingException e) {
             // shoudl not happen
             throw Exceptions.sneakyThrow(e);
@@ -389,6 +396,20 @@ public class URIEncoder {
      */
     public static List<Parameter<String>> decodeForms(String queryStr, Charset charset) {
         String[] queries = queryStr.split("&");
-        return Lists.map(Arrays.asList(queries), query -> decodeForm(query, charset));
+        List<Parameter<String>> list = new ArrayList<>(queries.length);
+        for (String query : queries) {
+            list.add(decodeForm(query, charset));
+        }
+
+        return list;
+    }
+
+    @Nonnull
+    public static List<Parameter<String>> toStringParameters(Collection<? extends Map.Entry<String, ?>> params) {
+        List<Parameter<String>> parameters = new ArrayList<>(params.size());
+        for (Map.Entry<String, ?> entry : params) {
+            parameters.add(Parameter.of(entry.getKey(), String.valueOf(entry.getValue())));
+        }
+        return parameters;
     }
 }

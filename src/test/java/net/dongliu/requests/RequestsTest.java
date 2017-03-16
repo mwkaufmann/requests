@@ -1,7 +1,7 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.json.TypeInfer;
 import net.dongliu.requests.body.Part;
+import net.dongliu.requests.json.TypeInfer;
 import net.dongliu.requests.mock.MockServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -70,7 +70,14 @@ public class RequestsTest {
     public void testCookie() {
         RawResponse response = Requests.get("http://127.0.0.1:8080/cookie")
                 .cookies(Parameter.of("test", "value")).send();
-        assertTrue(response.getCookies().stream().anyMatch(c -> c.getName().equals("test")));
+        boolean flag = false;
+        for (Cookie cookie : response.getCookies()) {
+            if (cookie.getName().equals("test")) {
+                flag = true;
+                break;
+            }
+        }
+        assertTrue(flag);
     }
 
     @Test
@@ -87,7 +94,7 @@ public class RequestsTest {
         RawResponse resp = Requests.get("http://127.0.0.1:8080/redirect").userAgent("my-user-agent").send();
         String text = resp.readToText();
         assertEquals(200, resp.getStatusCode());
-        assertTrue(text.contains("/redirected"));   
+        assertTrue(text.contains("/redirected"));
         assertTrue(text.contains("my-user-agent"));
     }
 
@@ -136,13 +143,17 @@ public class RequestsTest {
 
     @Test
     public void testInterceptor() {
-        long[] elapsed = {0};
-        Interceptor interceptor = (target, request) -> {
-            long start = System.nanoTime();
-            RawResponse response = target.proceed(request);
-            elapsed[0] = System.nanoTime() - start;
-            return response;
+        final long[] elapsed = {0};
+        Interceptor interceptor = new Interceptor() {
+            @Override
+            public RawResponse intercept(InvocationTarget target, Request request) {
+                long start = System.nanoTime();
+                RawResponse response = target.proceed(request);
+                elapsed[0] = System.nanoTime() - start;
+                return response;
+            }
         };
+
         String text = Requests.get("http://127.0.0.1:8080/echo_header")
                 .interceptors(interceptor)
                 .send().readToText();

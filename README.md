@@ -1,5 +1,4 @@
 Requests is a http request lib with fluent api for java, inspired by the python request module. 
-From version 3.0, requests required java8.
 
 #Maven Setting
 
@@ -9,7 +8,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.7.5</version>
+    <version>4.8.0</version>
 </dependency>
 ```
 

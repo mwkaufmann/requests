@@ -14,7 +14,7 @@ import java.lang.reflect.Type;
  *
  * @author Liu Dong
  */
-public class JacksonProvider implements JsonProvider {
+public class JacksonProvider extends AbstractJsonProvider implements JsonProvider {
 
     private final ObjectMapper objectMapper;
 

@@ -1,9 +1,10 @@
-package net.dongliu.requests;
+package net.dongliu.requests.utils;
+
+import net.dongliu.requests.Cookie;
+import net.dongliu.requests.Parameter;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -18,14 +19,15 @@ import java.util.Map;
  * -- the cookie's domain must be the same as, or a parent of, the origin domain
  * -- the cookie's domain must not be a TLD, a public suffix, or a parent of a public suffix.
  */
-class CookieUtils {
+public class CookieUtils {
 
-    private static final char[] hexChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    private static final char[] hexChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
+            'E', 'F'};
 
     /**
      * Get effective path from url path
      */
-    static String effectivePath(String path) {
+    public static String effectivePath(String path) {
         int idx = path.lastIndexOf('/');
         if (idx >= 0) {
             return path.substring(0, idx + 1);
@@ -37,7 +39,7 @@ class CookieUtils {
     /**
      * Escape cookie value
      */
-    static String escape(String value) {
+    public static String escape(String value) {
         int count = 0;
         for (int i = 0; i < value.length(); i++) {
             char c = value.charAt(i);
@@ -68,7 +70,7 @@ class CookieUtils {
      * @param subDomain not start with "."
      * @return
      */
-    static boolean isSubDomain(String domain, String subDomain) {
+    public static boolean isSubDomain(String domain, String subDomain) {
         if (domain.length() - 1 == subDomain.length()) {
             return domain.endsWith(subDomain);
         } else {
@@ -77,17 +79,17 @@ class CookieUtils {
     }
 
 
-    static Cookie parseCookieHeader(String originDomain, String originPath,
-                                    String headerValue) {
+    public static Cookie parseCookieHeader(String originDomain, String originPath,
+                                           String headerValue) {
         String[] items = headerValue.split("; ");
         Map.Entry<String, String> nameValue = parseCookieNameValue(items[0]);
 
         String domain = null;
         String path = null;
-        Instant expiry = null;
+        long expiry = 0;
         boolean secure = false;
-        for (int i = 1; i < items.length - 1; i++) {
-            Map.Entry<String, String> attribute = parseCookieAttribute(items[i]);
+        for (String item : items) {
+            Map.Entry<String, String> attribute = parseCookieAttribute(item);
             switch (attribute.getKey().toLowerCase()) {
                 case "domain":
                     domain = parseDomain(originDomain, attribute);
@@ -96,17 +98,16 @@ class CookieUtils {
                     path = attribute.getValue().endsWith("/") ? attribute.getValue() : attribute.getValue() + "/";
                     break;
                 case "expires":
-                    try {
-                        expiry = DateTimeFormatter.RFC_1123_DATE_TIME.parse(attribute.getValue(), Instant::from);
-                    } catch (DateTimeParseException ignore) {
-                        //TODO: we should ignore this cookie?
+                    Date date = CookieDateUtil.parseDate(attribute.getValue());
+                    if (date != null) {
+                        expiry = date.getTime();
                     }
                     break;
                 case "max-age":
                     try {
                         int seconds = Integer.parseInt(attribute.getValue());
                         if (seconds >= 0) {
-                            expiry = Instant.now().plusSeconds(seconds);
+                            expiry = System.currentTimeMillis() + seconds * 1000;
                         }
                     } catch (NumberFormatException ignore) {
                         //TODO: we should ignore this cookie?

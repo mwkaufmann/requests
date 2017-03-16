@@ -1,11 +1,7 @@
 package net.dongliu.requests;
 
 import javax.annotation.concurrent.ThreadSafe;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Stream;
+import java.util.*;
 
 /**
  * Http request share cookies etc.
@@ -25,7 +21,7 @@ public class Session {
         }
 
         // new cookie will override old cookie with the same (name, domain, path) value, even it is expired
-        Instant now = Instant.now();
+        long now = System.currentTimeMillis();
         Set<Cookie> newCookies = new HashSet<>();
         for (Cookie cookie : cookies) {
             if (!cookie.expired(now) && !addCookies.contains(cookie)) {
@@ -44,10 +40,19 @@ public class Session {
         return cookies;
     }
 
-    Stream<Cookie> matchedCookies(String protocol, String domain, String path) {
-        Instant now = Instant.now();
-        return this.cookies.stream().filter(c -> c.match(protocol, domain, path))
-                .filter(c -> !c.expired(now));
+    List<Cookie> matchedCookies(String protocol, String domain, String path) {
+        long now = System.currentTimeMillis();
+        List<Cookie> matched = new ArrayList<>();
+        for (Cookie cookie : cookies) {
+            if (!cookie.match(protocol, domain, path)) {
+                continue;
+            }
+            if (cookie.expired(now)) {
+                continue;
+            }
+            matched.add(cookie);
+        }
+        return matched;
     }
 
     public RequestBuilder get(String url) {

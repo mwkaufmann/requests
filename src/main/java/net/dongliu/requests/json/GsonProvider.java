@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  *
  * @author Liu Dong
  */
-public class GsonProvider implements JsonProvider {
+public class GsonProvider extends AbstractJsonProvider implements JsonProvider {
     private static final Logger logger = Logger.getLogger(GsonProvider.class.getName());
     private final Gson gson;
 

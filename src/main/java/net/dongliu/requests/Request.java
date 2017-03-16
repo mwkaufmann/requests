@@ -2,7 +2,6 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.utils.Exceptions;
-import net.dongliu.requests.utils.Lists;
 import net.dongliu.requests.utils.URIEncoder;
 
 import javax.annotation.Nonnull;
@@ -70,9 +69,7 @@ public class Request {
         if (params.isEmpty()) {
             fullUrl = url;
         } else {
-            fullUrl = url + "?" + URIEncoder.encodeQueries(
-                    Lists.map(params, p -> Parameter.of(p.getKey(), String.valueOf(p.getValue()))),
-                    charset);
+            fullUrl = url + "?" + URIEncoder.encodeQueries(URIEncoder.toStringParameters(params), charset);
         }
         try {
             return new URL(fullUrl);

@@ -1,30 +1,32 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.utils.CookieUtils;
+
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
-import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 
 @Immutable
-public class Cookie implements Serializable {
+public class Cookie implements Map.Entry<String, String>, Serializable {
     /**
      * <p>
      * If domain not start with ".",  means it is explicitly set and visible to it's sub-domains.
      * </p>
      * <p>
-     * If the Set-Cookie header field does not have a Domain attribute, the effective domain is the domain of the request.
+     * If the Set-Cookie header field does not have a Domain attribute, the effective domain is the domain of the
+     * request.
      * </p>
      */
     private final String domain;
     private final String path;
     private final String name;
     private final String value;
-    @Nullable
-    private final Instant expiry;
+    private final long expiry;
     private final boolean secure;
 
-    public Cookie(String domain, String path, String name, String value, @Nullable Instant expiry, boolean secure) {
+    public Cookie(String domain, String path, String name, String value, long expiry, boolean secure) {
         this.domain = Objects.requireNonNull(domain);
         this.path = Objects.requireNonNull(path);
         this.name = Objects.requireNonNull(name);
@@ -45,21 +47,30 @@ public class Cookie implements Serializable {
         return name;
     }
 
+    @Override
+    public String getKey() {
+        return name;
+    }
+
     public String getValue() {
         return value;
+    }
+
+    @Override
+    public String setValue(String value) {
+        throw new UnsupportedOperationException();
     }
 
     public boolean isSecure() {
         return secure;
     }
 
-    @Nullable
-    public Instant getExpiry() {
+    public long getExpiry() {
         return expiry;
     }
 
-    public boolean expired(Instant now) {
-        return expiry != null && expiry.isBefore(now);
+    public boolean expired(long now) {
+        return expiry != 0 && expiry < now;
     }
 
     public boolean match(String protocol, String host, String path) {

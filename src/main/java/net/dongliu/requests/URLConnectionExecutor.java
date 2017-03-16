@@ -3,6 +3,7 @@ package net.dongliu.requests;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.utils.Closeables;
+import net.dongliu.requests.utils.CookieUtils;
 import net.dongliu.requests.utils.Exceptions;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -14,11 +15,9 @@ import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.stream.Stream;
 import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
 
-import static java.util.stream.Collectors.*;
 import static net.dongliu.requests.HttpHeaders.*;
 
 /**
@@ -154,11 +153,14 @@ public class URLConnectionExecutor implements HttpExecutor {
 
         // set cookies
         if (!request.getCookies().isEmpty() || !session.getCookies().isEmpty()) {
-            Stream<? extends Map.Entry<String, ?>> stream1 = request.getCookies().stream();
-            Stream<? extends Map.Entry<String, ?>> stream2 = session.matchedCookies(protocol, host, effectivePath)
-                    .map(c -> Parameter.of(c.getName(), c.getValue()));
-            String cookieStr = Stream.concat(stream1, stream2).map(c -> c.getKey() + "=" + c.getValue())
-                    .collect(joining("; "));
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, ?> entry : request.getCookies()) {
+                sb.append(entry.getKey()).append("=").append(String.valueOf(entry.getValue())).append(";");
+            }
+            for (Cookie cookie : session.matchedCookies(protocol, host, effectivePath)) {
+                sb.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
+            }
+            String cookieStr = sb.deleteCharAt(sb.length() - 1).toString();
             if (!cookieStr.isEmpty()) {
                 conn.setRequestProperty(NAME_COOKIE, cookieStr);
             }
