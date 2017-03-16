@@ -69,7 +69,7 @@ String resp = Requests.get(url).send().withCharset(StandardCharsets.ISO_8859_1).
 
 ## Passing Parameters 
 
-Pass parameters in urls using param or params method:
+Pass parameters in urls using params method:
 
 ```java
 // set params by map
@@ -96,7 +96,9 @@ String resp = Requests.post(url).forms(Parameter.of("k1", "v1"), Parameter.of("k
 ```
 The forms parameter should only works with post method.
 
-## Custom Headers Http request headers can be set by header or headers method:
+## Custom Headers
+
+Http request headers can be set by headers method:
 
 ```java
 // set headers by map
