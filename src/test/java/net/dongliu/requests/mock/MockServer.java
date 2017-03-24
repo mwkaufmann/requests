@@ -45,7 +45,7 @@ public class MockServer {
         handler.addServletWithMapping(MockGetServlet.class, "/*");
         handler.addServletWithMapping(MockPostServlet.class, "/post");
         handler.addServletWithMapping(MockBasicAuthenticationServlet.class, "/basicAuth");
-        handler.addServletWithMapping(MockPartServlet.class, "/upload");
+        handler.addServletWithMapping(MockMultiPartServlet.class, "/multi_part");
         handler.addServletWithMapping(EchoBodyServlet.class, "/echo_body");
         handler.addServletWithMapping(EchoHeaderServlet.class, "/echo_header");
 

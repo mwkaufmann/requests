@@ -1,9 +1,6 @@
 package net.dongliu.requests.body;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Collection;
 
@@ -18,10 +15,10 @@ class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
         super(body, "multipart/form-data; boundary=" + BOUNDARY, false);
     }
 
-    // TODO: os was closed when method finished. However it does not matter current
     @Override
     public void writeBody(OutputStream os, Charset charset) throws IOException {
-        try (Writer writer = new OutputStreamWriter(os)) {
+        OutputStream output = new NonCloseOutputStream(os);
+        try (Writer writer = new OutputStreamWriter(output)) {
             for (Part part : getBody()) {
                 RequestBody body = part.getRequestBody();
                 String name = part.getName();
@@ -44,15 +41,17 @@ class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
                 writer.write(LINE_END);
                 writer.flush();
 
-                body.writeBody(os, charset);
+                body.writeBody(output, charset);
                 writer.write(LINE_END);
                 writer.flush();
-                os.flush();
+                output.flush();
             }
             writer.write("--");
             writer.write(BOUNDARY);
             writer.write("--");
             writer.write(LINE_END);
+        } finally {
+            output.close();
         }
     }
 
@@ -60,6 +59,17 @@ class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
         writer.write("--");
         writer.write(BOUNDARY);
         writer.write(LINE_END);
+    }
+
+    private static class NonCloseOutputStream extends FilterOutputStream {
+
+        public NonCloseOutputStream(OutputStream out) {
+            super(out);
+        }
+
+        @Override
+        public void close() throws IOException {
+        }
     }
 
 }

@@ -100,12 +100,22 @@ public class RequestsTest {
 
     @Test
     public void testMultiPart() {
-        String response = Requests.post("http://127.0.0.1:8080/upload")
+        String body = Requests.post("http://127.0.0.1:8080/multi_part")
                 .multiPartBody(Part.file("writeTo", "keystore", this.getClass().getResourceAsStream("/keystore"))
                         .contentType("application/octem-stream"))
                 .send().readToText();
-        assertTrue(response.contains("writeTo"));
-        assertTrue(response.contains("application/octem-stream"));
+        assertTrue(body.contains("writeTo"));
+        assertTrue(body.contains("application/octem-stream"));
+    }
+
+
+    @Test
+    public void testMultiPartText() {
+        String body = Requests.post("http://127.0.0.1:8080/multi_part")
+                .multiPartBody(Part.text("test", "this is test value"))
+                .send().readToText();
+        assertTrue(body.contains("this is test value"));
+        assertTrue(body.contains("plain/text; charset=utf-8"));
     }
 
     @Test
