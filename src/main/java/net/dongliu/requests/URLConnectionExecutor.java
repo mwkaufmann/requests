@@ -26,6 +26,7 @@ import static net.dongliu.requests.HttpHeaders.*;
  * @author Liu Dong
  */
 public class URLConnectionExecutor implements HttpExecutor {
+
     @Override
     public RawResponse proceed(Request request) {
         RawResponse response = doRequest(request);
@@ -97,6 +98,9 @@ public class URLConnectionExecutor implements HttpExecutor {
         } catch (IOException e) {
             throw Exceptions.sneakyThrow(e);
         }
+
+        // disable cache
+        conn.setUseCaches(false);
 
         // deal with https
         if (conn instanceof HttpsURLConnection) {
@@ -246,14 +250,13 @@ public class URLConnectionExecutor implements HttpExecutor {
 
         // update session
         session.updateCookie(cookies);
-        return new RawResponse(status, statusLine, headers, cookies, input, conn);
+        return new RawResponse(status, Objects.requireNonNull(statusLine), headers, cookies, input, conn);
     }
 
     /**
      * Wrap response input stream if it is compressed, return input its self if not use compress
      */
-    private InputStream wrapCompressBody(int status, String method, ResponseHeaders headers,
-                                         InputStream input) {
+    private InputStream wrapCompressBody(int status, String method, ResponseHeaders headers, InputStream input) {
         // if has no body, some server still set content-encoding header,
         // GZIPInputStream wrap empty input stream will cause exception. we should check this
         if (method.equals("HEAD") || (status >= 100 && status < 200) || status == 304 || status == 204) {
@@ -264,7 +267,8 @@ public class URLConnectionExecutor implements HttpExecutor {
         if (contentEncoding == null) {
             return input;
         }
-        //TODO: we should remove the content-encoding header here?
+
+        //we should remove the content-encoding header here?
         switch (contentEncoding) {
             case "gzip":
                 try {

@@ -30,7 +30,6 @@ public class RequestsProxyTest {
     public void testHttpProxy() throws Exception {
         // http proxy with redirect
         RawResponse response = Requests
-//                .get("http://127.0.0.1:8080")
                 .get("https://www.google.com")
                 .proxy(Proxies.httpProxy("127.0.0.1", 1081))
                 .send();
@@ -42,7 +41,6 @@ public class RequestsProxyTest {
     public void testSocksProxy() throws Exception {
         // socks proxy with redirect
         RawResponse response = Requests
-//                .get("http://127.0.0.1:8080")
                 .get("https://www.google.com")
                 .proxy(Proxies.socksProxy("127.0.0.1", 1080))
                 .send();
