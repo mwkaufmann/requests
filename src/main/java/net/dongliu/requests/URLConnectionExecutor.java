@@ -149,11 +149,6 @@ public class URLConnectionExecutor implements HttpExecutor {
         if (request.getBasicAuth() != null) {
             conn.setRequestProperty(NAME_AUTHORIZATION, request.getBasicAuth().encode());
         }
-        // http proxy authentication
-        if (proxy != null && proxy instanceof Proxies.AuthenticationHttpProxy) {
-            BasicAuth basicAuth = ((Proxies.AuthenticationHttpProxy) proxy).getBasicAuth();
-            conn.setRequestProperty(NAME_PROXY_AUTHORIZATION, basicAuth.encode());
-        }
 
         // set cookies
         if (!request.getCookies().isEmpty() || !session.getCookies().isEmpty()) {

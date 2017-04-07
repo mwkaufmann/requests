@@ -2,7 +2,6 @@ package net.dongliu.requests;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.SocketAddress;
 import java.util.Objects;
 
 /**
@@ -21,31 +20,17 @@ public class Proxies {
     /**
      * Create http proxy, with authentication
      */
-    public static Proxy httpProxy(String host, int port, String user, String password) {
-        Objects.requireNonNull(user);
-        Objects.requireNonNull(password);
-        return new AuthenticationHttpProxy(new InetSocketAddress(Objects.requireNonNull(host), port),
-                new BasicAuth(user, password));
-    }
+//    public static Proxy httpProxy(String host, int port, String user, String password) {
+//        Objects.requireNonNull(user);
+//        Objects.requireNonNull(password);
+//        return new AuthenticationHttpProxy(new InetSocketAddress(Objects.requireNonNull(host), port),
+//                new BasicAuth(user, password));
+//    }
 
     /**
-     * Create socks proxy
+     * Create socks5 proxy
      */
     public static Proxy socksProxy(String host, int port) {
         return new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(Objects.requireNonNull(host), port));
-    }
-
-
-    static class AuthenticationHttpProxy extends Proxy {
-        private final BasicAuth basicAuth;
-
-        private AuthenticationHttpProxy(SocketAddress address, BasicAuth basicAuth) {
-            super(Type.HTTP, address);
-            this.basicAuth = basicAuth;
-        }
-
-        BasicAuth getBasicAuth() {
-            return basicAuth;
-        }
     }
 }
