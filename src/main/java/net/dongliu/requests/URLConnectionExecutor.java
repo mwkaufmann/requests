@@ -15,8 +15,9 @@ import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.util.*;
-import java.util.zip.DeflaterInputStream;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 
 import static net.dongliu.requests.HttpHeaders.*;
 
@@ -273,7 +274,9 @@ public class URLConnectionExecutor implements HttpExecutor {
                     throw Exceptions.sneakyThrow(e);
                 }
             case "deflate":
-                return new DeflaterInputStream(input);
+                // Note: deflate implements may or may not wrap in zlib due to rfc confusing. 
+                // here deal with deflate without zlib header
+                return new InflaterInputStream(input, new Inflater(true));
             case "identity":
             case "compress": //historic; deprecated in most applications and replaced by gzip or deflate
             default:
