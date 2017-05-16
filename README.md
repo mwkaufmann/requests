@@ -210,8 +210,8 @@ Requests.get(url).verify(false).send();
 Set proxy by proxy method:
 
 ```java
-Requests.get(url).proxy(Proxies.httpProxy("127.0.0.1", 8081).send(); // http proxy
-Requests.get(url).proxy(Proxies.socksProxy("127.0.0.1", 1080).send(); // socks proxy proxy
+Requests.get(url).proxy(Proxies.httpProxy("127.0.0.1", 8081)).send(); // http proxy
+Requests.get(url).proxy(Proxies.socksProxy("127.0.0.1", 1080)).send(); // socks proxy proxy
 ```
 
 # Session
