@@ -9,10 +9,10 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Liu Dong
  */
-public class ResponseHeadersTest {
+public class HeadersTest {
     @Test
     public void getHeaders() throws Exception {
-        ResponseHeaders headers = new ResponseHeaders(Arrays.asList(
+        Headers headers = new Headers(Arrays.asList(
                 Parameter.of("Location", "www"),
                 Parameter.of("Location", "www2"),
                 Parameter.of("Content-Length", "100")
@@ -22,7 +22,7 @@ public class ResponseHeadersTest {
 
     @Test
     public void getFirstHeader() throws Exception {
-        ResponseHeaders headers = new ResponseHeaders(Arrays.asList(
+        Headers headers = new Headers(Arrays.asList(
                 Parameter.of("Location", "www"),
                 Parameter.of("Location", "www2"),
                 Parameter.of("Content-Length", "100")
@@ -33,7 +33,7 @@ public class ResponseHeadersTest {
 
     @Test
     public void getLongHeader() throws Exception {
-        ResponseHeaders headers = new ResponseHeaders(Arrays.asList(
+        Headers headers = new Headers(Arrays.asList(
                 Parameter.of("Location", "www"),
                 Parameter.of("Location", "www2"),
                 Parameter.of("Content-Length", "100")

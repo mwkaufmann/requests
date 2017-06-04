@@ -29,13 +29,13 @@ public class RawResponse implements AutoCloseable {
     private final int statusCode;
     private final String statusLine;
     private final Set<Cookie> cookies;
-    private final ResponseHeaders headers;
+    private final Headers headers;
     private final InputStream input;
     private final HttpURLConnection conn;
     @Nullable
     private Charset charset;
 
-    RawResponse(int statusCode, String statusLine, ResponseHeaders headers, Set<Cookie> cookies, InputStream input,
+    RawResponse(int statusCode, String statusLine, Headers headers, Set<Cookie> cookies, InputStream input,
                 HttpURLConnection conn) {
         this.statusCode = statusCode;
         this.statusLine = statusLine;
@@ -54,8 +54,20 @@ public class RawResponse implements AutoCloseable {
     /**
      * Set response read charset.
      * If not set, will get charset from response headers.
+     *
+     * @deprecated use {{@link #charset(Charset)}} instead
      */
+    @Deprecated
     public RawResponse withCharset(Charset charset) {
+        this.charset = Objects.requireNonNull(charset);
+        return this;
+    }
+
+    /**
+     * Set response read charset.
+     * If not set, will get charset from response headers.
+     */
+    public RawResponse charset(Charset charset) {
         this.charset = Objects.requireNonNull(charset);
         return this;
     }
@@ -254,7 +266,7 @@ public class RawResponse implements AutoCloseable {
      * Return immutable response header list
      */
     @Nonnull
-    public List<Map.Entry<String, String>> getHeaders() {
+    public List<Parameter<String>> getHeaders() {
         return headers.getHeaders();
     }
 
@@ -271,6 +283,19 @@ public class RawResponse implements AutoCloseable {
      */
     public Collection<Cookie> getCookies() {
         return cookies;
+    }
+
+    /**
+     * Get first cookie match the name, return null if not exists
+     */
+    @Nullable
+    public Cookie getFirstCookie(String name) {
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) {
+                return cookie;
+            }
+        }
+        return null;
     }
 
     private Charset getCharset() {

@@ -7,8 +7,8 @@
     <artifactId>requests</artifactId>
     <name>Convenient http client for java</name>
     <packaging>jar</packaging>
-    <version>4.8.5</version>
-    <url>https://github.com/caoqianli/requests</url>
+    <version>4.9.0</version>
+    <url>https://github.com/clearthesky/requests</url>
 
     <parent>
         <groupId>org.sonatype.oss</groupId>
@@ -34,7 +34,7 @@
     <licenses>
         <license>
             <name>The BSD 2-Clause License</name>
-            <url>https://github.com/caoqianli/requests/blob/master/LICENSE</url>
+            <url>https://github.com/clearthesky/requests/blob/master/LICENSE</url>
             <distribution>repo</distribution>
         </license>
     </licenses>

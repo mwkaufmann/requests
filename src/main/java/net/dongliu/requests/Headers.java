@@ -9,11 +9,11 @@ import java.util.*;
  *
  * @author Liu Dong
  */
-class ResponseHeaders {
-    private final List<Map.Entry<String, String>> headers;
+class Headers {
+    private final List<Parameter<String>> headers;
     private final Map<String, List<String>> map;
 
-    public ResponseHeaders(List<? extends Map.Entry<String, String>> headers) {
+    public Headers(List<Parameter<String>> headers) {
         this.headers = Collections.unmodifiableList(Objects.requireNonNull(headers));
         this.map = collectToMap(headers);
     }
@@ -75,7 +75,7 @@ class ResponseHeaders {
     }
 
     @Nonnull
-    public List<Map.Entry<String, String>> getHeaders() {
+    public List<Parameter<String>> getHeaders() {
         return headers;
     }
 }

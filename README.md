@@ -8,7 +8,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.8.5</version>
+    <version>4.9.0</version>
 </dependency>
 ```
 
@@ -20,6 +20,8 @@ One simple http request example that do http get request and read response as st
 ```java
 String url = ...;
 String resp = Requests.get(url).send().readToText();
+// or
+Response<String> resp = Requests.get(url).send().toTextResponse();
 ```
 
 Post and other method:
@@ -35,7 +37,7 @@ The response object have several common http response fields can be used:
 ```java
 RawResponse resp = Requests.get(url).send();
 int statusCode = resp.getStatusCode();
-List<Map.Entry<String, String>> headers = resp.getHeaders();
+List<Parameter<String>> headers = resp.getHeaders();
 Collection<Cookie> cookies = resp.getCookies();
 String body = resp.readToText();
 ```

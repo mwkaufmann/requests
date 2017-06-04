@@ -207,7 +207,7 @@ public class URLConnectionExecutor implements HttpExecutor {
 
         String statusLine = null;
         // headers and cookies
-        List<Map.Entry<String, String>> headerList = new ArrayList<>();
+        List<Parameter<String>> headerList = new ArrayList<>();
         Set<Cookie> cookies = new HashSet<>();
         int index = 0;
         while (true) {
@@ -227,7 +227,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                 cookies.add(CookieUtils.parseCookieHeader(host, path, value));
             }
         }
-        ResponseHeaders headers = new ResponseHeaders(headerList);
+        Headers headers = new Headers(headerList);
 
         InputStream input;
         try {
@@ -252,7 +252,7 @@ public class URLConnectionExecutor implements HttpExecutor {
     /**
      * Wrap response input stream if it is compressed, return input its self if not use compress
      */
-    private InputStream wrapCompressBody(int status, String method, ResponseHeaders headers, InputStream input) {
+    private InputStream wrapCompressBody(int status, String method, Headers headers, InputStream input) {
         // if has no body, some server still set content-encoding header,
         // GZIPInputStream wrap empty input stream will cause exception. we should check this
         if (method.equals("HEAD") || (status >= 100 && status < 200) || status == 304 || status == 204) {
