@@ -20,7 +20,7 @@ public final class RequestBuilder {
     String url;
     Collection<? extends Map.Entry<String, ?>> headers = Collections.emptyList();
     Collection<? extends Map.Entry<String, ?>> cookies = Collections.emptyList();
-    String userAgent = "Requests/4.8.5, Java " + System.getProperty("java.version");
+    String userAgent = "Requests/Java " + System.getProperty("java.version");
     Collection<? extends Map.Entry<String, ?>> params = Collections.emptyList();
     Charset requestCharset = StandardCharsets.UTF_8;
     RequestBody<?> body;
