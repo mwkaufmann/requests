@@ -55,13 +55,15 @@ public class CookieUtilsTest {
         cookie = CookieUtils.parseCookieHeader("weibo.com", "/", cookieValue);
         assertEquals("weibo.com", cookie.getDomain());
         assertEquals(0, cookie.getExpiry());
-        
+
         cookieValue = "ALF=1521175171; expires=Friday, 16-Mar-2018 04:39:31 GMT; path=/; domain=.sina.com.cn";
         cookie = CookieUtils.parseCookieHeader("login.sina.com.cn", "/sso/login.ph", cookieValue);
         assertEquals(".sina.com.cn", cookie.getDomain());
         assertEquals(1521175171000L, cookie.getExpiry());
         assertEquals("/", cookie.getPath());
-        
 
+
+        cookie = CookieUtils.parseCookieHeader("ssl.ptlogin2.qq.com", "/", "skey=@k4bPcIye6; PATH=/; DOMAIN=qq.com;");
+        assertEquals(".qq.com", cookie.getDomain());
     }
 }

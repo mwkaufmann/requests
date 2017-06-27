@@ -156,13 +156,14 @@ public class URLConnectionExecutor implements HttpExecutor {
         if (!request.getCookies().isEmpty() || !sessionCookies.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<String, ?> entry : request.getCookies()) {
-                sb.append(entry.getKey()).append("=").append(String.valueOf(entry.getValue())).append(";");
+                sb.append(entry.getKey()).append("=").append(String.valueOf(entry.getValue())).append("; ");
             }
             for (Cookie cookie : sessionCookies) {
-                sb.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
+                sb.append(cookie.getName()).append("=").append(cookie.getValue()).append("; ");
             }
-            if (sb.length() > 1) {
-                String cookieStr = sb.deleteCharAt(sb.length() - 1).toString();
+            if (sb.length() > 2) {
+                sb.setLength(sb.length() - 2);
+                String cookieStr = sb.toString();
                 conn.setRequestProperty(NAME_COOKIE, cookieStr);
             }
         }

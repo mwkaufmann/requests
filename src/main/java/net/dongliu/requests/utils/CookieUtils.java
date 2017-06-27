@@ -81,7 +81,7 @@ public class CookieUtils {
 
     public static Cookie parseCookieHeader(String originDomain, String originPath,
                                            String headerValue) {
-        String[] items = headerValue.split("; ");
+        String[] items = headerValue.split(";");
         Map.Entry<String, String> nameValue = parseCookieNameValue(items[0]);
 
         String domain = null;
@@ -89,6 +89,10 @@ public class CookieUtils {
         long expiry = 0;
         boolean secure = false;
         for (String item : items) {
+            item = item.trim();
+            if (item.isEmpty()) {
+                continue;
+            }
             Map.Entry<String, String> attribute = parseCookieAttribute(item);
             switch (attribute.getKey().toLowerCase()) {
                 case "domain":
