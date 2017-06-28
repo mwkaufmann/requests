@@ -79,6 +79,9 @@ public class CookieUtils {
     }
 
 
+    /**
+     * Parse one cookie header value, return the cookie
+     */
     public static Cookie parseCookieHeader(String originDomain, String originPath,
                                            String headerValue) {
         String[] items = headerValue.split(";");
@@ -99,7 +102,7 @@ public class CookieUtils {
                     domain = parseDomain(originDomain, attribute);
                     break;
                 case "path":
-                    path = attribute.getValue().endsWith("/") ? attribute.getValue() : attribute.getValue() + "/";
+                    path = StringUtils.appendSuffixIfNotExists(attribute.getValue(), "/");
                     break;
                 case "expires":
                     Date date = CookieDateUtil.parseDate(attribute.getValue());
@@ -110,11 +113,8 @@ public class CookieUtils {
                 case "max-age":
                     try {
                         int seconds = Integer.parseInt(attribute.getValue());
-                        if (seconds >= 0) {
-                            expiry = System.currentTimeMillis() + seconds * 1000;
-                        }
+                        expiry = System.currentTimeMillis() + seconds * 1000;
                     } catch (NumberFormatException ignore) {
-                        //TODO: we should ignore this cookie?
                     }
                     break;
                 case "secure":
@@ -127,7 +127,7 @@ public class CookieUtils {
             }
         }
 
-        return new Cookie(domain == null ? originDomain : domain, path == null ? originPath : path,
+        return new Cookie(StringUtils.firstNonNull(domain, originDomain), StringUtils.firstNonNull(path, originPath),
                 nameValue.getKey(), nameValue.getValue(), expiry, secure);
     }
 
