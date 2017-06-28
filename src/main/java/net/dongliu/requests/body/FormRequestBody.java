@@ -1,6 +1,6 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.requests.utils.URIEncoder;
+import net.dongliu.requests.URIEncoder;
 
 import java.io.IOException;
 import java.io.OutputStream;

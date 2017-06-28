@@ -2,9 +2,8 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
-import net.dongliu.requests.utils.Closeables;
 import net.dongliu.requests.utils.CookieUtils;
-import net.dongliu.requests.utils.Exceptions;
+import net.dongliu.requests.utils.IOUtils;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
@@ -97,7 +96,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                 conn = (HttpURLConnection) url.openConnection();
             }
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         }
 
         // disable cache
@@ -122,7 +121,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.setRequestMethod(request.getMethod());
         } catch (ProtocolException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         }
         conn.setReadTimeout(request.getSocksTimeout());
         conn.setConnectTimeout(request.getConnectTimeout());
@@ -181,7 +180,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try {
             conn.connect();
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         }
 
         try {
@@ -192,7 +191,7 @@ public class URLConnectionExecutor implements HttpExecutor {
             return getResponse(conn, session, request.isCompress(), request.getMethod(), host, effectivePath);
         } catch (IOException e) {
             conn.disconnect();
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         } catch (Throwable e) {
             conn.disconnect();
             throw e;
@@ -254,7 +253,8 @@ public class URLConnectionExecutor implements HttpExecutor {
     /**
      * Wrap response input stream if it is compressed, return input its self if not use compress
      */
-    private InputStream wrapCompressBody(int status, String method, Headers headers, InputStream input) {
+    private InputStream wrapCompressBody(int status, String method, Headers headers, InputStream input)
+            throws IOException {
         // if has no body, some server still set content-encoding header,
         // GZIPInputStream wrap empty input stream will cause exception. we should check this
         if (method.equals("HEAD") || (status >= 100 && status < 200) || status == 304 || status == 204) {
@@ -272,8 +272,8 @@ public class URLConnectionExecutor implements HttpExecutor {
                 try {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
-                    Closeables.closeQuietly(input);
-                    throw Exceptions.sneakyThrow(e);
+                    IOUtils.closeQuietly(input);
+                    throw e;
                 }
             case "deflate":
                 // Note: deflate implements may or may not wrap in zlib due to rfc confusing. 
@@ -290,7 +290,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         try (OutputStream os = conn.getOutputStream()) {
             body.writeBody(os, requestCharset);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         }
     }
 }

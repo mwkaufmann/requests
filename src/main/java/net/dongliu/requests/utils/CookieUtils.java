@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
+ * Only for internal use.
  * Http response set cookie header.
  * <p>
  * RFC 6265:

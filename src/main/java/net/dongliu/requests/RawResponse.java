@@ -1,11 +1,9 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
-import net.dongliu.requests.utils.Closeables;
-import net.dongliu.requests.utils.Exceptions;
-import net.dongliu.requests.utils.InputOutputs;
-import net.dongliu.requests.utils.ReaderWriters;
+import net.dongliu.requests.utils.IOUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,7 +45,7 @@ public class RawResponse implements AutoCloseable {
 
     @Override
     public void close() {
-        Closeables.closeQuietly(input);
+        IOUtils.closeQuietly(input);
         conn.disconnect();
     }
 
@@ -79,9 +77,9 @@ public class RawResponse implements AutoCloseable {
     public String readToText() {
         Charset charset = getCharset();
         try (Reader reader = new InputStreamReader(input, charset)) {
-            return ReaderWriters.readAll(reader);
+            return IOUtils.readAll(reader);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         } finally {
             close();
         }
@@ -99,9 +97,9 @@ public class RawResponse implements AutoCloseable {
      */
     public byte[] readToBytes() {
         try {
-            return InputOutputs.readAll(input);
+            return IOUtils.readAll(input);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         } finally {
             close();
         }
@@ -123,7 +121,7 @@ public class RawResponse implements AutoCloseable {
         try {
             return JsonLookup.getInstance().lookup().unmarshal(input, getCharset(), type);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         } finally {
             close();
         }
@@ -167,10 +165,10 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(File path) {
         try {
             try (OutputStream os = new FileOutputStream(path)) {
-                InputOutputs.copy(input, os);
+                IOUtils.copy(input, os);
             }
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         } finally {
             close();
         }
@@ -182,10 +180,10 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(Path path) {
         try {
             try (OutputStream os = Files.newOutputStream(path)) {
-                InputOutputs.copy(input, os);
+                IOUtils.copy(input, os);
             }
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         } finally {
             close();
         }
@@ -198,10 +196,10 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(String path) {
         try {
             try (OutputStream os = new FileOutputStream(path)) {
-                InputOutputs.copy(input, os);
+                IOUtils.copy(input, os);
             }
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         } finally {
             close();
         }
@@ -212,9 +210,9 @@ public class RawResponse implements AutoCloseable {
      */
     public void writeTo(OutputStream out) {
         try {
-            InputOutputs.copy(input, out);
+            IOUtils.copy(input, out);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         } finally {
             close();
         }
@@ -225,9 +223,9 @@ public class RawResponse implements AutoCloseable {
      */
     public void discardBody() {
         try {
-            InputOutputs.skipAll(input);
+            IOUtils.skipAll(input);
         } catch (IOException e) {
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         } finally {
             close();
         }

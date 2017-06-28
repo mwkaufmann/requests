@@ -1,6 +1,7 @@
-package net.dongliu.requests.utils;
+package net.dongliu.requests;
 
 import net.dongliu.requests.Parameter;
+import net.dongliu.requests.exception.RequestsException;
 
 import javax.annotation.Nonnull;
 import java.io.CharArrayWriter;
@@ -347,8 +348,8 @@ public class URIEncoder {
             return URLEncoder.encode(query.getName(), charset.name()) + "=" + URLEncoder.encode(query.getValue(),
                     charset.name());
         } catch (UnsupportedEncodingException e) {
-            // shoudl not happen
-            throw Exceptions.sneakyThrow(e);
+            // should not happen
+            throw new RequestsException(e);
         }
     }
 
@@ -366,7 +367,7 @@ public class URIEncoder {
             }
         } catch (UnsupportedEncodingException e) {
             // should not happen
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         }
         if (sb.length() > 0) {
             sb.deleteCharAt(sb.length() - 1);
@@ -387,7 +388,7 @@ public class URIEncoder {
                     URLDecoder.decode(s.substring(idx + 1), charset.name()));
         } catch (UnsupportedEncodingException e) {
             // should not happen
-            throw Exceptions.sneakyThrow(e);
+            throw new RequestsException(e);
         }
     }
 

@@ -1,13 +1,13 @@
 package net.dongliu.requests.utils;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * List utils functions
+ * List utils functions.
+ * Only for internal use
  *
  * @author Liu Dong
  */
@@ -19,18 +19,6 @@ public class ListUtils {
     public static <T> List<T> nullToEmpty(@Nullable List<T> list) {
         return list == null ? ListUtils.<T>of() : list;
     }
-
-
-    /**
-     * create mutable list
-     */
-    @SafeVarargs
-    public static <T> List<T> create(T... values) {
-        List<T> list = new ArrayList<>(values.length);
-        Collections.addAll(list, values);
-        return list;
-    }
-
 
     /**
      * Create immutable list

@@ -1,8 +1,7 @@
 package net.dongliu.requests.utils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import javax.annotation.Nullable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +10,7 @@ import java.util.List;
  *
  * @author Liu Dong
  */
-public class InputOutputs {
+public class IOUtils {
 
 
     private static byte[] empty = {};
@@ -29,7 +28,7 @@ public class InputOutputs {
                 output.write(buffer, 0, read);
             }
         } finally {
-            Closeables.closeQuietly(input);
+            IOUtils.closeQuietly(input);
         }
     }
 
@@ -67,7 +66,7 @@ public class InputOutputs {
                 }
             }
         } finally {
-            Closeables.closeQuietly(input);
+            IOUtils.closeQuietly(input);
         }
 
         if (dataList.size() == 0) {
@@ -113,59 +112,6 @@ public class InputOutputs {
     }
 
     /**
-     * Read exactly data with size.
-     *
-     * @return the size read; may less than array len if reach the end for stream
-     */
-    public static int readExact(InputStream input, byte[] data) throws IOException {
-        return readExact(input, data, 0, data.length);
-    }
-
-
-    /**
-     * Read all data from input and discard. The input stream would be closed when read finished.
-     *
-     * @return the bytes consumed
-     */
-    public static long consumeAll(InputStream input) throws IOException {
-        byte[] buffer = new byte[BUFFER_SIZE];
-        long total = 0;
-        int read;
-        try {
-            while ((read = input.read(buffer)) > 0) {
-                total += read;
-            }
-        } finally {
-            Closeables.closeQuietly(input);
-        }
-        return total;
-    }
-
-    /**
-     * Skip data with exact size
-     *
-     * @return the skipped size; may less than len if reach the end of stream
-     */
-    public static long skipExact(InputStream input, long len) throws IOException {
-        long count = 0;
-        long read;
-        while (len > 0 && (read = input.skip(len)) != 0) {
-            count += read;
-            len -= read;
-        }
-        if (len == 0) {
-            return count;
-        }
-
-        byte[] buffer = new byte[BUFFER_SIZE];
-        while (len > 0 && (read = input.read(buffer, 0, (int) Math.min(len, buffer.length))) != -1) {
-            count += read;
-            len -= read;
-        }
-        return count;
-    }
-
-    /**
      * Skip all input data, and finally close it
      *
      * @return the num of bytes skipped
@@ -186,9 +132,104 @@ public class InputOutputs {
                 count += read;
             }
         } finally {
-            Closeables.closeQuietly(input);
+            IOUtils.closeQuietly(input);
         }
         return count;
     }
-    
+
+    /**
+     * Close quietly, do not throw exceptions
+     */
+    public static void closeQuietly(@Nullable AutoCloseable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (Exception ignore) {
+            }
+        }
+    }
+
+    /**
+     * Copy reader to writer, and close reader
+     */
+    public static void copy(Reader reader, Writer writer) throws IOException {
+        char[] buffer = new char[BUFFER_SIZE];
+        try {
+            int read;
+            while ((read = reader.read(buffer)) != -1) {
+                writer.write(buffer, 0, read);
+            }
+        } finally {
+            IOUtils.closeQuietly(reader);
+        }
+    }
+
+    /**
+     * Read reader to String, and then close reader
+     */
+    public static String readAll(Reader reader) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        char[] buffer = new char[BUFFER_SIZE];
+        try {
+            int read;
+            while ((read = reader.read(buffer)) != -1) {
+                sb.append(buffer, 0, read);
+            }
+        } finally {
+            IOUtils.closeQuietly(reader);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Read reader to lines, and then close reader
+     */
+    public static List<String> readLines(Reader reader) throws IOException {
+        String line;
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader br = buffered(reader)) {
+            while ((line = br.readLine()) != null) {
+                lines.add(line);
+            }
+            return lines;
+        } finally {
+            IOUtils.closeQuietly(reader);
+        }
+    }
+
+    /**
+     * Wrap reader to buffered reader. if reader is buffered, return its self.
+     */
+    public static BufferedReader buffered(Reader reader) {
+        if (reader instanceof BufferedReader) {
+            return (BufferedReader) reader;
+        }
+        return new BufferedReader(reader);
+    }
+
+    /**
+     * Skip all reader data, and finally close it
+     *
+     * @return the num of chars skipped
+     */
+    public static long skipAll(Reader reader) throws IOException {
+        long count = 0;
+        long read;
+        try {
+            while ((read = reader.skip(BUFFER_SIZE)) != 0) {
+                count += read;
+            }
+            int c = reader.read();
+            if (c == -1) {
+                return count;
+            }
+            char[] buffer = new char[BUFFER_SIZE];
+            while ((read = reader.read(buffer)) != -1) {
+                count += read;
+            }
+        } finally {
+            IOUtils.closeQuietly(reader);
+        }
+        return count;
+    }
 }
