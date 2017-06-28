@@ -24,15 +24,6 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
         return new Parameter<>(key, value);
     }
 
-
-    public String first() {
-        return name;
-    }
-
-    public T second() {
-        return value;
-    }
-
     public String getKey() {
         return name;
     }
@@ -70,18 +61,6 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
     public Parameter<T> withValue(T newValue) {
         return new Parameter<>(name, newValue);
     }
-
-    /**
-     * To String pair
-     */
-    @SuppressWarnings("unchecked")
-    public Parameter<String> toStringPair() {
-        if (value instanceof String) {
-            return (Parameter<String>) this;
-        }
-        return new Parameter<>(name, value.toString());
-    }
-
 
     @Override
     public boolean equals(Object o) {

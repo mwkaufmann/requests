@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 
+import javax.annotation.Nullable;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
@@ -48,7 +49,7 @@ public class GsonProvider extends AbstractJsonProvider implements JsonProvider {
     }
 
     @Override
-    public void marshal(Writer writer, Object value) {
+    public void marshal(Writer writer, @Nullable Object value) {
         gson.toJson(value, writer);
     }
 

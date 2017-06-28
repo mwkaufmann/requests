@@ -162,9 +162,9 @@ public class RawResponse implements AutoCloseable {
     /**
      * Write response body to file
      */
-    public void writeToFile(File path) {
+    public void writeToFile(File file) {
         try {
-            try (OutputStream os = new FileOutputStream(path)) {
+            try (OutputStream os = new FileOutputStream(file)) {
                 IOUtils.copy(input, os);
             }
         } catch (IOException e) {
@@ -206,11 +206,36 @@ public class RawResponse implements AutoCloseable {
     }
 
     /**
-     * Write response body to output stream. Output stream will not be closed.
+     * Write response body to file, and return response contains the file.
+     */
+    public Response<File> toFileResponse(Path path) {
+        File file = path.toFile();
+        this.writeToFile(file);
+        return new Response<>(this.statusCode, this.cookies, this.headers, file);
+    }
+
+    /**
+     * Write response body to OutputStream. OutputStream will not be closed.
      */
     public void writeTo(OutputStream out) {
         try {
             IOUtils.copy(input, out);
+        } catch (IOException e) {
+            throw new RequestsException(e);
+        } finally {
+            close();
+        }
+    }
+
+    /**
+     * Write response body to Writer, charset can be set using {@link #charset(Charset)}, or will use charset detected from response header if not set.
+     * Writer will not be closed.
+     */
+    public void writeTo(Writer writer) {
+        try {
+            try (Reader reader = new InputStreamReader(input, getCharset())) {
+                IOUtils.copy(reader, writer);
+            }
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -304,8 +329,12 @@ public class RawResponse implements AutoCloseable {
         if (contentType == null) {
             return StandardCharsets.UTF_8;
         }
-        String[] items = contentType.split("; ");
+        String[] items = contentType.split(";");
         for (String item : items) {
+            item = item.trim();
+            if (item.isEmpty()) {
+                continue;
+            }
             int idx = item.indexOf('=');
             if (idx < 0) {
                 continue;
