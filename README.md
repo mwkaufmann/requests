@@ -37,8 +37,8 @@ The response object have several common http response fields can be used:
 ```java
 RawResponse resp = Requests.get(url).send();
 int statusCode = resp.getStatusCode();
-List<Parameter<String>> headers = resp.getHeaders();
-Collection<Cookie> cookies = resp.getCookies();
+String contentLen = resp.getFirstHeader("Content-Length");
+Cookie cookie = resp.getFirstCookie("_bd_name");
 String body = resp.readToText();
 ```
 Make sure call readToText or other methods to consume resp, or call close method to close resp.
