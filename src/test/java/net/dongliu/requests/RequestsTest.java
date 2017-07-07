@@ -68,8 +68,8 @@ public class RequestsTest {
 
     @Test
     public void testCookie() {
-        RawResponse response = Requests.get("http://127.0.0.1:8080/cookie")
-                .cookies(Parameter.of("test", "value")).send();
+        Response<String> response = Requests.get("http://127.0.0.1:8080/cookie")
+                .cookies(Parameter.of("test", "value")).send().toTextResponse();
         boolean flag = false;
         for (Cookie cookie : response.getCookies()) {
             if (cookie.getName().equals("test")) {
@@ -82,20 +82,19 @@ public class RequestsTest {
 
     @Test
     public void testBasicAuth() {
-        RawResponse response = Requests.get("http://127.0.0.1:8080/basicAuth")
+        Response<String> response = Requests.get("http://127.0.0.1:8080/basicAuth")
                 .basicAuth("test", "password")
-                .send();
+                .send().toTextResponse();
         assertEquals(200, response.getStatusCode());
-        response.readToText();
     }
 
     @Test
     public void testRedirect() {
-        RawResponse resp = Requests.get("http://127.0.0.1:8080/redirect").userAgent("my-user-agent").send();
-        String text = resp.readToText();
+        Response<String> resp = Requests.get("http://127.0.0.1:8080/redirect").userAgent("my-user-agent")
+                .send().toTextResponse();
         assertEquals(200, resp.getStatusCode());
-        assertTrue(text.contains("/redirected"));
-        assertTrue(text.contains("my-user-agent"));
+        assertTrue(resp.getBody().contains("/redirected"));
+        assertTrue(resp.getBody().contains("my-user-agent"));
     }
 
     @Test
@@ -144,11 +143,10 @@ public class RequestsTest {
 
     @Test
     public void testHttps() {
-        RawResponse response = Requests.get("https://127.0.0.1:8443/https")
-                .verify(false).send();
-        String s = response.readToText();
+        Response<String> response = Requests.get("https://127.0.0.1:8443/https")
+                .verify(false).send().toTextResponse();
         assertEquals(200, response.getStatusCode());
-        assertFalse(s.isEmpty());
+        assertFalse(response.getBody().isEmpty());
     }
 
     @Test

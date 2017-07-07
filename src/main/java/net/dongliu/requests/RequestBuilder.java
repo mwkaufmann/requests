@@ -133,9 +133,17 @@ public final class RequestBuilder {
     }
 
     /**
-     * Set charset used to encode request params or forms. Default UTF8
+     * Set charset used to encode request params or forms. Default UTF8.
      */
     public RequestBuilder requestCharset(Charset charset) {
+        requestCharset = charset;
+        return this;
+    }
+
+    /**
+     * Set charset used to encode request params or forms. Default UTF8.
+     */
+    public RequestBuilder charset(Charset charset) {
         requestCharset = charset;
         return this;
     }

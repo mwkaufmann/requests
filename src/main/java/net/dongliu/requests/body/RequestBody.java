@@ -18,7 +18,7 @@ public abstract class RequestBody<T> {
     private final T body;
     private String contentType;
     /**
-     * If write charset to contentType
+     * If write charset to contentType header value
      */
     private final boolean includeCharset;
 

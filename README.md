@@ -164,6 +164,25 @@ String resp = Requests.post(url)
         .send().readToText();
 ```
 
+## Json support
+
+Requests can handle json encoder(for request body)/decoder(for response body), if having Jackson, Gson, or Fastjson lib in classpath.
+
+```java
+// send json body, content-type is set to application/json
+RawResponse response = Requests.post("http://.../update_person")
+                .jsonBody(value)
+                .send();
+// response body as json, to value
+Person person = Requests.post("http://.../get_person")
+                .params(Parameter.of("id", 101))
+                .send().readToJson(Person.class);
+// json body decoder to generic type
+List<Person> persons = Requests.post("http://.../get_person_list")
+                .send().readToJson(new TypeInfer<List<Person>>() {});
+
+```
+
 ## Basic Auth 
 
 Set http basic auth param by auth method:
