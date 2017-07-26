@@ -182,6 +182,9 @@ public class Cookies {
                         Date date = CookieDateUtil.parseDate(attribute.getValue());
                         if (date != null) {
                             expiry = date.getTime();
+                            if (expiry == 0) {
+                                expiry = 1;
+                            }
                         }
                     }
                     break;
@@ -189,6 +192,9 @@ public class Cookies {
                     try {
                         int seconds = Integer.parseInt(attribute.getValue());
                         expiry = System.currentTimeMillis() + seconds * 1000;
+                        if (expiry == 0) {
+                            expiry = 1;
+                        }
                     } catch (NumberFormatException ignore) {
                     }
                     break;

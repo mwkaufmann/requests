@@ -12,7 +12,7 @@ import java.util.*;
  * CookieJar that store cookie in memory, maintaining cookies following RFC 6265
  */
 @ThreadSafe
-public class DefaultCookieJar implements CookieJar {
+class DefaultCookieJar implements CookieJar {
 
     private Map<CookieKey, Cookie> cookieMap = new HashMap<>();
 

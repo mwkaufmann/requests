@@ -3,7 +3,7 @@ package net.dongliu.requests;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
-import net.dongliu.requests.utils.IOUtils;
+import net.dongliu.requests.utils.InputOutputs;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,7 +45,7 @@ public class RawResponse implements AutoCloseable {
 
     @Override
     public void close() {
-        IOUtils.closeQuietly(input);
+        InputOutputs.closeQuietly(input);
         conn.disconnect();
     }
 
@@ -77,7 +77,7 @@ public class RawResponse implements AutoCloseable {
     public String readToText() {
         Charset charset = getCharset();
         try (Reader reader = new InputStreamReader(input, charset)) {
-            return IOUtils.readAll(reader);
+            return InputOutputs.readAll(reader);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -97,7 +97,7 @@ public class RawResponse implements AutoCloseable {
      */
     public byte[] readToBytes() {
         try {
-            return IOUtils.readAll(input);
+            return InputOutputs.readAll(input);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -165,7 +165,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(File file) {
         try {
             try (OutputStream os = new FileOutputStream(file)) {
-                IOUtils.copy(input, os);
+                InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -180,7 +180,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(Path path) {
         try {
             try (OutputStream os = Files.newOutputStream(path)) {
-                IOUtils.copy(input, os);
+                InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -196,7 +196,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(String path) {
         try {
             try (OutputStream os = new FileOutputStream(path)) {
-                IOUtils.copy(input, os);
+                InputOutputs.copy(input, os);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -219,7 +219,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void writeTo(OutputStream out) {
         try {
-            IOUtils.copy(input, out);
+            InputOutputs.copy(input, out);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -234,7 +234,7 @@ public class RawResponse implements AutoCloseable {
     public void writeTo(Writer writer) {
         try {
             try (Reader reader = new InputStreamReader(input, getCharset())) {
-                IOUtils.copy(reader, writer);
+                InputOutputs.copy(reader, writer);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -248,7 +248,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void discardBody() {
         try {
-            IOUtils.skipAll(input);
+            InputOutputs.skipAll(input);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {

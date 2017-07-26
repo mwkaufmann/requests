@@ -4,7 +4,7 @@ import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.exception.TooManyRedirectsException;
 import net.dongliu.requests.utils.Cookies;
-import net.dongliu.requests.utils.IOUtils;
+import net.dongliu.requests.utils.InputOutputs;
 
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
@@ -285,7 +285,7 @@ public class URLConnectionExecutor implements HttpExecutor {
                 try {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
-                    IOUtils.closeQuietly(input);
+                    InputOutputs.closeQuietly(input);
                     throw e;
                 }
             case "deflate":

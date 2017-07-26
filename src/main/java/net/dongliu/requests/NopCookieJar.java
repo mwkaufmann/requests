@@ -1,5 +1,7 @@
 package net.dongliu.requests;
 
+import jdk.nashorn.internal.ir.annotations.Immutable;
+
 import javax.annotation.Nonnull;
 import java.net.URL;
 import java.util.Collection;
@@ -9,7 +11,8 @@ import java.util.List;
 /**
  * Cookie jar that do nothing. Used for plain request.
  */
-public class NopCookieJar implements CookieJar {
+@Immutable
+class NopCookieJar implements CookieJar {
 
     static final NopCookieJar instance = new NopCookieJar();
 

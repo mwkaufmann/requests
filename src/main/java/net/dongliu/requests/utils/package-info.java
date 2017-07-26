@@ -1,5 +1,5 @@
 /**
- * Utils, Only for internal use!
+ * Utils classes, Only for internal use!
  *
  * @author Liu Dong
  */
