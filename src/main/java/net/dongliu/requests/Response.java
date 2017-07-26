@@ -16,11 +16,11 @@ import java.util.Set;
 @Immutable
 public class Response<T> {
     private final int statusCode;
-    private final Set<Cookie> cookies;
+    private final List<Cookie> cookies;
     private final Headers headers;
     private final T body;
 
-    public Response(int statusCode, Set<Cookie> cookies, Headers headers, T body) {
+    public Response(int statusCode, List<Cookie> cookies, Headers headers, T body) {
         this.statusCode = statusCode;
         this.cookies = cookies;
         this.headers = headers;

@@ -10,76 +10,37 @@ import java.util.*;
 @ThreadSafe
 public class Session {
 
-    private Set<Cookie> cookies = Collections.emptySet();
+    private final CookieJar cookieJar;
 
-    Session() {
-    }
-
-    synchronized void updateCookie(Set<Cookie> addCookies) {
-        if (addCookies.isEmpty()) {
-            return;
-        }
-
-        // new cookie will override old cookie with the same (name, domain, path) value, even it is expired
-        long now = System.currentTimeMillis();
-        Set<Cookie> newCookies = new HashSet<>();
-        for (Cookie cookie : cookies) {
-            if (!cookie.expired(now) && !addCookies.contains(cookie)) {
-                newCookies.add(cookie);
-            }
-        }
-        for (Cookie cookie : addCookies) {
-            if (!cookie.expired(now)) {
-                newCookies.add(cookie);
-            }
-        }
-        cookies = Collections.unmodifiableSet(newCookies);
-    }
-
-    synchronized Set<Cookie> getCookies() {
-        return cookies;
-    }
-
-    List<Cookie> matchedCookies(String protocol, String domain, String path) {
-        long now = System.currentTimeMillis();
-        List<Cookie> matched = new ArrayList<>();
-        for (Cookie cookie : cookies) {
-            if (!cookie.match(protocol, domain, path)) {
-                continue;
-            }
-            if (cookie.expired(now)) {
-                continue;
-            }
-            matched.add(cookie);
-        }
-        return matched;
+    Session(CookieJar cookieJar) {
+        this.cookieJar = cookieJar;
     }
 
     public RequestBuilder get(String url) {
-        return new RequestBuilder(this).url(url).method("GET");
+        return newRequest(Methods.GET, url);
     }
 
     public RequestBuilder post(String url) {
-        return new RequestBuilder(this).url(url).method("POST");
+        return newRequest(Methods.POST, url);
     }
 
     public RequestBuilder put(String url) {
-        return new RequestBuilder(this).url(url).method("PUT");
+        return newRequest(Methods.PUT, url);
     }
 
     public RequestBuilder head(String url) {
-        return new RequestBuilder(this).url(url).method("HEAD");
+        return newRequest(Methods.HEAD, url);
     }
 
     public RequestBuilder delete(String url) {
-        return new RequestBuilder(this).url(url).method("DELETE");
+        return newRequest(Methods.DELETE, url);
     }
 
     public RequestBuilder patch(String url) {
-        return new RequestBuilder(this).url(url).method("PATCH");
+        return newRequest(Methods.PATCH, url);
     }
 
     public RequestBuilder newRequest(String method, String url) {
-        return new RequestBuilder(this).url(url).method(method);
+        return new RequestBuilder(cookieJar).url(url).method(method);
     }
 }

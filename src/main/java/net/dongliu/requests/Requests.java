@@ -14,37 +14,37 @@ public class Requests {
     }
 
     public static RequestBuilder get(String url) {
-        return session().get(url);
+        return newRequest(Methods.GET, url);
     }
 
     public static RequestBuilder post(String url) {
-        return session().post(url);
+        return newRequest(Methods.POST, url);
     }
 
     public static RequestBuilder put(String url) {
-        return session().put(url);
+        return newRequest(Methods.PUT, url);
     }
 
     public static RequestBuilder delete(String url) {
-        return session().delete(url);
+        return newRequest(Methods.DELETE, url);
     }
 
     public static RequestBuilder head(String url) {
-        return session().head(url);
+        return newRequest(Methods.HEAD, url);
     }
 
     public static RequestBuilder patch(String url) {
-        return session().patch(url);
+        return newRequest(Methods.PATCH, url);
     }
 
     /**
      * Create new request with method and url
      */
     public static RequestBuilder newRequest(String method, String url) {
-        return session().newRequest(method, url);
+        return new RequestBuilder(NopCookieJar.instance).method(method).url(url);
     }
 
     public static Session session() {
-        return new Session();
+        return new Session(new DefaultCookieJar());
     }
 }

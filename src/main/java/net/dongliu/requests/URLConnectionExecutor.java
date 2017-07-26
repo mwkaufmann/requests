@@ -2,7 +2,7 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
-import net.dongliu.requests.utils.CookieUtils;
+import net.dongliu.requests.utils.Cookies;
 import net.dongliu.requests.utils.IOUtils;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -49,7 +49,9 @@ public class URLConnectionExecutor implements HttpExecutor {
             } catch (MalformedURLException e) {
                 throw new RequestsException("Get redirect url error", e);
             }
-            RequestBuilder builder = request.getSession().get(redirectUrl.toExternalForm())
+            // TODO: 307 use original method
+            RequestBuilder builder = Requests.newRequest(Methods.GET, redirectUrl.toExternalForm())
+                    .cookieJar(request.getCookieJar())
                     .socksTimeout(request.getSocksTimeout()).connectTimeout(request.getConnectTimeout())
                     .basicAuth(request.getBasicAuth())
                     .userAgent(request.getUserAgent())
@@ -81,12 +83,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         URL url = request.getUrl();
         Proxy proxy = request.getProxy();
         RequestBody body = request.getBody();
-        Session session = request.getSession();
-
-        String protocol = url.getProtocol();
-        String host = url.getHost(); // only domain, do not have port
-        // effective path for cookie
-        String effectivePath = CookieUtils.effectivePath(url.getPath());
+        CookieJar cookieJar = request.getCookieJar();
 
         HttpURLConnection conn;
         try {
@@ -151,7 +148,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         }
 
         // set cookies
-        List<Cookie> sessionCookies = session.matchedCookies(protocol, host, effectivePath);
+        Collection<Cookie> sessionCookies = cookieJar.getCookies(url);
         if (!request.getCookies().isEmpty() || !sessionCookies.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (Map.Entry<String, ?> entry : request.getCookies()) {
@@ -188,7 +185,7 @@ public class URLConnectionExecutor implements HttpExecutor {
             if (body != null) {
                 sendBody(body, conn, charset);
             }
-            return getResponse(conn, session, request.isCompress(), request.getMethod(), host, effectivePath);
+            return getResponse(url, conn, cookieJar, request.isCompress(), request.getMethod());
         } catch (IOException e) {
             conn.disconnect();
             throw new RequestsException(e);
@@ -201,15 +198,16 @@ public class URLConnectionExecutor implements HttpExecutor {
     /**
      * Wrap response, deal with headers and cookies
      */
-    private RawResponse getResponse(HttpURLConnection conn, Session session, boolean compress,
-                                    String method, String host, String path) throws IOException {
+    private RawResponse getResponse(URL url, HttpURLConnection conn, CookieJar cookieJar, boolean compress,
+                                    String method) throws IOException {
         // read result
         int status = conn.getResponseCode();
+        String host = url.getHost().toLowerCase();
 
         String statusLine = null;
         // headers and cookies
         List<Parameter<String>> headerList = new ArrayList<>();
-        Set<Cookie> cookies = new HashSet<>();
+        List<Cookie> cookies = new ArrayList<>();
         int index = 0;
         while (true) {
             String key = conn.getHeaderFieldKey(index);
@@ -225,7 +223,10 @@ public class URLConnectionExecutor implements HttpExecutor {
             }
             headerList.add(Parameter.of(key, value));
             if (key.equalsIgnoreCase(NAME_SET_COOKIE)) {
-                cookies.add(CookieUtils.parseCookieHeader(host, path, value));
+                Cookie c = Cookies.parseCookie(value, host, Cookies.calculatePath(url.getPath()));
+                if (c != null) {
+                    cookies.add(c);
+                }
             }
         }
         Headers headers = new Headers(headerList);
@@ -237,7 +238,7 @@ public class URLConnectionExecutor implements HttpExecutor {
             input = conn.getErrorStream();
         }
         if (input != null) {
-            // deal with [compressed] input
+            // deal with [compressed] input, only when use intend to let requests handle compress
             if (compress) {
                 input = wrapCompressBody(status, method, headers, input);
             }
@@ -246,7 +247,7 @@ public class URLConnectionExecutor implements HttpExecutor {
         }
 
         // update session
-        session.updateCookie(cookies);
+        cookieJar.storeCookies(cookies);
         return new RawResponse(status, Objects.requireNonNull(statusLine), headers, cookies, input, conn);
     }
 

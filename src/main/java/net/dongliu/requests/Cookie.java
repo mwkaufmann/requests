@@ -1,8 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.utils.CookieUtils;
-
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.util.Map;
@@ -11,38 +9,50 @@ import java.util.Objects;
 @Immutable
 public class Cookie implements Map.Entry<String, String>, Serializable {
     /**
-     * <p>
-     * If domain not start with ".",  means it is explicitly set and visible to it's sub-domains.
-     * </p>
-     * <p>
-     * If the Set-Cookie header field does not have a Domain attribute, the effective domain is the domain of the
-     * request.
-     * </p>
+     * The cookie domain set by attribute or from url
      */
+    @Nonnull
     private final String domain;
+    /**
+     * The cookie path set by attribute or from url
+     */
+    @Nonnull
     private final String path;
+    @Nonnull
     private final String name;
+    @Nonnull
     private final String value;
+    /**
+     * The cookie expire timestamp, zero means no expiry is set
+     */
     private final long expiry;
+    /**
+     * If secure attribute is set
+     */
     private final boolean secure;
 
-    public Cookie(String domain, String path, String name, String value, long expiry, boolean secure) {
+    /**
+     * If true, the cookie did not set domain attribute
+     */
+    private final boolean hostOnly;
+
+    public Cookie(String domain, String path, String name, String value, long expiry, boolean secure,
+                  boolean hostOnly) {
         this.domain = Objects.requireNonNull(domain);
         this.path = Objects.requireNonNull(path);
         this.name = Objects.requireNonNull(name);
         this.value = Objects.requireNonNull(value);
         this.expiry = expiry;
         this.secure = secure;
+        this.hostOnly = hostOnly;
     }
 
+    @Nonnull
     public String getDomain() {
         return domain;
     }
 
-    public String getPath() {
-        return path;
-    }
-
+    @Nonnull
     public String getName() {
         return name;
     }
@@ -52,6 +62,7 @@ public class Cookie implements Map.Entry<String, String>, Serializable {
         return name;
     }
 
+    @Nonnull
     public String getValue() {
         return value;
     }
@@ -69,41 +80,36 @@ public class Cookie implements Map.Entry<String, String>, Serializable {
         return expiry;
     }
 
+    /**
+     * If cookie is expired
+     */
     public boolean expired(long now) {
         return expiry != 0 && expiry < now;
     }
 
-    public boolean match(String protocol, String host, String path) {
-        if (secure && !protocol.equalsIgnoreCase("https")) {
-            return false;
-        }
-        if (domain.startsWith(".")) {
-            if (!CookieUtils.isSubDomain(domain, host)) {
-                return false;
-            }
-        } else {
-            if (!host.equals(domain)) {
-                return false;
-            }
-        }
+    @Nonnull
+    public String getPath() {
+        return path;
+    }
 
-        if (!path.startsWith(this.path)) {
-            return false;
-        }
-        return true;
+    public boolean isHostOnly() {
+        return hostOnly;
     }
 
     @Override
-    public boolean equals(@Nullable Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         Cookie cookie = (Cookie) o;
 
+        if (expiry != cookie.expiry) return false;
+        if (secure != cookie.secure) return false;
+        if (hostOnly != cookie.hostOnly) return false;
         if (!domain.equals(cookie.domain)) return false;
         if (!path.equals(cookie.path)) return false;
-        return name.equals(cookie.name);
-
+        if (!name.equals(cookie.name)) return false;
+        return value.equals(cookie.value);
     }
 
     @Override
@@ -111,6 +117,10 @@ public class Cookie implements Map.Entry<String, String>, Serializable {
         int result = domain.hashCode();
         result = 31 * result + path.hashCode();
         result = 31 * result + name.hashCode();
+        result = 31 * result + value.hashCode();
+        result = 31 * result + (int) (expiry ^ (expiry >>> 32));
+        result = 31 * result + (secure ? 1 : 0);
+        result = 31 * result + (hostOnly ? 1 : 0);
         return result;
     }
 
@@ -122,6 +132,8 @@ public class Cookie implements Map.Entry<String, String>, Serializable {
                 ", name='" + name + '\'' +
                 ", value='" + value + '\'' +
                 ", expiry=" + expiry +
+                ", secure=" + secure +
+                ", hostOnly=" + hostOnly +
                 '}';
     }
 }

@@ -26,19 +26,19 @@ import java.util.*;
 public class RawResponse implements AutoCloseable {
     private final int statusCode;
     private final String statusLine;
-    private final Set<Cookie> cookies;
+    private final List<Cookie> cookies;
     private final Headers headers;
     private final InputStream input;
     private final HttpURLConnection conn;
     @Nullable
     private Charset charset;
 
-    RawResponse(int statusCode, String statusLine, Headers headers, Set<Cookie> cookies, InputStream input,
+    RawResponse(int statusCode, String statusLine, Headers headers, List<Cookie> cookies, InputStream input,
                 HttpURLConnection conn) {
         this.statusCode = statusCode;
         this.statusLine = statusLine;
         this.headers = headers;
-        this.cookies = Collections.unmodifiableSet(cookies);
+        this.cookies = Collections.unmodifiableList(cookies);
         this.input = input;
         this.conn = conn;
     }

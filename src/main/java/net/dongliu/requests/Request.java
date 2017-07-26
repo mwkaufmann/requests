@@ -37,7 +37,7 @@ public class Request {
     private final List<CertificateInfo> certs;
     private final BasicAuth basicAuth;
     @Nonnull
-    private final Session session;
+    private final CookieJar cookieJar;
     private final URL url;
     private final boolean keepAlive;
 
@@ -56,7 +56,7 @@ public class Request {
         verify = builder.verify;
         certs = builder.certs;
         basicAuth = builder.basicAuth;
-        session = builder.session;
+        cookieJar = builder.cookieJar;
         keepAlive = builder.keepAlive;
 
         this.url = joinUrl(builder.url, builder.params, charset);
@@ -134,8 +134,8 @@ public class Request {
     }
 
     @Nonnull
-    public Session getSession() {
-        return session;
+    public CookieJar getCookieJar() {
+        return cookieJar;
     }
 
     public URL getUrl() {

@@ -61,7 +61,7 @@ public class RequestsTest {
     public void testPost() {
         // form encoded post
         String text = Requests.post("http://127.0.0.1:8080/post")
-                .forms(Parameter.of("wd", "test"))
+                .body(Parameter.of("wd", "test"))
                 .send().readToText();
         assertTrue(text.contains("wd=test"));
     }
@@ -128,7 +128,8 @@ public class RequestsTest {
     @Test
     public void receiveJson() {
         List<Integer> list = Requests.post("http://127.0.0.1:8080/echo_body").jsonBody(Arrays.asList(1, 2, 3))
-                .send().readToJson(new TypeInfer<List<Integer>>() {});
+                .send().readToJson(new TypeInfer<List<Integer>>() {
+                });
         assertEquals(3, list.size());
     }
 

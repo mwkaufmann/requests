@@ -16,7 +16,7 @@ import java.util.*;
  * @author Liu Dong
  */
 public final class RequestBuilder {
-    String method = "GET";
+    String method = Methods.GET;
     String url;
     Collection<? extends Map.Entry<String, ?>> headers = Collections.emptyList();
     Collection<? extends Map.Entry<String, ?>> cookies = Collections.emptyList();
@@ -33,13 +33,13 @@ public final class RequestBuilder {
     List<CertificateInfo> certs = Collections.emptyList();
     BasicAuth basicAuth;
     @Nonnull
-    Session session;
+    CookieJar cookieJar;
     boolean keepAlive = true;
 
     private List<? extends Interceptor> interceptors = Collections.emptyList();
 
-    RequestBuilder(Session session) {
-        this.session = Objects.requireNonNull(session);
+    RequestBuilder(CookieJar cookieJar) {
+        this.cookieJar = Objects.requireNonNull(cookieJar);
     }
 
     public RequestBuilder method(String method) {
@@ -384,5 +384,13 @@ public final class RequestBuilder {
      */
     public RequestBuilder interceptors(Interceptor... interceptors) {
         return interceptors(Arrays.asList(interceptors));
+    }
+
+    /**
+     * Set cookie jar
+     */
+    public RequestBuilder cookieJar(CookieJar cookieJar) {
+        this.cookieJar = Objects.requireNonNull(cookieJar);
+        return this;
     }
 }
