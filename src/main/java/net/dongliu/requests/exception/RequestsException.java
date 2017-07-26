@@ -1,6 +1,8 @@
 package net.dongliu.requests.exception;
 
 /**
+ * Thrown when request failed.
+ *
  * @author Liu Dong
  */
 public class RequestsException extends RuntimeException {

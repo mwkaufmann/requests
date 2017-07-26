@@ -4,6 +4,7 @@ import net.dongliu.requests.body.Part;
 import net.dongliu.requests.body.RequestBody;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.net.Proxy;
 import java.nio.charset.Charset;
@@ -23,9 +24,11 @@ public final class RequestBuilder {
     String userAgent = "Requests/Java " + System.getProperty("java.version");
     Collection<? extends Map.Entry<String, ?>> params = Collections.emptyList();
     Charset requestCharset = StandardCharsets.UTF_8;
+    @Nullable
     RequestBody<?> body;
     int socksTimeout = Request.DEFAULT_TIMEOUT;
     int connectTimeout = Request.DEFAULT_TIMEOUT;
+    @Nullable
     Proxy proxy;
     boolean followRedirect = true;
     boolean compress = true;
@@ -151,7 +154,7 @@ public final class RequestBuilder {
     /**
      * Set request body
      */
-    public RequestBuilder body(RequestBody<?> body) {
+    public RequestBuilder body(@Nullable RequestBody<?> body) {
         this.body = body;
         return this;
     }
@@ -202,14 +205,14 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder body(Map.Entry<String, ?>... formBody) {
-        return forms(Arrays.asList(formBody));
+        return body(Arrays.asList(formBody));
     }
 
     /**
      * Set www-form-encoded body. Only for Post
      */
     public RequestBuilder body(Map<String, ?> formBody) {
-        return forms(formBody.entrySet());
+        return body(formBody.entrySet());
     }
 
     /**
@@ -272,8 +275,8 @@ public final class RequestBuilder {
     /**
      * set proxy
      */
-    public RequestBuilder proxy(Proxy proxy) {
-        this.proxy = Objects.requireNonNull(proxy);
+    public RequestBuilder proxy(@Nullable Proxy proxy) {
+        this.proxy = proxy;
         return this;
     }
 

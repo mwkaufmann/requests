@@ -2,9 +2,11 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
+import net.dongliu.requests.exception.TooManyRedirectsException;
 import net.dongliu.requests.utils.Cookies;
 import net.dongliu.requests.utils.IOUtils;
 
+import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.ByteArrayInputStream;
@@ -19,6 +21,7 @@ import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import static net.dongliu.requests.HttpHeaders.*;
+import static net.dongliu.requests.StatusCodes.*;
 
 /**
  * Execute http request with url connection
@@ -31,15 +34,17 @@ public class URLConnectionExecutor implements HttpExecutor {
     public RawResponse proceed(Request request) {
         RawResponse response = doRequest(request);
 
-        if (!request.isFollowRedirect() || !isRedirect(response.getStatusCode())) {
+        int statusCode = response.getStatusCode();
+        if (!request.isFollowRedirect() || !isRedirect(statusCode)) {
             return response;
         }
 
         // handle redirect
         response.discardBody();
-        int redirectCount = 0;
+        int redirectTimes = 0;
+        int maxRedirectTimes = 5;
         URL redirectUrl = request.getUrl();
-        while (redirectCount++ < 5) {
+        while (redirectTimes++ < maxRedirectTimes) {
             String location = response.getFirstHeader(NAME_LOCATION);
             if (location == null) {
                 throw new RequestsException("Redirect location not found");
@@ -47,10 +52,17 @@ public class URLConnectionExecutor implements HttpExecutor {
             try {
                 redirectUrl = new URL(redirectUrl, location);
             } catch (MalformedURLException e) {
-                throw new RequestsException("Get redirect url error", e);
+                throw new RequestsException("Resolve redirect url error, location: " + location, e);
             }
-            // TODO: 307 use original method
-            RequestBuilder builder = Requests.newRequest(Methods.GET, redirectUrl.toExternalForm())
+            String method = request.getMethod();
+            RequestBody<?> body = request.getBody();
+            if (statusCode == MOVED_PERMANENTLY || statusCode == FOUND || statusCode == SEE_OTHER) {
+                // 301/302 change method to get, due to historical reason.
+                method = Methods.GET;
+                body = null;
+            }
+
+            RequestBuilder builder = Requests.newRequest(method, redirectUrl.toExternalForm())
                     .cookieJar(request.getCookieJar())
                     .socksTimeout(request.getSocksTimeout()).connectTimeout(request.getConnectTimeout())
                     .basicAuth(request.getBasicAuth())
@@ -59,34 +71,33 @@ public class URLConnectionExecutor implements HttpExecutor {
                     .verify(request.isVerify())
                     .certs(request.getCerts())
                     .keepAlive(request.isKeepAlive())
-                    .followRedirect(false);
-            if (request.getProxy() != null) {
-                builder.proxy(request.getProxy());
-            }
+                    .followRedirect(false)
+                    .proxy(request.getProxy())
+                    .body(body);
             response = builder.send();
             if (!isRedirect(response.getStatusCode())) {
                 return response;
             }
             response.discardBody();
         }
-        throw new RequestsException("Too many redirect");
+        throw new TooManyRedirectsException(maxRedirectTimes);
     }
 
     private static boolean isRedirect(int status) {
-        return status == 300 || status == 301 || status == 302 || status == 303 || status == 307
-                || status == 308;
+        return status == MULTIPLE_CHOICES || status == MOVED_PERMANENTLY || status == FOUND || status == SEE_OTHER
+                || status == TEMPORARY_REDIRECT || status == PERMANENT_REDIRECT;
     }
 
 
     private RawResponse doRequest(Request request) {
         Charset charset = request.getCharset();
         URL url = request.getUrl();
-        Proxy proxy = request.getProxy();
-        RequestBody body = request.getBody();
+        @Nullable RequestBody body = request.getBody();
         CookieJar cookieJar = request.getCookieJar();
 
         HttpURLConnection conn;
         try {
+            @Nullable Proxy proxy = request.getProxy();
             if (proxy != null) {
                 conn = (HttpURLConnection) url.openConnection(proxy);
             } else {
@@ -258,7 +269,8 @@ public class URLConnectionExecutor implements HttpExecutor {
             throws IOException {
         // if has no body, some server still set content-encoding header,
         // GZIPInputStream wrap empty input stream will cause exception. we should check this
-        if (method.equals("HEAD") || (status >= 100 && status < 200) || status == 304 || status == 204) {
+        if (method.equals(Methods.HEAD)
+                || (status >= 100 && status < 200) || status == NOT_MODIFIED || status == NO_CONTENT) {
             return input;
         }
 

@@ -4,6 +4,7 @@ import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -27,9 +28,11 @@ public class Request {
     private final Collection<? extends Map.Entry<String, ?>> cookies;
     private final String userAgent;
     private final Charset charset;
+    @Nullable
     private final RequestBody<?> body;
     private final int socksTimeout;
     private final int connectTimeout;
+    @Nullable
     private final Proxy proxy;
     private final boolean followRedirect;
     private final boolean compress;
@@ -97,6 +100,7 @@ public class Request {
         return charset;
     }
 
+    @Nullable
     public RequestBody<?> getBody() {
         return body;
     }
@@ -109,6 +113,7 @@ public class Request {
         return connectTimeout;
     }
 
+    @Nullable
     public Proxy getProxy() {
         return proxy;
     }

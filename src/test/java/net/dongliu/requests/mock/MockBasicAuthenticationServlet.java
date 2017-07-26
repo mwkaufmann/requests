@@ -37,6 +37,7 @@ public class MockBasicAuthenticationServlet extends HttpServlet {
             return false;
         }
         String encodedToken = auth.substring(6);
+        //TODO: base64
         sun.misc.BASE64Decoder dec = new sun.misc.BASE64Decoder();
         String token = new String(dec.decodeBuffer(encodedToken));
 
