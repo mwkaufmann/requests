@@ -102,7 +102,8 @@ class URLConnectionExecutor implements HttpExecutor {
 
     private RawResponse doRequest(Request request) {
         Charset charset = request.getCharset();
-        URL url = request.getUrl();
+        URL url = URIEncoder.joinUrl(request.getUrl(), URIEncoder.toStringParameters(request.getParams()),
+                request.getCharset());
         @Nullable RequestBody body = request.getBody();
         @Nullable URLConnectionSessionContext sessionContext = (URLConnectionSessionContext) request.getSessionContext();
         CookieJar cookieJar;

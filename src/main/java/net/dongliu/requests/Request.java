@@ -1,12 +1,10 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.body.RequestBody;
-import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.executor.SessionContext;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -26,6 +24,8 @@ public class Request {
     private final String method;
     private final Collection<? extends Map.Entry<String, ?>> headers;
     private final Collection<? extends Map.Entry<String, ?>> cookies;
+    private final Collection<? extends Map.Entry<String, ?>> params;
+
     private final String userAgent;
     private final Charset charset;
     @Nullable
@@ -49,7 +49,7 @@ public class Request {
         headers = builder.headers;
         cookies = builder.cookies;
         userAgent = builder.userAgent;
-        charset = builder.requestCharset;
+        charset = builder.charset;
         body = builder.body;
         socksTimeout = builder.socksTimeout;
         connectTimeout = builder.connectTimeout;
@@ -61,23 +61,15 @@ public class Request {
         basicAuth = builder.basicAuth;
         sessionContext = builder.sessionContext;
         keepAlive = builder.keepAlive;
-
-        this.url = joinUrl(builder.url, builder.params, charset);
+        this.url = builder.url;
+        this.params = builder.params;
     }
 
-    private static URL joinUrl(String url, Collection<? extends Map.Entry<String, ?>> params,
-                               Charset charset) {
-        String fullUrl;
-        if (params.isEmpty()) {
-            fullUrl = url;
-        } else {
-            fullUrl = url + "?" + URIEncoder.encodeQueries(URIEncoder.toStringParameters(params), charset);
-        }
-        try {
-            return new URL(fullUrl);
-        } catch (MalformedURLException e) {
-            throw new RequestsException(e);
-        }
+    /**
+     * Create and copy fields to mutable builder instance.
+     */
+    public RequestBuilder toBuilder() {
+        return new RequestBuilder(this);
     }
 
     public String getMethod() {
@@ -145,6 +137,13 @@ public class Request {
 
     public URL getUrl() {
         return url;
+    }
+
+    /**
+     * Parameter to append to url.
+     */
+    public Collection<? extends Map.Entry<String, ?>> getParams() {
+        return params;
     }
 
     public boolean isKeepAlive() {

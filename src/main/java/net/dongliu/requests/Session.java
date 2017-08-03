@@ -42,6 +42,6 @@ public class Session {
     }
 
     public RequestBuilder newRequest(String method, String url) {
-        return new RequestBuilder(context).url(url).method(method);
+        return new RequestBuilder().sessionContext(context).url(url).method(method);
     }
 }

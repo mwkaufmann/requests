@@ -2,6 +2,7 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.body.Part;
 import net.dongliu.requests.body.RequestBody;
+import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.executor.HttpExecutor;
 import net.dongliu.requests.executor.RequestProvider;
 import net.dongliu.requests.executor.RequestProviders;
@@ -9,7 +10,9 @@ import net.dongliu.requests.executor.SessionContext;
 
 import javax.annotation.Nullable;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.Proxy;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -21,12 +24,12 @@ import java.util.*;
  */
 public final class RequestBuilder {
     String method = Methods.GET;
-    String url;
+    URL url;
     Collection<? extends Map.Entry<String, ?>> headers = Collections.emptyList();
     Collection<? extends Map.Entry<String, ?>> cookies = Collections.emptyList();
     String userAgent = "Requests/Java " + System.getProperty("java.version");
     Collection<? extends Map.Entry<String, ?>> params = Collections.emptyList();
-    Charset requestCharset = StandardCharsets.UTF_8;
+    Charset charset = StandardCharsets.UTF_8;
     @Nullable
     RequestBody<?> body;
     int socksTimeout = Request.DEFAULT_TIMEOUT;
@@ -44,8 +47,28 @@ public final class RequestBuilder {
 
     private List<? extends Interceptor> interceptors = Collections.emptyList();
 
-    RequestBuilder(@Nullable SessionContext sessionContext) {
-        this.sessionContext = sessionContext;
+    RequestBuilder() {
+    }
+
+    RequestBuilder(Request request) {
+        method = request.getMethod();
+        headers = request.getHeaders();
+        cookies = request.getCookies();
+        userAgent = request.getUserAgent();
+        charset = request.getCharset();
+        body = request.getBody();
+        socksTimeout = request.getSocksTimeout();
+        connectTimeout = request.getConnectTimeout();
+        proxy = request.getProxy();
+        followRedirect = request.isFollowRedirect();
+        compress = request.isCompress();
+        verify = request.isVerify();
+        certs = request.getCerts();
+        basicAuth = request.getBasicAuth();
+        sessionContext = request.getSessionContext();
+        keepAlive = request.isKeepAlive();
+        this.url = request.getUrl();
+        this.params = request.getParams();
     }
 
     public RequestBuilder method(String method) {
@@ -54,6 +77,15 @@ public final class RequestBuilder {
     }
 
     public RequestBuilder url(String url) {
+        try {
+            this.url = new URL(Objects.requireNonNull(url));
+        } catch (MalformedURLException e) {
+            throw new RequestsException("Resolve url error, url: " + url, e);
+        }
+        return this;
+    }
+
+    public RequestBuilder url(URL url) {
         this.url = Objects.requireNonNull(url);
         return this;
     }
@@ -142,7 +174,7 @@ public final class RequestBuilder {
      * Set charset used to encode request params or forms. Default UTF8.
      */
     public RequestBuilder requestCharset(Charset charset) {
-        requestCharset = charset;
+        this.charset = charset;
         return this;
     }
 
@@ -150,7 +182,7 @@ public final class RequestBuilder {
      * Set charset used to encode request params or forms. Default UTF8.
      */
     public RequestBuilder charset(Charset charset) {
-        requestCharset = charset;
+        this.charset = charset;
         return this;
     }
 

@@ -41,7 +41,7 @@ public class Requests {
      * Create new request with method and url
      */
     public static RequestBuilder newRequest(String method, String url) {
-        return new RequestBuilder(null).method(method).url(url);
+        return new RequestBuilder().method(method).url(url);
     }
 
     /**

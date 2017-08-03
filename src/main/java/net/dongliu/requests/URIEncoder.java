@@ -1,11 +1,12 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.Parameter;
 import net.dongliu.requests.exception.RequestsException;
 
 import javax.annotation.Nonnull;
 import java.io.CharArrayWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -137,17 +138,17 @@ public class URIEncoder {
     /**
      * Encode key-value query parameter
      */
-    public static String encodeQuery(Parameter<String> query, Charset charset) {
-        return encodeParam(query.getName(), charset) + "=" + encodeParam(query.getValue(), charset);
+    public static String encodeQuery(Map.Entry<String, String> query, Charset charset) {
+        return encodeParam(query.getKey(), charset) + "=" + encodeParam(query.getValue(), charset);
     }
 
     /**
      * Encode multi queries
      */
-    public static String encodeQueries(Collection<? extends Parameter<String>> queries, Charset charset) {
+    public static String encodeQueries(Collection<? extends Map.Entry<String, String>> queries, Charset charset) {
         StringBuilder sb = new StringBuilder();
-        for (Parameter<String> query : queries) {
-            sb.append(encodeParam(query.getName(), charset));
+        for (Map.Entry<String, String> query : queries) {
+            sb.append(encodeParam(query.getKey(), charset));
             sb.append('=');
             sb.append(encodeParam(query.getValue(), charset));
             sb.append('&');
@@ -412,5 +413,38 @@ public class URIEncoder {
             parameters.add(Parameter.of(entry.getKey(), String.valueOf(entry.getValue())));
         }
         return parameters;
+    }
+
+    @Nonnull
+    public static URL joinUrl(URL url, Collection<? extends Map.Entry<String, String>> params, Charset charset) {
+        if (params.isEmpty()) {
+            return url;
+        }
+
+        String path = url.getPath();
+        String query = url.getQuery();
+        String segment = url.getRef();
+        StringBuilder sb = new StringBuilder();
+        sb.append(path);
+
+        String newQuery = encodeQueries(params, charset);
+        if (query == null || query.isEmpty()) {
+            sb.append('?').append(newQuery);
+        } else {
+            sb.append('?').append(query).append('&').append(newQuery);
+        }
+
+        if (segment != null && !segment.isEmpty()) {
+            sb.append('#').append(segment);
+        }
+
+        URL fullURL;
+        try {
+            fullURL = new URL(url.getProtocol(), url.getHost(), url.getPort(), sb.toString());
+        } catch (MalformedURLException e) {
+            throw new RequestsException(e);
+
+        }
+        return fullURL;
     }
 }
