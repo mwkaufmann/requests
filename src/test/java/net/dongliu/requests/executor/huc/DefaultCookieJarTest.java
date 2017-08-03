@@ -1,10 +1,10 @@
-package net.dongliu.requests;
+package net.dongliu.requests.executor.huc;
 
+import net.dongliu.requests.Cookie;
 import org.junit.Test;
 
 import java.net.URL;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;

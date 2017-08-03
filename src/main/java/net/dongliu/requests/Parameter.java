@@ -1,5 +1,6 @@
 package net.dongliu.requests;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
@@ -12,7 +13,9 @@ import java.util.Objects;
 public class Parameter<T> implements Map.Entry<String, T>, Serializable {
     private static final long serialVersionUID = -6525353427059094141L;
 
+    @Nonnull
     private final String name;
+    @Nonnull
     private final T value;
 
     public Parameter(String key, T value) {
@@ -28,24 +31,12 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
         return name;
     }
 
-    /**
-     * Create a new pair with new key
-     */
-    public Parameter<T> withKey(String newKey) {
-        return new Parameter<>(newKey, value);
-    }
-
+    @Nonnull
     public String getName() {
         return name;
     }
 
-    /**
-     * Create a new pair with new key
-     */
-    public Parameter<T> withName(String newKey) {
-        return new Parameter<>(newKey, value);
-    }
-
+    @Nonnull
     public T getValue() {
         return value;
     }
@@ -53,13 +44,6 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
     @Override
     public T setValue(T value) {
         throw new UnsupportedOperationException("Pair is read only");
-    }
-
-    /**
-     * Create a new pair with new value
-     */
-    public Parameter<T> withValue(T newValue) {
-        return new Parameter<>(name, newValue);
     }
 
     @Override

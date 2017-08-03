@@ -1,7 +1,8 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.executor.SessionContext;
+
 import javax.annotation.concurrent.ThreadSafe;
-import java.util.*;
 
 /**
  * Http request share cookies etc.
@@ -10,10 +11,10 @@ import java.util.*;
 @ThreadSafe
 public class Session {
 
-    private final CookieJar cookieJar;
+    private final SessionContext context;
 
-    Session(CookieJar cookieJar) {
-        this.cookieJar = cookieJar;
+    Session(SessionContext context) {
+        this.context = context;
     }
 
     public RequestBuilder get(String url) {
@@ -41,6 +42,6 @@ public class Session {
     }
 
     public RequestBuilder newRequest(String method, String url) {
-        return new RequestBuilder(cookieJar).url(url).method(method);
+        return new RequestBuilder(context).url(url).method(method);
     }
 }

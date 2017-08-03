@@ -33,7 +33,7 @@ public class RawResponse implements AutoCloseable {
     @Nullable
     private Charset charset;
 
-    RawResponse(int statusCode, String statusLine, Headers headers, List<Cookie> cookies, InputStream input,
+    public RawResponse(int statusCode, String statusLine, Headers headers, List<Cookie> cookies, InputStream input,
                 HttpURLConnection conn) {
         this.statusCode = statusCode;
         this.statusLine = statusLine;
@@ -244,7 +244,8 @@ public class RawResponse implements AutoCloseable {
     }
 
     /**
-     * Consume and discard this response body
+     * Consume and discard this response body.
+     *
      */
     public void discardBody() {
         try {

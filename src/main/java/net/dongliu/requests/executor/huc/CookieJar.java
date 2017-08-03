@@ -1,4 +1,6 @@
-package net.dongliu.requests;
+package net.dongliu.requests.executor.huc;
+
+import net.dongliu.requests.Cookie;
 
 import javax.annotation.Nonnull;
 import java.net.URL;
@@ -8,7 +10,7 @@ import java.util.List;
 /**
  * Interface for storing cookies
  */
-public interface CookieJar {
+interface CookieJar {
 
     /**
      * Add multi cookies to cookie jar.

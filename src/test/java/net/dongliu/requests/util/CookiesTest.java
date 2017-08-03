@@ -1,5 +1,6 @@
-package net.dongliu.requests;
+package net.dongliu.requests.util;
 
+import net.dongliu.requests.Cookie;
 import net.dongliu.requests.utils.Cookies;
 import org.junit.Test;
 

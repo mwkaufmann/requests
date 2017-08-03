@@ -1,6 +1,7 @@
-package net.dongliu.requests;
+package net.dongliu.requests.executor.huc;
 
 import jdk.nashorn.internal.ir.annotations.Immutable;
+import net.dongliu.requests.Cookie;
 
 import javax.annotation.Nonnull;
 import java.net.URL;

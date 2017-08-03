@@ -1,5 +1,7 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.executor.HttpExecutor;
+
 import java.util.List;
 
 /**

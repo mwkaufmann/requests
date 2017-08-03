@@ -1,17 +1,17 @@
 package net.dongliu.requests;
 
 
+import net.dongliu.requests.executor.RequestProvider;
+import net.dongliu.requests.executor.RequestProviders;
+
 /**
- * Http request
+ * Http request utils methods.
  *
  * @author Liu Dong
  */
 public class Requests {
 
-    static {
-        // we can modify Host, and other restricted headers
-        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
-    }
+    private static RequestProvider provider = RequestProviders.lookup();
 
     public static RequestBuilder get(String url) {
         return newRequest(Methods.GET, url);
@@ -41,10 +41,13 @@ public class Requests {
      * Create new request with method and url
      */
     public static RequestBuilder newRequest(String method, String url) {
-        return new RequestBuilder(NopCookieJar.instance).method(method).url(url);
+        return new RequestBuilder(null).method(method).url(url);
     }
 
+    /**
+     * Create new session.
+     */
     public static Session session() {
-        return new Session(new DefaultCookieJar());
+        return new Session(provider.newSessionContext());
     }
 }

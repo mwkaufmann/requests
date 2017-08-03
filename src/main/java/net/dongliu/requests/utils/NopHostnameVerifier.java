@@ -1,4 +1,4 @@
-package net.dongliu.requests;
+package net.dongliu.requests.utils;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;

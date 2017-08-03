@@ -2,8 +2,8 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
+import net.dongliu.requests.executor.SessionContext;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.net.MalformedURLException;
@@ -39,8 +39,8 @@ public class Request {
     private final boolean verify;
     private final List<CertificateInfo> certs;
     private final BasicAuth basicAuth;
-    @Nonnull
-    private final CookieJar cookieJar;
+    @Nullable
+    private final SessionContext sessionContext;
     private final URL url;
     private final boolean keepAlive;
 
@@ -59,7 +59,7 @@ public class Request {
         verify = builder.verify;
         certs = builder.certs;
         basicAuth = builder.basicAuth;
-        cookieJar = builder.cookieJar;
+        sessionContext = builder.sessionContext;
         keepAlive = builder.keepAlive;
 
         this.url = joinUrl(builder.url, builder.params, charset);
@@ -138,9 +138,9 @@ public class Request {
         return basicAuth;
     }
 
-    @Nonnull
-    public CookieJar getCookieJar() {
-        return cookieJar;
+    @Nullable
+    public SessionContext getSessionContext() {
+        return sessionContext;
     }
 
     public URL getUrl() {

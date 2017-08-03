@@ -9,7 +9,7 @@ import java.util.*;
  *
  * @author Liu Dong
  */
-class Headers {
+public class Headers {
     private final List<Parameter<String>> headers;
     private final Map<String, List<String>> map;
 

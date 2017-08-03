@@ -2,8 +2,11 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.body.Part;
 import net.dongliu.requests.body.RequestBody;
+import net.dongliu.requests.executor.HttpExecutor;
+import net.dongliu.requests.executor.RequestProvider;
+import net.dongliu.requests.executor.RequestProviders;
+import net.dongliu.requests.executor.SessionContext;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.net.Proxy;
@@ -35,14 +38,14 @@ public final class RequestBuilder {
     boolean verify = true;
     List<CertificateInfo> certs = Collections.emptyList();
     BasicAuth basicAuth;
-    @Nonnull
-    CookieJar cookieJar;
+    @Nullable
+    SessionContext sessionContext;
     boolean keepAlive = true;
 
     private List<? extends Interceptor> interceptors = Collections.emptyList();
 
-    RequestBuilder(CookieJar cookieJar) {
-        this.cookieJar = Objects.requireNonNull(cookieJar);
+    RequestBuilder(@Nullable SessionContext sessionContext) {
+        this.sessionContext = sessionContext;
     }
 
     public RequestBuilder method(String method) {
@@ -345,7 +348,8 @@ public final class RequestBuilder {
      */
     public RawResponse send() {
         Request request = build();
-        HttpExecutor executor = new URLConnectionExecutor();
+        RequestProvider provider = RequestProviders.lookup();
+        HttpExecutor executor = provider.httpExecutor();
         return new InterceptorChain(interceptors, executor).proceed(request);
     }
 
@@ -390,10 +394,10 @@ public final class RequestBuilder {
     }
 
     /**
-     * Set cookie jar
+     * Set interceptors
      */
-    public RequestBuilder cookieJar(CookieJar cookieJar) {
-        this.cookieJar = Objects.requireNonNull(cookieJar);
+    public RequestBuilder sessionContext(@Nullable SessionContext sessionContext) {
+        this.sessionContext = sessionContext;
         return this;
     }
 }

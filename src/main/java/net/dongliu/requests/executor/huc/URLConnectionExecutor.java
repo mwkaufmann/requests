@@ -1,10 +1,14 @@
-package net.dongliu.requests;
+package net.dongliu.requests.executor.huc;
 
+import net.dongliu.requests.*;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.exception.TooManyRedirectsException;
+import net.dongliu.requests.executor.HttpExecutor;
 import net.dongliu.requests.utils.Cookies;
 import net.dongliu.requests.utils.InputOutputs;
+import net.dongliu.requests.utils.NopHostnameVerifier;
+import net.dongliu.requests.utils.SSLSocketFactories;
 
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
@@ -28,7 +32,12 @@ import static net.dongliu.requests.StatusCodes.*;
  *
  * @author Liu Dong
  */
-public class URLConnectionExecutor implements HttpExecutor {
+class URLConnectionExecutor implements HttpExecutor {
+
+    static {
+        // we can modify Host, and other restricted headers
+        System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+    }
 
     @Override
     public RawResponse proceed(Request request) {
@@ -63,7 +72,7 @@ public class URLConnectionExecutor implements HttpExecutor {
             }
 
             RequestBuilder builder = Requests.newRequest(method, redirectUrl.toExternalForm())
-                    .cookieJar(request.getCookieJar())
+                    .sessionContext(request.getSessionContext())
                     .socksTimeout(request.getSocksTimeout()).connectTimeout(request.getConnectTimeout())
                     .basicAuth(request.getBasicAuth())
                     .userAgent(request.getUserAgent())
@@ -93,7 +102,13 @@ public class URLConnectionExecutor implements HttpExecutor {
         Charset charset = request.getCharset();
         URL url = request.getUrl();
         @Nullable RequestBody body = request.getBody();
-        CookieJar cookieJar = request.getCookieJar();
+        @Nullable URLConnectionSessionContext sessionContext = (URLConnectionSessionContext) request.getSessionContext();
+        CookieJar cookieJar;
+        if (sessionContext == null) {
+            cookieJar = NopCookieJar.instance;
+        } else {
+            cookieJar = sessionContext.getCookieJar();
+        }
 
         HttpURLConnection conn;
         try {

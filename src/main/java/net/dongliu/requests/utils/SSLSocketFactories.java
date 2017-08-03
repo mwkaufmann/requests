@@ -1,5 +1,6 @@
-package net.dongliu.requests;
+package net.dongliu.requests.utils;
 
+import net.dongliu.requests.CertificateInfo;
 import net.dongliu.requests.exception.RequestsException;
 
 import javax.net.ssl.*;
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Liu Dong
  */
-class SSLSocketFactories {
+public class SSLSocketFactories {
 
     // To reuse the connection, settings on the underlying socket must use the exact same objects.
 
