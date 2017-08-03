@@ -10,6 +10,7 @@ import net.dongliu.requests.utils.InputOutputs;
 import net.dongliu.requests.utils.NopHostnameVerifier;
 import net.dongliu.requests.utils.SSLSocketFactories;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
@@ -39,6 +40,7 @@ class URLConnectionExecutor implements HttpExecutor {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
     }
 
+    @Nonnull
     @Override
     public RawResponse proceed(Request request) {
         RawResponse response = doRequest(request);

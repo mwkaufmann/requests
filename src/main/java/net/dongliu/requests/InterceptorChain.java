@@ -2,6 +2,7 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.executor.HttpExecutor;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -10,22 +11,21 @@ import java.util.List;
 class InterceptorChain implements Interceptor.InvocationTarget {
     private final List<? extends Interceptor> interceptorList;
     private final HttpExecutor httpExecutor;
-    // use index to advance interceptor, avoid interceptor chain creation
-    private int index = 0;
 
     public InterceptorChain(List<? extends Interceptor> interceptorList, HttpExecutor httpExecutor) {
         this.interceptorList = interceptorList;
         this.httpExecutor = httpExecutor;
     }
 
+    @Nonnull
     @Override
     public RawResponse proceed(Request request) {
-        if (index == interceptorList.size()) {
+        if (interceptorList.isEmpty()) {
             return httpExecutor.proceed(request);
         }
-        Interceptor interceptor = interceptorList.get(index);
-        index++;
-        return interceptor.intercept(this, request);
+        Interceptor interceptor = interceptorList.get(0);
+        InterceptorChain chain = new InterceptorChain(interceptorList.subList(1, interceptorList.size()), httpExecutor);
+        return interceptor.intercept(chain, request);
     }
 
 }

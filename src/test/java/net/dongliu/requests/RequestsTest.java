@@ -7,6 +7,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -152,13 +153,13 @@ public class RequestsTest {
 
     @Test
     public void testInterceptor() {
-        final long[] elapsed = {0};
+        final long[] statusCode = {0};
         Interceptor interceptor = new Interceptor() {
             @Override
+            @Nonnull
             public RawResponse intercept(InvocationTarget target, Request request) {
-                long start = System.nanoTime();
                 RawResponse response = target.proceed(request);
-                elapsed[0] = System.nanoTime() - start;
+                statusCode[0] = response.getStatusCode();
                 return response;
             }
         };
@@ -166,6 +167,7 @@ public class RequestsTest {
         String text = Requests.get("http://127.0.0.1:8080/echo_header")
                 .interceptors(interceptor)
                 .send().readToText();
-        assertTrue(elapsed[0] > 0);
+        assertFalse(text.isEmpty());
+        assertTrue(statusCode[0] > 0);
     }
 }
