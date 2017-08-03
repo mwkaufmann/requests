@@ -1,5 +1,7 @@
 package net.dongliu.requests.mock;
 
+import net.dongliu.requests.utils.Base64;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -37,9 +39,7 @@ public class MockBasicAuthenticationServlet extends HttpServlet {
             return false;
         }
         String encodedToken = auth.substring(6);
-        //TODO: base64
-        sun.misc.BASE64Decoder dec = new sun.misc.BASE64Decoder();
-        String token = new String(dec.decodeBuffer(encodedToken));
+        String token = new String(Base64.getDecoder().decode(encodedToken));
 
         return "test:password".equals(token);
     }
