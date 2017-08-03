@@ -421,12 +421,16 @@ public class URIEncoder {
             return url;
         }
 
-        String path = url.getPath();
-        String query = url.getQuery();
-        String segment = url.getRef();
         StringBuilder sb = new StringBuilder();
-        sb.append(path);
+        sb.append(url.getProtocol()).append(':');
+        if (url.getAuthority() != null && !url.getAuthority().isEmpty()) {
+            sb.append("//").append(url.getAuthority());
+        }
+        if (url.getPath() != null) {
+            sb.append(url.getPath());
+        }
 
+        String query = url.getQuery();
         String newQuery = encodeQueries(params, charset);
         if (query == null || query.isEmpty()) {
             sb.append('?').append(newQuery);
@@ -434,13 +438,13 @@ public class URIEncoder {
             sb.append('?').append(query).append('&').append(newQuery);
         }
 
-        if (segment != null && !segment.isEmpty()) {
-            sb.append('#').append(segment);
+        if (url.getRef() != null) {
+            sb.append('#').append(url.getRef());
         }
 
         URL fullURL;
         try {
-            fullURL = new URL(url.getProtocol(), url.getHost(), url.getPort(), sb.toString());
+            fullURL = new URL(sb.toString());
         } catch (MalformedURLException e) {
             throw new RequestsException(e);
 

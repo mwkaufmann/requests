@@ -24,7 +24,11 @@ public class URIEncoderTest {
                 Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
         assertEquals("http://www.test.com/path?s=t&t=v", URIEncoder.joinUrl(new URL("http://www.test.com/path?s=t"),
                 Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
+        assertEquals("http://www.test.com/path?t=v", URIEncoder.joinUrl(new URL("http://www.test.com/path?"),
+                Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
         assertEquals("http://www.test.com/path?t=v#seg", URIEncoder.joinUrl(new URL("http://www.test.com/path#seg"),
+                Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
+        assertEquals("http://www.test.com/path?t=v#", URIEncoder.joinUrl(new URL("http://www.test.com/path#"),
                 Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
     }
 
