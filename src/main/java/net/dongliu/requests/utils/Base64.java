@@ -41,34 +41,34 @@ import java.util.Objects;
  * as specified in
  * <a href="http://www.ietf.org/rfc/rfc4648.txt">RFC 4648</a> and
  * <a href="http://www.ietf.org/rfc/rfc2045.txt">RFC 2045</a>.
- * <p>
+ * 
  * <ul>
  * <li><a name="basic"><b>Basic</b></a>
- * <p> Uses "The Base64 Alphabet" as specified in Table 1 of
+ *  Uses "The Base64 Alphabet" as specified in Table 1 of
  * RFC 4648 and RFC 2045 for encoding and decoding operation.
  * The encoder does not add any line feed (line separator)
  * character. The decoder rejects data that contains characters
- * outside the base64 alphabet.</p></li>
- * <p>
+ * outside the base64 alphabet.</li>
+ * 
  * <li><a name="url"><b>URL and Filename safe</b></a>
- * <p> Uses the "URL and Filename safe Base64 Alphabet" as specified
+ *  Uses the "URL and Filename safe Base64 Alphabet" as specified
  * in Table 2 of RFC 4648 for encoding and decoding. The
  * encoder does not add any line feed (line separator) character.
  * The decoder rejects data that contains characters outside the
- * base64 alphabet.</p></li>
- * <p>
+ * base64 alphabet.</li>
+ * 
  * <li><a name="mime"><b>MIME</b></a>
- * <p> Uses the "The Base64 Alphabet" as specified in Table 1 of
+ *  Uses the "The Base64 Alphabet" as specified in Table 1 of
  * RFC 2045 for encoding and decoding operation. The encoded output
  * must be represented in lines of no more than 76 characters each
  * and uses a carriage return {@code '\r'} followed immediately by
  * a linefeed {@code '\n'} as the line separator. No line separator
  * is added to the end of the encoded output. All line separators
  * or other characters not found in the base64 alphabet table are
- * ignored in decoding operation.</p></li>
+ * ignored in decoding operation.</li>
  * </ul>
- * <p>
- * <p> Unless otherwise noted, passing a {@code null} argument to a
+ * 
+ *  Unless otherwise noted, passing a {@code null} argument to a
  * method of this class will cause a {@link NullPointerException
  * NullPointerException} to be thrown.
  *
@@ -174,11 +174,11 @@ public class Base64 {
     /**
      * This class implements an encoder for encoding byte data using
      * the Base64 encoding scheme as specified in RFC 4648 and RFC 2045.
-     * <p>
-     * <p> Instances of {@link Encoder} class are safe for use by
+     * 
+     *  Instances of {@link Encoder} class are safe for use by
      * multiple concurrent threads.
-     * <p>
-     * <p> Unless otherwise noted, passing a {@code null} argument to
+     * 
+     *  Unless otherwise noted, passing a {@code null} argument to
      * a method of this class will cause a
      * {@link NullPointerException NullPointerException} to
      * be thrown.
@@ -268,8 +268,8 @@ public class Base64 {
          * Encodes all bytes from the specified byte array using the
          * {@link Base64} encoding scheme, writing the resulting bytes to the
          * given output byte array, starting at offset 0.
-         * <p>
-         * <p> It is the responsibility of the invoker of this method to make
+         * 
+         *  It is the responsibility of the invoker of this method to make
          * sure the output byte array {@code dst} has enough space for encoding
          * all bytes from the input byte array. No bytes will be written to the
          * output byte array if the output byte array is not big enough.
@@ -291,13 +291,13 @@ public class Base64 {
         /**
          * Encodes the specified byte array into a String using the {@link Base64}
          * encoding scheme.
-         * <p>
-         * <p> This method first encodes all input bytes into a base64 encoded
+         * 
+         *  This method first encodes all input bytes into a base64 encoded
          * byte array and then constructs a new String by using the encoded byte
          * array and the {@link StandardCharsets#ISO_8859_1
          * ISO-8859-1} charset.
-         * <p>
-         * <p> In other words, an invocation of this method has exactly the same
+         * 
+         *  In other words, an invocation of this method has exactly the same
          * effect as invoking
          * {@code new String(encode(src), StandardCharsets.ISO_8859_1)}.
          *
@@ -314,7 +314,7 @@ public class Base64 {
          * Encodes all remaining bytes from the specified byte buffer into
          * a newly-allocated ByteBuffer using the {@link Base64} encoding
          * scheme.
-         * <p>
+         * 
          * Upon return, the source buffer's position will be updated to
          * its limit; its limit will not have been changed. The returned
          * output buffer's position will be zero and its limit will be the
@@ -346,8 +346,8 @@ public class Base64 {
         /**
          * Wraps an output stream for encoding byte data using the {@link Base64}
          * encoding scheme.
-         * <p>
-         * <p> It is recommended to promptly close the returned output stream after
+         * 
+         *  It is recommended to promptly close the returned output stream after
          * use, during which it will flush all possible leftover bytes to the underlying
          * output stream. Closing the returned output stream will close the underlying
          * output stream.
@@ -366,8 +366,8 @@ public class Base64 {
          * Returns an encoder instance that encodes equivalently to this one,
          * but without adding any padding character at the end of the encoded
          * byte data.
-         * <p>
-         * <p> The encoding scheme of this encoder instance is unaffected by
+         * 
+         *  The encoding scheme of this encoder instance is unaffected by
          * this invocation. The returned encoder instance should be used for
          * non-padding encoding operation.
          *
@@ -433,8 +433,8 @@ public class Base64 {
     /**
      * This class implements a decoder for decoding byte data using the
      * Base64 encoding scheme as specified in RFC 4648 and RFC 2045.
-     * <p>
-     * <p> The Base64 padding character {@code '='} is accepted and
+     * 
+     *  The Base64 padding character {@code '='} is accepted and
      * interpreted as the end of the encoded byte data, but is not
      * required. So if the final unit of the encoded byte data only has
      * two or three Base64 characters (without the corresponding padding
@@ -444,11 +444,11 @@ public class Base64 {
      * present, otherwise {@code IllegalArgumentException} (
      * {@code IOException} when reading from a Base64 stream) is thrown
      * during decoding.
-     * <p>
-     * <p> Instances of {@link Decoder} class are safe for use by
+     * 
+     *  Instances of {@link Decoder} class are safe for use by
      * multiple concurrent threads.
-     * <p>
-     * <p> Unless otherwise noted, passing a {@code null} argument to
+     * 
+     *  Unless otherwise noted, passing a {@code null} argument to
      * a method of this class will cause a
      * {@link NullPointerException NullPointerException} to
      * be thrown.
@@ -521,8 +521,8 @@ public class Base64 {
         /**
          * Decodes a Base64 encoded String into a newly-allocated byte array
          * using the {@link Base64} encoding scheme.
-         * <p>
-         * <p> An invocation of this method has exactly the same effect as invoking
+         * 
+         *  An invocation of this method has exactly the same effect as invoking
          * {@code decode(src.getBytes(StandardCharsets.ISO_8859_1))}
          *
          * @param src the string to decode
@@ -537,13 +537,13 @@ public class Base64 {
          * Decodes all bytes from the input byte array using the {@link Base64}
          * encoding scheme, writing the results into the given output byte array,
          * starting at offset 0.
-         * <p>
-         * <p> It is the responsibility of the invoker of this method to make
+         * 
+         *  It is the responsibility of the invoker of this method to make
          * sure the output byte array {@code dst} has enough space for decoding
          * all bytes from the input byte array. No bytes will be be written to
          * the output byte array if the output byte array is not big enough.
-         * <p>
-         * <p> If the input byte array is not in valid Base64 encoding scheme
+         * 
+         *  If the input byte array is not in valid Base64 encoding scheme
          * then some bytes may have been written to the output byte array before
          * IllegalargumentException is thrown.
          *
@@ -564,13 +564,13 @@ public class Base64 {
         /**
          * Decodes all bytes from the input byte buffer using the {@link Base64}
          * encoding scheme, writing the results into a newly-allocated ByteBuffer.
-         * <p>
-         * <p> Upon return, the source buffer's position will be updated to
+         * 
+         *  Upon return, the source buffer's position will be updated to
          * its limit; its limit will not have been changed. The returned
          * output buffer's position will be zero and its limit will be the
          * number of resulting decoded bytes
-         * <p>
-         * <p> {@code IllegalArgumentException} is thrown if the input buffer
+         * 
+         *  {@code IllegalArgumentException} is thrown if the input buffer
          * is not in valid Base64 encoding scheme. The position of the input
          * buffer will not be advanced in this case.
          *
@@ -604,11 +604,11 @@ public class Base64 {
 
         /**
          * Returns an input stream for decoding {@link Base64} encoded byte stream.
-         * <p>
-         * <p> The {@code read}  methods of the returned {@code InputStream} will
+         * 
+         *  The {@code read}  methods of the returned {@code InputStream} will
          * throw {@code IOException} when reading bytes that cannot be decoded.
-         * <p>
-         * <p> Closing the returned input stream will close the underlying
+         * 
+         *  Closing the returned input stream will close the underlying
          * input stream.
          *
          * @param is the input stream

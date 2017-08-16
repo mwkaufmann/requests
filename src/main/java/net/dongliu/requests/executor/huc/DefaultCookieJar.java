@@ -6,6 +6,7 @@ import net.dongliu.requests.utils.Cookies;
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.ThreadSafe;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
 
@@ -13,7 +14,7 @@ import java.util.*;
  * CookieJar that store cookie in memory, maintaining cookies following RFC 6265
  */
 @ThreadSafe
-class DefaultCookieJar implements CookieJar {
+class DefaultCookieJar implements CookieJar, Serializable {
 
     private Map<CookieKey, Cookie> cookieMap = new HashMap<>();
 
