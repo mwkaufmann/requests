@@ -18,16 +18,6 @@ public class Proxies {
     }
 
     /**
-     * Create http proxy, with authentication
-     */
-//    public static Proxy httpProxy(String host, int port, String user, String password) {
-//        Objects.requireNonNull(user);
-//        Objects.requireNonNull(password);
-//        return new AuthenticationHttpProxy(new InetSocketAddress(Objects.requireNonNull(host), port),
-//                new BasicAuth(user, password));
-//    }
-
-    /**
      * Create socks5 proxy
      */
     public static Proxy socksProxy(String host, int port) {

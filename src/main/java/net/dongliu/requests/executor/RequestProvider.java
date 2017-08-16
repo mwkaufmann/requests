@@ -1,5 +1,8 @@
 package net.dongliu.requests.executor;
 
+import net.dongliu.requests.Client;
+import net.dongliu.requests.ClientBuilder;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -14,5 +17,6 @@ public interface RequestProvider {
     SessionContext newSessionContext();
 
     @Nonnull
-    HttpExecutor httpExecutor();
+    Client newClient(ClientBuilder builder);
+
 }
