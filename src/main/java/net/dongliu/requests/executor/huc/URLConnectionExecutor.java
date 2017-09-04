@@ -4,7 +4,11 @@ import net.dongliu.requests.*;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.exception.TooManyRedirectsException;
-import net.dongliu.requests.utils.*;
+import net.dongliu.requests.executor.HttpExecutor;
+import net.dongliu.requests.utils.Cookies;
+import net.dongliu.requests.utils.InputOutputs;
+import net.dongliu.requests.utils.NopHostnameVerifier;
+import net.dongliu.requests.utils.SSLSocketFactories;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,39 +26,27 @@ import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 import static net.dongliu.requests.HttpHeaders.*;
-import static net.dongliu.requests.HttpHeaders.NAME_CONTENT_ENCODING;
 import static net.dongliu.requests.StatusCodes.*;
-import static net.dongliu.requests.StatusCodes.NO_CONTENT;
 
 /**
- * Internal impl class.
- * Http client impl using URLConnection. Note This client do not truly handle connection pool.
+ * Execute http request with url connection
+ *
+ * @author Liu Dong
  */
-public class URLConnectionClient extends Client {
+class URLConnectionExecutor implements HttpExecutor {
+
     static {
         // we can modify Host, and other restricted headers
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
-        System.setProperty("http.keepAlive", "true");
-        // connection keep alive per host, the default value is 5
-        System.setProperty("http.maxConnections", String.valueOf(DefaultSettings.MAX_CONNECTION_PER_HOST));
-    }
-
-    URLConnectionClient(ClientBuilder builder) {
-        super(builder);
-    }
-
-    @Override
-    public void close() throws Exception {
-
     }
 
     @Nonnull
     @Override
-    protected RawResponse execute(Request request) {
+    public RawResponse proceed(Request request) {
         RawResponse response = doRequest(request);
 
         int statusCode = response.getStatusCode();
-        if (!isFollowRedirect() || !isRedirect(statusCode)) {
+        if (!request.isFollowRedirect() || !isRedirect(statusCode)) {
             return response;
         }
 
@@ -81,13 +73,19 @@ public class URLConnectionClient extends Client {
                 body = null;
             }
 
-            Request newRequest = newRequest(method, redirectUrl)
+            RequestBuilder builder = Requests.newRequest(method, redirectUrl.toExternalForm())
                     .sessionContext(request.getSessionContext())
+                    .socksTimeout(request.getSocksTimeout()).connectTimeout(request.getConnectTimeout())
                     .basicAuth(request.getBasicAuth())
                     .userAgent(request.getUserAgent())
-                    .body(body)
-                    .build();
-            response = doRequest(newRequest);
+                    .compress(request.isCompress())
+                    .verify(request.isVerify())
+                    .certs(request.getCerts())
+                    .keepAlive(request.isKeepAlive())
+                    .followRedirect(false)
+                    .proxy(request.getProxy())
+                    .body(body);
+            response = builder.send();
             if (!isRedirect(response.getStatusCode())) {
                 return response;
             }
@@ -117,8 +115,12 @@ public class URLConnectionClient extends Client {
 
         HttpURLConnection conn;
         try {
-            Proxy proxy = Utils.ifNullThen(getProxy(), Proxy.NO_PROXY);
-            conn = (HttpURLConnection) url.openConnection(proxy);
+            @Nullable Proxy proxy = request.getProxy();
+            if (proxy != null) {
+                conn = (HttpURLConnection) url.openConnection(proxy);
+            } else {
+                conn = (HttpURLConnection) url.openConnection();
+            }
         } catch (IOException e) {
             throw new RequestsException(e);
         }
@@ -128,17 +130,27 @@ public class URLConnectionClient extends Client {
 
         // deal with https
         if (conn instanceof HttpsURLConnection) {
-            setSSLSocketFactory((HttpsURLConnection) conn);
+            SSLSocketFactory ssf = null;
+            if (!request.isVerify()) {
+                // trust all certificates
+                ssf = SSLSocketFactories.getTrustAllSSLSocketFactory();
+                // do not verify host of certificate
+                ((HttpsURLConnection) conn).setHostnameVerifier(NopHostnameVerifier.getInstance());
+            } else if (!request.getCerts().isEmpty()) {
+                ssf = SSLSocketFactories.getCustomSSLSocketFactory(request.getCerts());
+            }
+            if (ssf != null) {
+                ((HttpsURLConnection) conn).setSSLSocketFactory(ssf);
+            }
         }
-        conn.setReadTimeout(getSocksTimeout());
-        conn.setConnectTimeout(getConnectTimeout());
 
         try {
             conn.setRequestMethod(request.getMethod());
         } catch (ProtocolException e) {
             throw new RequestsException(e);
         }
-
+        conn.setReadTimeout(request.getSocksTimeout());
+        conn.setConnectTimeout(request.getConnectTimeout());
         // Url connection did not deal with cookie when handle redirect. Disable it and handle it manually
         conn.setInstanceFollowRedirects(false);
         if (body != null) {
@@ -156,8 +168,7 @@ public class URLConnectionClient extends Client {
         if (!request.getUserAgent().isEmpty()) {
             conn.setRequestProperty(NAME_USER_AGENT, request.getUserAgent());
         }
-
-        if (isCompress()) {
+        if (request.isCompress()) {
             conn.setRequestProperty(NAME_ACCEPT_ENCODING, "gzip, deflate");
         }
 
@@ -188,7 +199,7 @@ public class URLConnectionClient extends Client {
         }
 
         // disable keep alive
-        if (!isKeepAlive()) {
+        if (!request.isKeepAlive()) {
             conn.setRequestProperty("Connection", "close");
         }
 
@@ -203,28 +214,13 @@ public class URLConnectionClient extends Client {
             if (body != null) {
                 sendBody(body, conn, charset);
             }
-            return getResponse(url, conn, cookieJar, isCompress(), request.getMethod());
+            return getResponse(url, conn, cookieJar, request.isCompress(), request.getMethod());
         } catch (IOException e) {
             conn.disconnect();
             throw new RequestsException(e);
         } catch (Throwable e) {
             conn.disconnect();
             throw e;
-        }
-    }
-
-    private void setSSLSocketFactory(HttpsURLConnection conn) {
-        SSLSocketFactory ssf = null;
-        if (!isVerify()) {
-            // trust all certificates
-            ssf = SSLSocketFactories.getTrustAllSSLSocketFactory();
-            // do not verify host of certificate
-            conn.setHostnameVerifier(NopHostnameVerifier.getInstance());
-        } else if (!getCerts().isEmpty()) {
-            ssf = SSLSocketFactories.getCustomSSLSocketFactory(getCerts());
-        }
-        if (ssf != null) {
-            conn.setSSLSocketFactory(ssf);
         }
     }
 
@@ -311,7 +307,7 @@ public class URLConnectionClient extends Client {
                     throw e;
                 }
             case "deflate":
-                // Note: deflate implements may or may not wrap in zlib due to rfc confusing.
+                // Note: deflate implements may or may not wrap in zlib due to rfc confusing. 
                 // here deal with deflate without zlib header
                 return new InflaterInputStream(input, new Inflater(true));
             case "identity":

@@ -1,5 +1,5 @@
 /**
- * Internal impl details. Do not use class in this package.
+ * Only for internal use.
  * Provider Http Executors
  */
 @ParametersAreNonnullByDefault

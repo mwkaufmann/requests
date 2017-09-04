@@ -153,21 +153,21 @@ public class RequestsTest {
 
     @Test
     public void testInterceptor() {
-//        final long[] statusCode = {0};
-//        Interceptor interceptor = new Interceptor() {
-//            @Override
-//            @Nonnull
-//            public RawResponse intercept(InvocationTarget target, Request request) {
-//                RawResponse response = target.execute(request);
-//                statusCode[0] = response.getStatusCode();
-//                return response;
-//            }
-//        };
-//
-//        String text = Requests.get("http://127.0.0.1:8080/echo_header")
-//                .interceptors(interceptor)
-//                .send().readToText();
-//        assertFalse(text.isEmpty());
-//        assertTrue(statusCode[0] > 0);
+        final long[] statusCode = {0};
+        Interceptor interceptor = new Interceptor() {
+            @Override
+            @Nonnull
+            public RawResponse intercept(InvocationTarget target, Request request) {
+                RawResponse response = target.proceed(request);
+                statusCode[0] = response.getStatusCode();
+                return response;
+            }
+        };
+
+        String text = Requests.get("http://127.0.0.1:8080/echo_header")
+                .interceptors(interceptor)
+                .send().readToText();
+        assertFalse(text.isEmpty());
+        assertTrue(statusCode[0] > 0);
     }
 }
