@@ -3,10 +3,11 @@ package net.dongliu.requests;
 import net.dongliu.requests.executor.SessionContext;
 
 import javax.annotation.concurrent.ThreadSafe;
+import java.net.URL;
 
 /**
  * Http request share cookies etc.
- * This class is thread-safe
+ * This class is threadsafe
  */
 @ThreadSafe
 public class Session {
@@ -42,6 +43,37 @@ public class Session {
     }
 
     public RequestBuilder newRequest(String method, String url) {
+        return new RequestBuilder().sessionContext(context).url(url).method(method);
+    }
+
+    public RequestBuilder get(URL url) {
+        return newRequest(Methods.GET, url);
+    }
+
+    public RequestBuilder post(URL url) {
+        return newRequest(Methods.POST, url);
+    }
+
+    public RequestBuilder put(URL url) {
+        return newRequest(Methods.PUT, url);
+    }
+
+    public RequestBuilder head(URL url) {
+        return newRequest(Methods.HEAD, url);
+    }
+
+    public RequestBuilder delete(URL url) {
+        return newRequest(Methods.DELETE, url);
+    }
+
+    public RequestBuilder patch(URL url) {
+        return newRequest(Methods.PATCH, url);
+    }
+
+    /**
+     * Create new request with method and url
+     */
+    public RequestBuilder newRequest(String method, URL url) {
         return new RequestBuilder().sessionContext(context).url(url).method(method);
     }
 }

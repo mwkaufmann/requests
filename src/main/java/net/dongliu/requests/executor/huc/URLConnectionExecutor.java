@@ -38,6 +38,9 @@ class URLConnectionExecutor implements HttpExecutor {
     static {
         // we can modify Host, and other restricted headers
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
+        System.setProperty("http.keepAlive", "true");
+        // default is 5
+        System.setProperty("http.maxConnections", "50");
     }
 
     @Nonnull
@@ -73,9 +76,10 @@ class URLConnectionExecutor implements HttpExecutor {
                 body = null;
             }
 
-            RequestBuilder builder = Requests.newRequest(method, redirectUrl.toExternalForm())
+            RequestBuilder builder = Requests.newRequest(method, redirectUrl)
                     .sessionContext(request.getSessionContext())
-                    .socksTimeout(request.getSocksTimeout()).connectTimeout(request.getConnectTimeout())
+                    .socksTimeout(request.getSocksTimeout())
+                    .connectTimeout(request.getConnectTimeout())
                     .basicAuth(request.getBasicAuth())
                     .userAgent(request.getUserAgent())
                     .compress(request.isCompress())

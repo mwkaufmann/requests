@@ -15,6 +15,8 @@ import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_JSON;
  */
 class JsonRequestBody<T> extends RequestBody<T> {
 
+    private static final long serialVersionUID = 890531624817102489L;
+
     JsonRequestBody(T body) {
         super(body, CONTENT_TYPE_JSON, true);
     }

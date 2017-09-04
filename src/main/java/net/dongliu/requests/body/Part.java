@@ -3,6 +3,7 @@ package net.dongliu.requests.body;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -10,7 +11,8 @@ import java.util.Objects;
  *
  * @author Liu Dong
  */
-public class Part<T> {
+public class Part<T> implements Serializable {
+    private static final long serialVersionUID = -8628605676399143391L;
     private final String name;
     /**
      * May be null

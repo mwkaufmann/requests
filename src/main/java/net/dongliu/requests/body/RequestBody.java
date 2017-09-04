@@ -1,9 +1,6 @@
 package net.dongliu.requests.body;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Map;
@@ -14,7 +11,8 @@ import java.util.Objects;
  *
  * @author Liu Dong
  */
-public abstract class RequestBody<T> {
+public abstract class RequestBody<T> implements Serializable {
+    private static final long serialVersionUID = 1332594280620699388L;
     private final T body;
     private String contentType;
     /**

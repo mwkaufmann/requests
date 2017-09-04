@@ -12,6 +12,8 @@ import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_TEXT;
  * @author Liu Dong
  */
 class StringRequestBody extends RequestBody<String> {
+    private static final long serialVersionUID = -1542159158991437897L;
+
     StringRequestBody(String body) {
         super(body, CONTENT_TYPE_TEXT, true);
     }

@@ -27,13 +27,13 @@ public final class RequestBuilder {
     URL url;
     Collection<? extends Map.Entry<String, ?>> headers = Collections.emptyList();
     Collection<? extends Map.Entry<String, ?>> cookies = Collections.emptyList();
-    String userAgent = "Requests/Java " + System.getProperty("java.version");
+    String userAgent = DefaultSettings.USER_AGENT;
     Collection<? extends Map.Entry<String, ?>> params = Collections.emptyList();
     Charset charset = StandardCharsets.UTF_8;
     @Nullable
     RequestBody<?> body;
-    int socksTimeout = Request.DEFAULT_TIMEOUT;
-    int connectTimeout = Request.DEFAULT_TIMEOUT;
+    int socksTimeout = DefaultSettings.SOCKS_TIMEOUT;
+    int connectTimeout = DefaultSettings.CONNECT_TIMEOUT;
     @Nullable
     Proxy proxy;
     boolean followRedirect = true;
@@ -284,7 +284,7 @@ public final class RequestBuilder {
     }
 
     /**
-     * Set tcp socks timeout in mills
+     * Set tcp socks timeout in mills. Default is 3000
      */
     public RequestBuilder socksTimeout(int timeout) {
         checkTimeout(timeout);
@@ -293,7 +293,7 @@ public final class RequestBuilder {
     }
 
     /**
-     * Set tcp connect timeout in mills
+     * Set tcp connect timeout in mills. Default is 1000
      */
     public RequestBuilder connectTimeout(int timeout) {
         checkTimeout(timeout);

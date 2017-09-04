@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -8,9 +9,11 @@ import java.util.Objects;
  *
  * @author Liu Dong
  */
-public class CertificateInfo {
+public class CertificateInfo implements Serializable {
+    private static final long serialVersionUID = -3880008161985636331L;
     private final String path;
-    private final @Nullable String password;
+    private final @Nullable
+    String password;
 
     /**
      * @param path should not be null
@@ -33,7 +36,8 @@ public class CertificateInfo {
         return path;
     }
 
-    public @Nullable String getPassword() {
+    public @Nullable
+    String getPassword() {
         return password;
     }
 

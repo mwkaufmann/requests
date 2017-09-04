@@ -15,6 +15,8 @@ import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_BINARY;
  * @author Liu Dong
  */
 class FileRequestBody extends RequestBody<File> {
+    private static final long serialVersionUID = -1902920038280221251L;
+
     FileRequestBody(File body) {
         super(body, getFileContentType(body), false);
     }

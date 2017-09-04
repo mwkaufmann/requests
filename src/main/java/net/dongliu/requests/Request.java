@@ -5,6 +5,7 @@ import net.dongliu.requests.executor.SessionContext;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.io.Serializable;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -18,9 +19,8 @@ import java.util.Map;
  * @author Liu Dong
  */
 @Immutable
-public class Request {
-    static final int DEFAULT_TIMEOUT = 10_000;
-
+public class Request implements Serializable {
+    private static final long serialVersionUID = -2585065451136206831L;
     private final String method;
     private final Collection<? extends Map.Entry<String, ?>> headers;
     private final Collection<? extends Map.Entry<String, ?>> cookies;
