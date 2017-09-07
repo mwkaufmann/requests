@@ -1,12 +1,11 @@
 package net.dongliu.requests;
 
-import jdk.nashorn.internal.ir.annotations.Immutable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Response with transformed result
