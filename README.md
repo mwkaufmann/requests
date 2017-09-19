@@ -100,7 +100,8 @@ params.put("k1", "v1");
 params.put("k2", "v2");
 String resp = Requests.get(url).params(params).send().readToText();
 // set multi params
-String resp = Requests.get(url).params(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
+String resp = Requests.get(url)
+        .params(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 ```
 
@@ -113,7 +114,8 @@ params.put("k1", "v1");
 params.put("k2", "v2");
 String resp = Requests.post(url).forms(params).send().readToText();
 // set multi params
-String resp = Requests.post(url).forms(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
+String resp = Requests.post(url)
+        .forms(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 ```
 The forms parameter should only works with post method.
@@ -129,7 +131,8 @@ headers.put("k1", "v1");
 headers.put("k2", "v2");
 String resp = Requests.get(url).headers(headers).send().readToText();
 // set multi headers
-String resp = Requests.get(url).headers(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
+String resp = Requests.get(url)
+        .headers(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 ```
 
@@ -144,7 +147,8 @@ cookies.put("k2", "v2");
 // set cookies by map
 String resp = Requests.get(url).cookies(cookies).send().readToText();
 // set cookies
-String resp = Requests.get(url).cookies(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
+String resp = Requests.get(url)
+        .cookies(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 ```
 
