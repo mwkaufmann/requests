@@ -84,7 +84,6 @@ class URLConnectionExecutor implements HttpExecutor {
                     .userAgent(request.getUserAgent())
                     .compress(request.isCompress())
                     .verify(request.isVerify())
-                    .certs(request.getCerts())
                     .keepAlive(request.isKeepAlive())
                     .followRedirect(false)
                     .proxy(request.getProxy())
@@ -140,8 +139,6 @@ class URLConnectionExecutor implements HttpExecutor {
                 ssf = SSLSocketFactories.getTrustAllSSLSocketFactory();
                 // do not verify host of certificate
                 ((HttpsURLConnection) conn).setHostnameVerifier(NopHostnameVerifier.getInstance());
-            } else if (!request.getCerts().isEmpty()) {
-                ssf = SSLSocketFactories.getCustomSSLSocketFactory(request.getCerts());
             }
             if (ssf != null) {
                 ((HttpsURLConnection) conn).setSSLSocketFactory(ssf);

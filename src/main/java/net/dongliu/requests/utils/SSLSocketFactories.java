@@ -1,15 +1,11 @@
 package net.dongliu.requests.utils;
 
-import net.dongliu.requests.CertificateInfo;
 import net.dongliu.requests.exception.RequestsException;
 
 import javax.net.ssl.*;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -42,11 +38,10 @@ public class SSLSocketFactories {
         return sslSocketFactoryLazy;
     }
 
-    private static final ConcurrentMap<Collection<CertificateInfo>, SSLSocketFactory> map =
-            new ConcurrentHashMap<>();
+    private static final ConcurrentMap<KeyStore, SSLSocketFactory> map = new ConcurrentHashMap<>();
 
-    private static SSLSocketFactory _getCustomSSLSocketFactory(Collection<CertificateInfo> certs) {
-        TrustManager trustManager = new CustomCertTrustManager(certs);
+    private static SSLSocketFactory _getCustomSSLSocketFactory(KeyStore keyStore) {
+        TrustManager trustManager = new CustomCertTrustManager(keyStore);
         SSLContext sslContext;
         try {
             sslContext = SSLContext.getInstance("SSL");
@@ -58,11 +53,11 @@ public class SSLSocketFactories {
         return sslContext.getSocketFactory();
     }
 
-    public static SSLSocketFactory getCustomSSLSocketFactory(Collection<CertificateInfo> certs) {
-        if (!map.containsKey(certs)) {
-            map.put(certs, _getCustomSSLSocketFactory(certs));
+    public static SSLSocketFactory getCustomSSLSocketFactory(KeyStore keyStore) {
+        if (!map.containsKey(keyStore)) {
+            map.put(keyStore, _getCustomSSLSocketFactory(keyStore));
         }
-        return map.get(certs);
+        return map.get(keyStore);
     }
 
     static class TrustAllTrustManager implements X509TrustManager {
@@ -85,33 +80,19 @@ public class SSLSocketFactories {
 
     static class CustomCertTrustManager implements X509TrustManager {
 
-        private final Collection<CertificateInfo> certs;
+        private final KeyStore keyStore;
         private final X509TrustManager sunJSSEX509TrustManager;
 
-        public CustomCertTrustManager(Collection<CertificateInfo> certs) {
-            this.certs = certs;
+        public CustomCertTrustManager(KeyStore keyStore) {
+            this.keyStore = keyStore;
             this.sunJSSEX509TrustManager = load();
         }
 
         private X509TrustManager load() {
-            KeyStore ks;
-            try {
-                ks = KeyStore.getInstance("JKS");
-            } catch (KeyStoreException e) {
-                throw new RequestsException(e);
-            }
-            for (CertificateInfo cert : certs) {
-                try {
-                    ks.load(new FileInputStream(cert.getPath()), cert.getPassword() == null ?
-                            null : cert.getPassword().toCharArray());
-                } catch (IOException | NoSuchAlgorithmException | CertificateException e) {
-                    throw new RequestsException(e);
-                }
-            }
             TrustManagerFactory trustManagerFactory;
             try {
                 trustManagerFactory = TrustManagerFactory.getInstance("SunX509", "SunJSSE");
-                trustManagerFactory.init(ks);
+                trustManagerFactory.init(keyStore);
             } catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException e) {
                 throw new RequestsException(e);
             }

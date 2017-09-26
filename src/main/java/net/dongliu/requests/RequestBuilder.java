@@ -39,7 +39,6 @@ public final class RequestBuilder {
     boolean followRedirect = true;
     boolean compress = true;
     boolean verify = true;
-    List<CertificateInfo> certs = Collections.emptyList();
     BasicAuth basicAuth;
     @Nullable
     SessionContext sessionContext;
@@ -63,7 +62,6 @@ public final class RequestBuilder {
         followRedirect = request.isFollowRedirect();
         compress = request.isCompress();
         verify = request.isVerify();
-        certs = request.getCerts();
         basicAuth = request.getBasicAuth();
         sessionContext = request.getSessionContext();
         keepAlive = request.isKeepAlive();
@@ -344,14 +342,6 @@ public final class RequestBuilder {
      */
     public RequestBuilder keepAlive(boolean keepAlive) {
         this.keepAlive = keepAlive;
-        return this;
-    }
-
-    /**
-     * Add trust certs
-     */
-    public RequestBuilder certs(List<CertificateInfo> certs) {
-        this.certs = Objects.requireNonNull(certs);
         return this;
     }
 

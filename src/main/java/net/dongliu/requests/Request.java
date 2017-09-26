@@ -10,7 +10,6 @@ import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,7 +36,6 @@ public class Request implements Serializable {
     private final boolean followRedirect;
     private final boolean compress;
     private final boolean verify;
-    private final List<CertificateInfo> certs;
     private final BasicAuth basicAuth;
     @Nullable
     private final SessionContext sessionContext;
@@ -57,7 +55,6 @@ public class Request implements Serializable {
         followRedirect = builder.followRedirect;
         compress = builder.compress;
         verify = builder.verify;
-        certs = builder.certs;
         basicAuth = builder.basicAuth;
         sessionContext = builder.sessionContext;
         keepAlive = builder.keepAlive;
@@ -120,10 +117,6 @@ public class Request implements Serializable {
 
     public boolean isVerify() {
         return verify;
-    }
-
-    public List<CertificateInfo> getCerts() {
-        return certs;
     }
 
     public BasicAuth getBasicAuth() {
