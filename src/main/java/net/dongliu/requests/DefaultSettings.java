@@ -7,14 +7,14 @@ public class DefaultSettings {
     /**
      * Default user agent
      */
-    public static final String USER_AGENT = "Requests 4.13.0, Java " + System.getProperty("java.version");
+    public static final String USER_AGENT = "Requests 4.13.1, Java " + System.getProperty("java.version");
 
     /**
      * Default connect timeout for http connection
      */
-    public static final int CONNECT_TIMEOUT = 1000;
+    public static final int CONNECT_TIMEOUT = 3000;
     /**
      * Default socks timeout for http connection
      */
-    public static final int SOCKS_TIMEOUT = 3_000;
+    public static final int SOCKS_TIMEOUT = 5000;
 }

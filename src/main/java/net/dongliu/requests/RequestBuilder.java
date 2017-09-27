@@ -282,7 +282,7 @@ public final class RequestBuilder {
     }
 
     /**
-     * Set tcp socks timeout in mills. Default is 3000
+     * Set tcp socks timeout in milliseconds. Default is 5000
      */
     public RequestBuilder socksTimeout(int timeout) {
         checkTimeout(timeout);
@@ -291,7 +291,7 @@ public final class RequestBuilder {
     }
 
     /**
-     * Set tcp connect timeout in mills. Default is 1000
+     * Set tcp connect timeout in milliseconds. Default is 3000
      */
     public RequestBuilder connectTimeout(int timeout) {
         checkTimeout(timeout);
@@ -376,11 +376,18 @@ public final class RequestBuilder {
     }
 
     /**
-     * Set connect timeout and socket time out
+     * Set both connect timeout and socks timeout in milliseconds
      */
     public RequestBuilder timeout(int timeout) {
         checkTimeout(timeout);
         return connectTimeout(timeout).socksTimeout(timeout);
+    }
+
+    /**
+     * Set connect timeout and socks timeout in milliseconds
+     */
+    public RequestBuilder timeout(int connectTimeout, int socksTimeout) {
+        return connectTimeout(connectTimeout).socksTimeout(socksTimeout);
     }
 
     /**

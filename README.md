@@ -28,7 +28,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.13.0</version>
+    <version>4.13.1</version>
 </dependency>
 ```
 
@@ -225,12 +225,10 @@ Requests.get(url).followRedirect(false).send();
 
 ## Timeout
 
-There are two timeout parameters you can set, connect timeout, and socket timeout. The timeout value default to 10_000 milliseconds.
+You can set connection connect timeout, and socket read/write timeout value, as blow:
 
 ```java
-// both connec timeout, and socket timeout
-Requests.get(url).timeout(30_000).send();
-// set connect timeout and socket timeout separately
+// set connect timeout and socket timeout
 Requests.get(url).socketTimeout(20_000).connectTimeout(30_000).send();
 ```
 
