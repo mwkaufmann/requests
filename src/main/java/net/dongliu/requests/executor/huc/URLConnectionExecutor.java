@@ -6,7 +6,7 @@ import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.exception.TooManyRedirectsException;
 import net.dongliu.requests.executor.HttpExecutor;
 import net.dongliu.requests.utils.Cookies;
-import net.dongliu.requests.utils.InputOutputs;
+import net.dongliu.requests.utils.IOUtils;
 import net.dongliu.requests.utils.NopHostnameVerifier;
 import net.dongliu.requests.utils.SSLSocketFactories;
 
@@ -304,7 +304,7 @@ class URLConnectionExecutor implements HttpExecutor {
                 try {
                     return new GZIPInputStream(input);
                 } catch (IOException e) {
-                    InputOutputs.closeQuietly(input);
+                    IOUtils.closeQuietly(input);
                     throw e;
                 }
             case "deflate":

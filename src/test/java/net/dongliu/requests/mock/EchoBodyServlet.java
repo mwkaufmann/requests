@@ -1,7 +1,7 @@
 package net.dongliu.requests.mock;
 
 
-import net.dongliu.requests.utils.InputOutputs;
+import net.dongliu.requests.utils.IOUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,7 +18,7 @@ public class EchoBodyServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String body = InputOutputs.readAll(request.getReader());
+        String body = IOUtils.readAll(request.getReader());
 
         response.setContentType("text/plain");
         response.setCharacterEncoding(request.getCharacterEncoding());

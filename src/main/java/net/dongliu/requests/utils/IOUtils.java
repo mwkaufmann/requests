@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author Liu Dong
  */
-public class InputOutputs {
+public class IOUtils {
 
 
     private static byte[] empty = {};
@@ -28,7 +28,7 @@ public class InputOutputs {
                 output.write(buffer, 0, read);
             }
         } finally {
-            InputOutputs.closeQuietly(input);
+            IOUtils.closeQuietly(input);
         }
     }
 
@@ -66,7 +66,7 @@ public class InputOutputs {
                 }
             }
         } finally {
-            InputOutputs.closeQuietly(input);
+            IOUtils.closeQuietly(input);
         }
 
         if (dataList.size() == 0) {
@@ -132,7 +132,7 @@ public class InputOutputs {
                 count += read;
             }
         } finally {
-            InputOutputs.closeQuietly(input);
+            IOUtils.closeQuietly(input);
         }
         return count;
     }
@@ -160,7 +160,7 @@ public class InputOutputs {
                 writer.write(buffer, 0, read);
             }
         } finally {
-            InputOutputs.closeQuietly(reader);
+            IOUtils.closeQuietly(reader);
         }
     }
 
@@ -176,7 +176,7 @@ public class InputOutputs {
                 sb.append(buffer, 0, read);
             }
         } finally {
-            InputOutputs.closeQuietly(reader);
+            IOUtils.closeQuietly(reader);
         }
         return sb.toString();
     }
@@ -193,7 +193,7 @@ public class InputOutputs {
             }
             return lines;
         } finally {
-            InputOutputs.closeQuietly(reader);
+            IOUtils.closeQuietly(reader);
         }
     }
 
@@ -228,7 +228,7 @@ public class InputOutputs {
                 count += read;
             }
         } finally {
-            InputOutputs.closeQuietly(reader);
+            IOUtils.closeQuietly(reader);
         }
         return count;
     }

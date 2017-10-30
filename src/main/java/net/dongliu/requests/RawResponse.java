@@ -1,9 +1,10 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.exception.IllegalStatusException;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
-import net.dongliu.requests.utils.InputOutputs;
+import net.dongliu.requests.utils.IOUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,7 +15,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Raw http response.
@@ -34,7 +38,7 @@ public class RawResponse implements AutoCloseable {
     private Charset charset;
 
     public RawResponse(int statusCode, String statusLine, Headers headers, List<Cookie> cookies, InputStream input,
-                HttpURLConnection conn) {
+                       HttpURLConnection conn) {
         this.statusCode = statusCode;
         this.statusLine = statusLine;
         this.headers = headers;
@@ -45,7 +49,7 @@ public class RawResponse implements AutoCloseable {
 
     @Override
     public void close() {
-        InputOutputs.closeQuietly(input);
+        IOUtils.closeQuietly(input);
         conn.disconnect();
     }
 
@@ -70,6 +74,17 @@ public class RawResponse implements AutoCloseable {
         return this;
     }
 
+    /**
+     * Check the response status code, if is not 2xx, throw IllegalStatusException.
+     * You can want call this method first, if you want to use the response content.
+     */
+    public RawResponse checkStatus() throws IllegalStatusException {
+        if (this.statusCode < 200 || this.statusCode >= 300) {
+            throw new IllegalStatusException(this.statusCode);
+        }
+        return this;
+    }
+
 
     /**
      * Read response body to string. return empty string if response has no body
@@ -77,7 +92,7 @@ public class RawResponse implements AutoCloseable {
     public String readToText() {
         Charset charset = getCharset();
         try (Reader reader = new InputStreamReader(input, charset)) {
-            return InputOutputs.readAll(reader);
+            return IOUtils.readAll(reader);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -97,7 +112,22 @@ public class RawResponse implements AutoCloseable {
      */
     public byte[] readToBytes() {
         try {
-            return InputOutputs.readAll(input);
+            return IOUtils.readAll(input);
+        } catch (IOException e) {
+            throw new RequestsException(e);
+        } finally {
+            close();
+        }
+    }
+
+    /**
+     * Handle response body with handler, return a new response with content as handler result.
+     * The response is closed whether this call succeed or failed with exception.
+     */
+    public <T> Response<T> toResponse(ResponseHandler<T> handler) {
+        try {
+            T result = handler.handle(this.statusCode, this.headers, this.input);
+            return new Response<>(this.statusCode, this.cookies, this.headers, result);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -165,7 +195,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(File file) {
         try {
             try (OutputStream os = new FileOutputStream(file)) {
-                InputOutputs.copy(input, os);
+                IOUtils.copy(input, os);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -180,7 +210,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(Path path) {
         try {
             try (OutputStream os = Files.newOutputStream(path)) {
-                InputOutputs.copy(input, os);
+                IOUtils.copy(input, os);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -196,7 +226,7 @@ public class RawResponse implements AutoCloseable {
     public void writeToFile(String path) {
         try {
             try (OutputStream os = new FileOutputStream(path)) {
-                InputOutputs.copy(input, os);
+                IOUtils.copy(input, os);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -219,7 +249,7 @@ public class RawResponse implements AutoCloseable {
      */
     public void writeTo(OutputStream out) {
         try {
-            InputOutputs.copy(input, out);
+            IOUtils.copy(input, out);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -228,13 +258,14 @@ public class RawResponse implements AutoCloseable {
     }
 
     /**
-     * Write response body to Writer, charset can be set using {@link #charset(Charset)}, or will use charset detected from response header if not set.
+     * Write response body to Writer, charset can be set using {@link #charset(Charset)},
+     * or will use charset detected from response header if not set.
      * Writer will not be closed.
      */
     public void writeTo(Writer writer) {
         try {
             try (Reader reader = new InputStreamReader(input, getCharset())) {
-                InputOutputs.copy(reader, writer);
+                IOUtils.copy(reader, writer);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -245,11 +276,10 @@ public class RawResponse implements AutoCloseable {
 
     /**
      * Consume and discard this response body.
-     *
      */
     public void discardBody() {
         try {
-            InputOutputs.skipAll(input);
+            IOUtils.skipAll(input);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {

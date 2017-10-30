@@ -6,6 +6,8 @@ package net.dongliu.requests.exception;
  * @author Liu Dong
  */
 public class RequestsException extends RuntimeException {
+    private static final long serialVersionUID = -932950698709129457L;
+
     public RequestsException(String msg) {
         super(msg);
     }
