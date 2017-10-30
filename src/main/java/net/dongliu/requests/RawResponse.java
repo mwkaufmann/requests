@@ -77,6 +77,8 @@ public class RawResponse implements AutoCloseable {
     /**
      * Check the response status code, if is not 2xx, throw IllegalStatusException.
      * You can want call this method first, if you want to use the response content.
+     *
+     * @throws IllegalStatusException
      */
     public RawResponse checkStatus() throws IllegalStatusException {
         if (this.statusCode < 200 || this.statusCode >= 300) {

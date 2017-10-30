@@ -28,7 +28,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.13.1</version>
+    <version>4.14.0</version>
 </dependency>
 ```
 
