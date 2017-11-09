@@ -2,12 +2,14 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.executor.SessionContext;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.ThreadSafe;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Http request share cookies etc.
- * This class is threadsafe
+ * This class is Thread-Safe.
  */
 @ThreadSafe
 public class Session {
@@ -68,6 +70,15 @@ public class Session {
 
     public RequestBuilder patch(URL url) {
         return newRequest(Methods.PATCH, url);
+    }
+
+
+    /**
+     * Return all cookies this session current hold.
+     */
+    @Nonnull
+    public List<Cookie> currentCookies() {
+        return context.getCookieJar().getCookies();
     }
 
     /**

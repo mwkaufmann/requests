@@ -1,10 +1,9 @@
-package net.dongliu.requests.executor.huc;
+package net.dongliu.requests.executor;
 
 import net.dongliu.requests.*;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.exception.TooManyRedirectsException;
-import net.dongliu.requests.executor.HttpExecutor;
 import net.dongliu.requests.utils.Cookies;
 import net.dongliu.requests.utils.IOUtils;
 import net.dongliu.requests.utils.NopHostnameVerifier;
@@ -108,7 +107,7 @@ class URLConnectionExecutor implements HttpExecutor {
         URL url = URIEncoder.joinUrl(request.getUrl(), URIEncoder.toStringParameters(request.getParams()),
                 request.getCharset());
         @Nullable RequestBody body = request.getBody();
-        @Nullable URLConnectionSessionContext sessionContext = (URLConnectionSessionContext) request.getSessionContext();
+        @Nullable SessionContext sessionContext = request.getSessionContext();
         CookieJar cookieJar;
         if (sessionContext == null) {
             cookieJar = NopCookieJar.instance;

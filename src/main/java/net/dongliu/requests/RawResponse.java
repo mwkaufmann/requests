@@ -335,14 +335,14 @@ public class RawResponse implements AutoCloseable {
     }
 
     /**
-     * Get all cookies
+     * Get all cookies returned by this response
      */
     public Collection<Cookie> getCookies() {
         return cookies;
     }
 
     /**
-     * Get first cookie match the name, return null if not exists
+     * Get first cookie match the name returned by this response, return null if not found
      */
     @Nullable
     public Cookie getFirstCookie(String name) {

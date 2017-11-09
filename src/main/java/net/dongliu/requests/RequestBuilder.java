@@ -4,8 +4,7 @@ import net.dongliu.requests.body.Part;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.executor.HttpExecutor;
-import net.dongliu.requests.executor.RequestProvider;
-import net.dongliu.requests.executor.RequestProviders;
+import net.dongliu.requests.executor.RequestExecutorFactory;
 import net.dongliu.requests.executor.SessionContext;
 
 import javax.annotation.Nullable;
@@ -370,8 +369,8 @@ public final class RequestBuilder {
      */
     public RawResponse send() {
         Request request = build();
-        RequestProvider provider = RequestProviders.lookup();
-        HttpExecutor executor = provider.httpExecutor();
+        RequestExecutorFactory factory = RequestExecutorFactory.getInstance();
+        HttpExecutor executor = factory.getHttpExecutor();
         return new InterceptorChain(interceptors, executor).proceed(request);
     }
 
@@ -422,9 +421,6 @@ public final class RequestBuilder {
         return interceptors(Arrays.asList(interceptors));
     }
 
-    /**
-     * Set interceptors
-     */
     public RequestBuilder sessionContext(@Nullable SessionContext sessionContext) {
         this.sessionContext = sessionContext;
         return this;

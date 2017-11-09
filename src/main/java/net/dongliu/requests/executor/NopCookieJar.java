@@ -1,4 +1,4 @@
-package net.dongliu.requests.executor.huc;
+package net.dongliu.requests.executor;
 
 import net.dongliu.requests.Cookie;
 
@@ -33,7 +33,7 @@ class NopCookieJar implements CookieJar {
 
     @Nonnull
     @Override
-    public Collection<Cookie> getCookies() {
+    public List<Cookie> getCookies() {
         return Collections.emptyList();
     }
 }

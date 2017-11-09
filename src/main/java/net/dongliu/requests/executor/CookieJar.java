@@ -1,4 +1,4 @@
-package net.dongliu.requests.executor.huc;
+package net.dongliu.requests.executor;
 
 import net.dongliu.requests.Cookie;
 
@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Interface for storing cookies
  */
-interface CookieJar {
+public interface CookieJar {
 
     /**
      * Add multi cookies to cookie jar.
@@ -29,5 +29,5 @@ interface CookieJar {
      * Get all cookies in this store
      */
     @Nonnull
-    Collection<Cookie> getCookies();
+    List<Cookie> getCookies();
 }

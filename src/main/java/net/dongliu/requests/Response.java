@@ -31,7 +31,7 @@ public class Response<T> {
     }
 
     /**
-     * Get all returned cookies
+     * Get all cookies returned by this response
      */
     @Nonnull
     public Collection<Cookie> getCookies() {
@@ -48,7 +48,7 @@ public class Response<T> {
 
 
     /**
-     * Get first cookie match the name, return null if not exists
+     * Get first cookie match the name returned by this response, return null if not found
      */
     @Nullable
     public Cookie getFirstCookie(String name) {

@@ -1,4 +1,4 @@
-package net.dongliu.requests.executor.huc;
+package net.dongliu.requests.executor;
 
 import net.dongliu.requests.Cookie;
 import org.junit.Test;

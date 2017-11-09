@@ -1,8 +1,7 @@
 package net.dongliu.requests;
 
 
-import net.dongliu.requests.executor.RequestProvider;
-import net.dongliu.requests.executor.RequestProviders;
+import net.dongliu.requests.executor.RequestExecutorFactory;
 
 import java.net.URL;
 
@@ -12,8 +11,6 @@ import java.net.URL;
  * @author Liu Dong
  */
 public class Requests {
-
-    private static RequestProvider provider = RequestProviders.lookup();
 
     /**
      * Start a GET request
@@ -99,6 +96,7 @@ public class Requests {
      * Create new session.
      */
     public static Session session() {
-        return new Session(provider.newSessionContext());
+        RequestExecutorFactory factory = RequestExecutorFactory.getInstance();
+        return new Session(factory.newSessionContext());
     }
 }

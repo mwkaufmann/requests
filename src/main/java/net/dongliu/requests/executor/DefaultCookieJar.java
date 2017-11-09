@@ -1,4 +1,4 @@
-package net.dongliu.requests.executor.huc;
+package net.dongliu.requests.executor;
 
 import net.dongliu.requests.Cookie;
 import net.dongliu.requests.utils.Cookies;
@@ -16,6 +16,7 @@ import java.util.*;
 @ThreadSafe
 class DefaultCookieJar implements CookieJar, Serializable {
 
+    private static final long serialVersionUID = 8372575235144209124L;
     private Map<CookieKey, Cookie> cookieMap = new HashMap<>();
 
     @Override
@@ -63,7 +64,7 @@ class DefaultCookieJar implements CookieJar, Serializable {
 
     @Nonnull
     @Override
-    public synchronized Collection<Cookie> getCookies() {
+    public synchronized List<Cookie> getCookies() {
         return new ArrayList<>(cookieMap.values());
     }
 
