@@ -58,7 +58,7 @@ class URLConnectionExecutor implements HttpExecutor {
         int maxRedirectTimes = 5;
         URL redirectUrl = request.getUrl();
         while (redirectTimes++ < maxRedirectTimes) {
-            String location = response.getFirstHeader(NAME_LOCATION);
+            String location = response.getHeader(NAME_LOCATION);
             if (location == null) {
                 throw new RequestsException("Redirect location not found");
             }
@@ -235,7 +235,7 @@ class URLConnectionExecutor implements HttpExecutor {
 
         String statusLine = null;
         // headers and cookies
-        List<Parameter<String>> headerList = new ArrayList<>();
+        List<Header> headerList = new ArrayList<>();
         List<Cookie> cookies = new ArrayList<>();
         int index = 0;
         while (true) {
@@ -250,7 +250,7 @@ class URLConnectionExecutor implements HttpExecutor {
                 statusLine = value;
                 continue;
             }
-            headerList.add(Parameter.of(key, value));
+            headerList.add(new Header(key, value));
             if (key.equalsIgnoreCase(NAME_SET_COOKIE)) {
                 Cookie c = Cookies.parseCookie(value, host, Cookies.calculatePath(url.getPath()));
                 if (c != null) {
@@ -277,7 +277,7 @@ class URLConnectionExecutor implements HttpExecutor {
 
         // update session
         cookieJar.storeCookies(cookies);
-        return new RawResponse(status, Objects.requireNonNull(statusLine), headers, cookies, input, conn);
+        return new RawResponse(status, Objects.requireNonNull(statusLine), cookies, headers, input, conn);
     }
 
     /**
@@ -292,7 +292,7 @@ class URLConnectionExecutor implements HttpExecutor {
             return input;
         }
 
-        String contentEncoding = headers.getFirstHeader(NAME_CONTENT_ENCODING);
+        String contentEncoding = headers.getHeader(NAME_CONTENT_ENCODING);
         if (contentEncoding == null) {
             return input;
         }

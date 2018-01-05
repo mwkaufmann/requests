@@ -6,7 +6,6 @@ import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
 import net.dongliu.requests.utils.IOUtils;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
@@ -15,8 +14,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,22 +24,17 @@ import java.util.Objects;
  *
  * @author Liu Dong
  */
-public class RawResponse implements AutoCloseable {
-    private final int statusCode;
+public class RawResponse extends AbstractResponse implements AutoCloseable {
     private final String statusLine;
-    private final List<Cookie> cookies;
-    private final Headers headers;
     private final InputStream input;
     private final HttpURLConnection conn;
     @Nullable
     private Charset charset;
 
-    public RawResponse(int statusCode, String statusLine, Headers headers, List<Cookie> cookies, InputStream input,
+    public RawResponse(int statusCode, String statusLine, List<Cookie> cookies, Headers headers, InputStream input,
                        HttpURLConnection conn) {
-        this.statusCode = statusCode;
+        super(statusCode, cookies, headers);
         this.statusLine = statusLine;
-        this.headers = headers;
-        this.cookies = Collections.unmodifiableList(cookies);
         this.input = input;
         this.conn = conn;
     }
@@ -310,73 +302,10 @@ public class RawResponse implements AutoCloseable {
         return input;
     }
 
-    /**
-     * Get header value with name. If not exists, return null
-     */
-    @Nullable
-    public String getFirstHeader(String name) {
-        return this.headers.getFirstHeader(name);
-    }
-
-    /**
-     * Return immutable response header list
-     */
-    @Nonnull
-    public List<Parameter<String>> getHeaders() {
-        return headers.getHeaders();
-    }
-
-    /**
-     * Get all headers values with name. If not exists, return empty list
-     */
-    @Nonnull
-    public List<String> getHeaders(String name) {
-        return this.headers.getHeaders(name);
-    }
-
-    /**
-     * Get all cookies returned by this response
-     */
-    public Collection<Cookie> getCookies() {
-        return cookies;
-    }
-
-    /**
-     * Get first cookie match the name returned by this response, return null if not found
-     */
-    @Nullable
-    public Cookie getFirstCookie(String name) {
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(name)) {
-                return cookie;
-            }
-        }
-        return null;
-    }
-
     private Charset getCharset() {
         if (this.charset != null) {
             return this.charset;
         }
-        String contentType = getFirstHeader(HttpHeaders.NAME_CONTENT_TYPE);
-        if (contentType == null) {
-            return StandardCharsets.UTF_8;
-        }
-        String[] items = contentType.split(";");
-        for (String item : items) {
-            item = item.trim();
-            if (item.isEmpty()) {
-                continue;
-            }
-            int idx = item.indexOf('=');
-            if (idx < 0) {
-                continue;
-            }
-            String key = item.substring(0, idx).trim();
-            if (key.equalsIgnoreCase("charset")) {
-                return Charset.forName(item.substring(idx + 1).trim());
-            }
-        }
-        return StandardCharsets.UTF_8;
+        return headers.getCharset(StandardCharsets.UTF_8);
     }
 }

@@ -137,7 +137,7 @@ public class RequestsTest {
     @Test
     public void sendHeaders() {
         String text = Requests.get("http://127.0.0.1:8080/echo_header")
-                .headers(Parameter.of("Host", "www.test.com"), Parameter.of("TestHeader", 1))
+                .headers(new Header("Host", "www.test.com"), new Header("TestHeader", 1))
                 .send().readToText();
         assertTrue(text.contains("Host: www.test.com"));
         assertTrue(text.contains("TestHeader: 1"));

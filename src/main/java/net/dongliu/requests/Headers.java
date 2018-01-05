@@ -1,7 +1,12 @@
 package net.dongliu.requests;
 
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -9,16 +14,120 @@ import java.util.*;
  *
  * @author Liu Dong
  */
-public class Headers {
-    private final List<Parameter<String>> headers;
-    private final Map<String, List<String>> map;
+@Immutable
+public class Headers implements Serializable {
+    private static final long serialVersionUID = -1283402589869346874L;
+    private final List<Header> headers;
+    private transient volatile Map<String, List<String>> map;
 
-    public Headers(List<Parameter<String>> headers) {
+    public Headers(List<Header> headers) {
         this.headers = Collections.unmodifiableList(Objects.requireNonNull(headers));
-        this.map = collectToMap(headers);
     }
 
-    private Map<String, List<String>> collectToMap(List<? extends Map.Entry<String, String>> headers) {
+    /**
+     * Get headers by name. If not exists, return empty list
+     */
+    @Nonnull
+    public List<String> getHeaders(String name) {
+        Objects.requireNonNull(name);
+        ensureMap();
+        List<String> values = map.get(name.toLowerCase());
+        if (values == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(values);
+    }
+
+    /**
+     * Get the first header value matched name. If not exists, return null.
+     *
+     * @deprecated using {@link #getHeader(String)} instead
+     */
+    @Deprecated
+    @Nullable
+    public String getFirstHeader(String name) {
+        Objects.requireNonNull(name);
+        return getHeader(name);
+    }
+
+    /**
+     * Get the first header value matched name. If not exists, return null.
+     */
+    @Nullable
+    public String getHeader(String name) {
+        ensureMap();
+        Objects.requireNonNull(name);
+        List<String> values = map.get(name.toLowerCase());
+        if (values == null) {
+            return null;
+        }
+        return values.get(0);
+    }
+
+    /**
+     * Get header value as long. If not exists, return defaultValue
+     */
+    public long getLongHeader(String name, long defaultValue) {
+        String firstHeader = getHeader(name);
+        if (firstHeader == null) {
+            return defaultValue;
+        }
+        try {
+            return Long.parseLong(firstHeader.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    @Nonnull
+    public List<Header> getHeaders() {
+        return headers;
+    }
+
+    /**
+     * Get charset set in content type header.
+     *
+     * @return the charset, or defaultCharset if no charset is set.
+     */
+    public Charset getCharset(Charset defaultCharset) {
+        Charset charset = getCharset();
+        return charset == null ? defaultCharset : charset;
+    }
+
+    /**
+     * Get charset set in content type header.
+     *
+     * @return null if no charset is set.
+     */
+    @Nullable
+    public Charset getCharset() {
+        String contentType = getHeader(HttpHeaders.NAME_CONTENT_TYPE);
+        if (contentType == null) {
+            return StandardCharsets.UTF_8;
+        }
+        String[] items = contentType.split(";");
+        for (String item : items) {
+            item = item.trim();
+            if (item.isEmpty()) {
+                continue;
+            }
+            int idx = item.indexOf('=');
+            if (idx < 0) {
+                continue;
+            }
+            String key = item.substring(0, idx).trim();
+            if (key.equalsIgnoreCase("charset")) {
+                return Charset.forName(item.substring(idx + 1).trim());
+            }
+        }
+        return StandardCharsets.UTF_8;
+    }
+
+
+    private void ensureMap() {
+        if (this.map != null) {
+            return;
+        }
         Map<String, List<String>> map = new HashMap<>();
         for (Map.Entry<String, String> header : headers) {
             String key = header.getKey().toLowerCase();
@@ -32,50 +141,6 @@ public class Headers {
                 list.add(value);
             }
         }
-        return map;
-    }
-
-    /**
-     * Get headers by name. If not exists, return empty list
-     */
-    @Nonnull
-    public List<String> getHeaders(String name) {
-        List<String> values = map.get(name.toLowerCase());
-        if (values == null) {
-            return Collections.emptyList();
-        }
-        return Collections.unmodifiableList(values);
-    }
-
-    /**
-     * Get the first header value matched name. If not exists, return null
-     */
-    @Nullable
-    public String getFirstHeader(String name) {
-        List<String> values = map.get(name.toLowerCase());
-        if (values == null) {
-            return null;
-        }
-        return values.get(0);
-    }
-
-    /**
-     * Get header value as long. If not exists, return defaultValue
-     */
-    public long getLongHeader(String name, long defaultValue) {
-        String firstHeader = getFirstHeader(name);
-        if (firstHeader == null) {
-            return defaultValue;
-        }
-        try {
-            return Long.parseLong(firstHeader.trim());
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
-    @Nonnull
-    public List<Parameter<String>> getHeaders() {
-        return headers;
+        this.map = map;
     }
 }

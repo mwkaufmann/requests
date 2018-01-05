@@ -8,6 +8,7 @@ import java.util.Objects;
 
 @Immutable
 public class Cookie implements Map.Entry<String, String>, Serializable {
+    private static final long serialVersionUID = -287880603936079757L;
     /**
      * The cookie domain set by attribute or from url
      */

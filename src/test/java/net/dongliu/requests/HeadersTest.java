@@ -11,32 +11,32 @@ import static org.junit.Assert.assertEquals;
  */
 public class HeadersTest {
     @Test
-    public void getHeaders() throws Exception {
+    public void getHeaders() {
         Headers headers = new Headers(Arrays.asList(
-                Parameter.of("Location", "www"),
-                Parameter.of("Location", "www2"),
-                Parameter.of("Content-Length", "100")
+                new Header("Location", "www"),
+                new Header("Location", "www2"),
+                new Header("Content-Length", "100")
         ));
         assertEquals(Arrays.asList("www", "www2"), headers.getHeaders("Location"));
     }
 
     @Test
-    public void getFirstHeader() throws Exception {
+    public void getHeader() {
         Headers headers = new Headers(Arrays.asList(
-                Parameter.of("Location", "www"),
-                Parameter.of("Location", "www2"),
-                Parameter.of("Content-Length", "100")
+                new Header("Location", "www"),
+                new Header("Location", "www2"),
+                new Header("Content-Length", "100")
         ));
-        assertEquals("www", headers.getFirstHeader("Location"));
-        assertEquals("www", headers.getFirstHeader("location"));
+        assertEquals("www", headers.getHeader("Location"));
+        assertEquals("www", headers.getHeader("location"));
     }
 
     @Test
-    public void getLongHeader() throws Exception {
+    public void getLongHeader() {
         Headers headers = new Headers(Arrays.asList(
-                Parameter.of("Location", "www"),
-                Parameter.of("Location", "www2"),
-                Parameter.of("Content-Length", "100")
+                new Header("Location", "www"),
+                new Header("Location", "www2"),
+                new Header("Content-Length", "100")
         ));
         assertEquals(100, headers.getLongHeader("Content-Length", -1));
     }

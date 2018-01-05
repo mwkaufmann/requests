@@ -7,7 +7,7 @@ public class DefaultSettings {
     /**
      * Default user agent
      */
-    public static final String USER_AGENT = "Requests 4.14.1, Java " + System.getProperty("java.version");
+    public static final String USER_AGENT = "Requests 4.15.0, Java " + System.getProperty("java.version");
 
     /**
      * Default connect timeout for http connection

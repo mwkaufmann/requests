@@ -8,7 +8,7 @@ Table of Contents
   * [Simple Case](#simple-case)
   * [Charset](#charset)
   * [Passing Parameters](#passing-parameters)
-  * [Custom Headers](#custom-headers)
+  * [Set Headers](#set-headers)
   * [Cookies](#cookies)
   * [Request with data](#request-with-data)
   * [Json support](#json-support)
@@ -28,7 +28,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.14.1</version>
+    <version>4.15.0</version>
 </dependency>
 ```
 
@@ -57,8 +57,8 @@ The response object have several common http response fields can be used:
 ```java
 RawResponse resp = Requests.get(url).send();
 int statusCode = resp.getStatusCode();
-String contentLen = resp.getFirstHeader("Content-Length");
-Cookie cookie = resp.getFirstCookie("_bd_name");
+String contentLen = resp.getHeader("Content-Length");
+Cookie cookie = resp.getCookie("_bd_name");
 String body = resp.readToText();
 ```
 Make sure call readToText or other methods to consume resp, or call close method to close resp.
@@ -120,7 +120,7 @@ String resp = Requests.post(url)
 ```
 The forms parameter should only works with post method.
 
-## Custom Headers
+## Set Headers
 
 Http request headers can be set by headers method:
 
@@ -132,7 +132,7 @@ headers.put("k2", "v2");
 String resp = Requests.get(url).headers(headers).send().readToText();
 // set multi headers
 String resp = Requests.get(url)
-        .headers(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
+        .headers(new Header("k1", "v1"), new Header("k2", "v2"))
         .send().readToText();
 ```
 
