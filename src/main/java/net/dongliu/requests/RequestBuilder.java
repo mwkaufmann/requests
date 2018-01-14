@@ -36,6 +36,7 @@ public final class RequestBuilder {
     @Nullable
     Proxy proxy;
     boolean followRedirect = true;
+    int maxRedirectCount = 5;
     boolean compress = true;
     boolean verify = true;
     BasicAuth basicAuth;
@@ -59,6 +60,7 @@ public final class RequestBuilder {
         connectTimeout = request.getConnectTimeout();
         proxy = request.getProxy();
         followRedirect = request.isFollowRedirect();
+        maxRedirectCount = request.getMaxRedirectCount();
         compress = request.isCompress();
         verify = request.isVerify();
         basicAuth = request.getBasicAuth();
@@ -317,6 +319,14 @@ public final class RequestBuilder {
      */
     public RequestBuilder followRedirect(boolean followRedirect) {
         this.followRedirect = followRedirect;
+        return this;
+    }
+
+    /**
+     * Set max redirects count
+     */
+    public RequestBuilder maxRedirectCount(int maxRedirectCount) {
+        this.maxRedirectCount = maxRedirectCount;
         return this;
     }
 
