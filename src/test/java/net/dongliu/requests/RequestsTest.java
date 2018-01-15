@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +32,7 @@ public class RequestsTest {
     }
 
     @Test
-    public void testGet() throws Exception {
+    public void testGet() {
         String resp = Requests.get("http://127.0.0.1:8080")
                 .requestCharset(StandardCharsets.UTF_8).send().readToText();
         assertFalse(resp.isEmpty());
@@ -148,7 +149,13 @@ public class RequestsTest {
         Response<String> response = Requests.get("https://127.0.0.1:8443/https")
                 .verify(false).send().toTextResponse();
         assertEquals(200, response.getStatusCode());
-        assertFalse(response.getBody().isEmpty());
+
+
+        KeyStore keyStore = KeyStores.load(this.getClass().getResourceAsStream("/keystore"), "123456".toCharArray());
+        response = Requests.get("https://127.0.0.1:8443/https")
+                .keyStore(keyStore)
+                .send().toTextResponse();
+        assertEquals(200, response.getStatusCode());
     }
 
     @Test

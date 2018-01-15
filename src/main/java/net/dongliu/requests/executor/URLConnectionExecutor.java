@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.Charset;
+import java.security.KeyStore;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
@@ -83,6 +84,7 @@ class URLConnectionExecutor implements HttpExecutor {
                     .userAgent(request.getUserAgent())
                     .compress(request.isCompress())
                     .verify(request.isVerify())
+                    .keyStore(request.getKeyStore())
                     .keepAlive(request.isKeepAlive())
                     .followRedirect(false)
                     .maxRedirectCount(request.getMaxRedirectCount())
@@ -139,6 +141,9 @@ class URLConnectionExecutor implements HttpExecutor {
                 ssf = SSLSocketFactories.getTrustAllSSLSocketFactory();
                 // do not verify host of certificate
                 ((HttpsURLConnection) conn).setHostnameVerifier(NopHostnameVerifier.getInstance());
+            } else if (request.getKeyStore() != null) {
+                KeyStore keyStore = request.getKeyStore();
+                ssf = SSLSocketFactories.getCustomTrustSSLSocketFactory(keyStore);
             }
             if (ssf != null) {
                 ((HttpsURLConnection) conn).setSSLSocketFactory(ssf);

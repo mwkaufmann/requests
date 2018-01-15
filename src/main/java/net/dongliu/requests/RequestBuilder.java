@@ -14,6 +14,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStore;
 import java.util.*;
 
 /**
@@ -43,6 +44,8 @@ public final class RequestBuilder {
     @Nullable
     SessionContext sessionContext;
     boolean keepAlive = true;
+    @Nullable
+    KeyStore keyStore;
 
     private List<? extends Interceptor> interceptors = Collections.emptyList();
 
@@ -343,6 +346,14 @@ public final class RequestBuilder {
      */
     public RequestBuilder verify(boolean verify) {
         this.verify = verify;
+        return this;
+    }
+
+    /**
+     * Add a custom additional keyStore contains X509 Certificate, for ssl connection trust validation.
+     */
+    public RequestBuilder keyStore(KeyStore keyStore) {
+        this.keyStore = keyStore;
         return this;
     }
 

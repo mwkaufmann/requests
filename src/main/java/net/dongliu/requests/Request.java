@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.net.Proxy;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.KeyStore;
 import java.util.Collection;
 import java.util.Map;
 
@@ -37,6 +38,8 @@ public class Request implements Serializable {
     private final int maxRedirectCount;
     private final boolean compress;
     private final boolean verify;
+    @Nullable
+    private final KeyStore keyStore;
     private final BasicAuth basicAuth;
     @Nullable
     private final SessionContext sessionContext;
@@ -57,6 +60,7 @@ public class Request implements Serializable {
         maxRedirectCount = builder.maxRedirectCount;
         compress = builder.compress;
         verify = builder.verify;
+        keyStore = builder.keyStore;
         basicAuth = builder.basicAuth;
         sessionContext = builder.sessionContext;
         keepAlive = builder.keepAlive;
@@ -123,6 +127,11 @@ public class Request implements Serializable {
 
     public boolean isVerify() {
         return verify;
+    }
+
+    @Nullable
+    public KeyStore getKeyStore() {
+        return keyStore;
     }
 
     public BasicAuth getBasicAuth() {

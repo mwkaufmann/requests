@@ -1,5 +1,6 @@
 package net.dongliu.requests.utils;
 
+import net.dongliu.requests.exception.TrustManagerLoadFailedException;
 import net.dongliu.requests.exception.RequestsException;
 
 import javax.net.ssl.*;
@@ -53,7 +54,7 @@ public class SSLSocketFactories {
         return sslContext.getSocketFactory();
     }
 
-    public static SSLSocketFactory getCustomSSLSocketFactory(KeyStore keyStore) {
+    public static SSLSocketFactory getCustomTrustSSLSocketFactory(KeyStore keyStore) {
         if (!map.containsKey(keyStore)) {
             map.put(keyStore, _getCustomSSLSocketFactory(keyStore));
         }
@@ -62,14 +63,11 @@ public class SSLSocketFactories {
 
     static class TrustAllTrustManager implements X509TrustManager {
         @Override
-        public void checkClientTrusted(X509Certificate[] x509Certificates,
-                                       String s) throws CertificateException {
+        public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
         }
 
         @Override
-        public void checkServerTrusted(X509Certificate[] x509Certificates,
-                                       String s) throws CertificateException {
-
+        public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
         }
 
         @Override
@@ -78,46 +76,84 @@ public class SSLSocketFactories {
         }
     }
 
+    /**
+     * Trust Manager that trust additional x509 certificates provided by user
+     */
     static class CustomCertTrustManager implements X509TrustManager {
 
         private final KeyStore keyStore;
-        private final X509TrustManager sunJSSEX509TrustManager;
+        private final X509TrustManager defaultTrustManager;
+        private final X509TrustManager trustManager;
 
         public CustomCertTrustManager(KeyStore keyStore) {
             this.keyStore = keyStore;
-            this.sunJSSEX509TrustManager = load();
-        }
+            // get the default trust manager
+            TrustManagerFactory defaultTrustManagerFactory;
+            try {
+                defaultTrustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                defaultTrustManagerFactory.init((KeyStore) null);
+            } catch (NoSuchAlgorithmException | KeyStoreException e) {
+                throw new TrustManagerLoadFailedException(e);
+            }
+            X509TrustManager defaultTrustManager = null;
+            for (TrustManager tm : defaultTrustManagerFactory.getTrustManagers()) {
+                if (tm instanceof X509TrustManager) {
+                    defaultTrustManager = (X509TrustManager) tm;
+                    break;
+                }
+            }
+            if (defaultTrustManager == null) {
+                throw new TrustManagerLoadFailedException("Default X509TrustManager not found");
+            }
+            this.defaultTrustManager = defaultTrustManager;
 
-        private X509TrustManager load() {
             TrustManagerFactory trustManagerFactory;
             try {
                 trustManagerFactory = TrustManagerFactory.getInstance("SunX509", "SunJSSE");
                 trustManagerFactory.init(keyStore);
             } catch (NoSuchAlgorithmException | NoSuchProviderException | KeyStoreException e) {
-                throw new RequestsException(e);
+                throw new TrustManagerLoadFailedException(e);
             }
 
-            for (TrustManager trustManger : trustManagerFactory.getTrustManagers()) {
-                if (trustManger instanceof X509TrustManager) {
-                    return (X509TrustManager) trustManger;
+            X509TrustManager trustManager = null;
+            for (TrustManager tm : trustManagerFactory.getTrustManagers()) {
+                if (tm instanceof X509TrustManager) {
+                    trustManager = (X509TrustManager) tm;
+                    break;
                 }
             }
-            throw new RuntimeException("Couldn't initialize X509TrustManager");
+            if (trustManager == null) {
+                throw new TrustManagerLoadFailedException("X509TrustManager for user keystore not found");
+            }
+            this.trustManager = trustManager;
         }
 
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-            sunJSSEX509TrustManager.checkClientTrusted(chain, authType);
+            try {
+                trustManager.checkClientTrusted(chain, authType);
+            } catch (CertificateException e) {
+                defaultTrustManager.checkClientTrusted(chain, authType);
+            }
         }
 
         @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-            sunJSSEX509TrustManager.checkServerTrusted(chain, authType);
+            try {
+                trustManager.checkServerTrusted(chain, authType);
+            } catch (CertificateException e) {
+                defaultTrustManager.checkServerTrusted(chain, authType);
+            }
         }
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
-            return sunJSSEX509TrustManager.getAcceptedIssuers();
+            X509Certificate[] defaultAcceptedIssuers = defaultTrustManager.getAcceptedIssuers();
+            X509Certificate[] acceptedIssuers = trustManager.getAcceptedIssuers();
+            X509Certificate[] result = new X509Certificate[defaultAcceptedIssuers.length + acceptedIssuers.length];
+            System.arraycopy(defaultAcceptedIssuers, 0, result, 0, defaultAcceptedIssuers.length);
+            System.arraycopy(acceptedIssuers, 0, result, defaultAcceptedIssuers.length, acceptedIssuers.length);
+            return result;
         }
     }
 
