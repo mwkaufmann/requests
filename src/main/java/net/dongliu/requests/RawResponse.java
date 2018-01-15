@@ -31,9 +31,9 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     @Nullable
     private Charset charset;
 
-    public RawResponse(int statusCode, String statusLine, List<Cookie> cookies, Headers headers, InputStream input,
+    public RawResponse(String url, int statusCode, String statusLine, List<Cookie> cookies, Headers headers, InputStream input,
                        HttpURLConnection conn) {
-        super(statusCode, cookies, headers);
+        super(url, statusCode, cookies, headers);
         this.statusLine = statusLine;
         this.input = input;
         this.conn = conn;
@@ -98,7 +98,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      * Convert to response, with body as text. The origin raw response will be closed
      */
     public Response<String> toTextResponse() {
-        return new Response<>(this.statusCode, this.cookies, this.headers, readToText());
+        return new Response<>(this.url, this.statusCode, this.cookies, this.headers, readToText());
     }
 
     /**
@@ -121,7 +121,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     public <T> Response<T> toResponse(ResponseHandler<T> handler) {
         try {
             T result = handler.handle(this.statusCode, this.headers, this.input);
-            return new Response<>(this.statusCode, this.cookies, this.headers, result);
+            return new Response<>(this.url, this.statusCode, this.cookies, this.headers, result);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -133,7 +133,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      * Convert to response, with body as byte array
      */
     public Response<byte[]> toBytesResponse() {
-        return new Response<>(this.statusCode, this.cookies, this.headers, readToBytes());
+        return new Response<>(this.url, this.statusCode, this.cookies, this.headers, readToBytes());
     }
 
     /**
@@ -173,14 +173,14 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      * Convert http response body to json result
      */
     public <T> Response<T> toJsonResponse(TypeInfer<T> typeInfer) {
-        return new Response<>(this.statusCode, this.cookies, this.headers, readToJson(typeInfer));
+        return new Response<>(this.url, this.statusCode, this.cookies, this.headers, readToJson(typeInfer));
     }
 
     /**
      * Convert http response body to json result
      */
     public <T> Response<T> toJsonResponse(Class<T> cls) {
-        return new Response<>(this.statusCode, this.cookies, this.headers, readToJson(cls));
+        return new Response<>(this.url, this.statusCode, this.cookies, this.headers, readToJson(cls));
     }
 
     /**
@@ -235,7 +235,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     public Response<File> toFileResponse(Path path) {
         File file = path.toFile();
         this.writeToFile(file);
-        return new Response<>(this.statusCode, this.cookies, this.headers, file);
+        return new Response<>(this.url, this.statusCode, this.cookies, this.headers, file);
     }
 
     /**

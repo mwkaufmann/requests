@@ -9,14 +9,23 @@ import java.util.List;
  * Common parent for RawResponse and Response
  */
 class AbstractResponse {
+    protected final String url;
     protected final int statusCode;
     protected final List<Cookie> cookies;
     protected final Headers headers;
 
-    protected AbstractResponse(int statusCode, List<Cookie> cookies, Headers headers) {
+    protected AbstractResponse(String url, int statusCode, List<Cookie> cookies, Headers headers) {
+        this.url = url;
         this.statusCode = statusCode;
         this.cookies = Collections.unmodifiableList(cookies);
         this.headers = headers;
+    }
+
+    /**
+     * Get actual url (redirected)
+     */
+    public String getURL() {
+        return url;
     }
 
     public int getStatusCode() {

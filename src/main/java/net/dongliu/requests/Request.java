@@ -34,6 +34,7 @@ public class Request implements Serializable {
     @Nullable
     private final Proxy proxy;
     private final boolean followRedirect;
+    private final int maxRedirectCount;
     private final boolean compress;
     private final boolean verify;
     private final BasicAuth basicAuth;
@@ -53,6 +54,7 @@ public class Request implements Serializable {
         connectTimeout = builder.connectTimeout;
         proxy = builder.proxy;
         followRedirect = builder.followRedirect;
+        maxRedirectCount = builder.maxRedirectCount;
         compress = builder.compress;
         verify = builder.verify;
         basicAuth = builder.basicAuth;
@@ -109,6 +111,10 @@ public class Request implements Serializable {
 
     public boolean isFollowRedirect() {
         return followRedirect;
+    }
+
+    public int getMaxRedirectCount() {
+        return maxRedirectCount;
     }
 
     public boolean isCompress() {

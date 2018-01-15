@@ -55,7 +55,7 @@ class URLConnectionExecutor implements HttpExecutor {
         // handle redirect
         response.discardBody();
         int redirectTimes = 0;
-        int maxRedirectTimes = 5;
+        final int maxRedirectTimes = request.getMaxRedirectCount();
         URL redirectUrl = request.getUrl();
         while (redirectTimes++ < maxRedirectTimes) {
             String location = response.getHeader(NAME_LOCATION);
@@ -85,6 +85,7 @@ class URLConnectionExecutor implements HttpExecutor {
                     .verify(request.isVerify())
                     .keepAlive(request.isKeepAlive())
                     .followRedirect(false)
+                    .maxRedirectCount(request.getMaxRedirectCount())
                     .proxy(request.getProxy())
                     .body(body);
             response = builder.send();
@@ -277,7 +278,7 @@ class URLConnectionExecutor implements HttpExecutor {
 
         // update session
         cookieJar.storeCookies(cookies);
-        return new RawResponse(status, Objects.requireNonNull(statusLine), cookies, headers, input, conn);
+        return new RawResponse(url.toExternalForm(), status, Objects.requireNonNull(statusLine), cookies, headers, input, conn);
     }
 
     /**

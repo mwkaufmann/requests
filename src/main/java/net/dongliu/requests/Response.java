@@ -15,8 +15,8 @@ public class Response<T> extends AbstractResponse implements Serializable {
     private static final long serialVersionUID = 5956373495731090956L;
     private final T body;
 
-    public Response(int statusCode, List<Cookie> cookies, Headers headers, T body) {
-        super(statusCode, cookies, headers);
+    public Response(String url, int statusCode, List<Cookie> cookies, Headers headers, T body) {
+        super(url, statusCode, cookies, headers);
         this.body = body;
     }
 
