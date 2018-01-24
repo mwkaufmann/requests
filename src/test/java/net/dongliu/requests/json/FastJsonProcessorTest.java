@@ -11,10 +11,10 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Liu Dong
  */
-public class FastJsonProviderTest {
+public class FastJsonProcessorTest {
     @Test
     public void marshal() throws Exception {
-        FastJsonProvider jsonProvider = new FastJsonProvider();
+        FastJsonProcessor jsonProvider = new FastJsonProcessor();
         try (StringWriter writer = new StringWriter()) {
             jsonProvider.marshal(writer, "test");
             String s = writer.toString();
@@ -24,7 +24,7 @@ public class FastJsonProviderTest {
 
     @Test
     public void unmarshal() throws Exception {
-        FastJsonProvider jsonProvider = new FastJsonProvider();
+        FastJsonProcessor jsonProvider = new FastJsonProcessor();
         String str = jsonProvider.unmarshal(new ByteArrayInputStream("\"test\"".getBytes()), StandardCharsets.UTF_8,
                 String.class);
         assertEquals("test", str);

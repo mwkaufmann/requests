@@ -4,10 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapterFactory;
 
-import javax.annotation.Nullable;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,11 +16,11 @@ import java.util.logging.Logger;
  *
  * @author Liu Dong
  */
-public class GsonProvider extends AbstractJsonProvider implements JsonProvider {
-    private static final Logger logger = Logger.getLogger(GsonProvider.class.getName());
+public class GsonProcessor implements JsonProcessor {
+    private static final Logger logger = Logger.getLogger(GsonProcessor.class.getName());
     private final Gson gson;
 
-    public GsonProvider() {
+    public GsonProcessor() {
         this(getDefaultGson());
     }
 
@@ -44,17 +43,19 @@ public class GsonProvider extends AbstractJsonProvider implements JsonProvider {
         }
     }
 
-    public GsonProvider(Gson gson) {
+    public GsonProcessor(Gson gson) {
         this.gson = gson;
     }
 
     @Override
-    public void marshal(Writer writer, @Nullable Object value) {
+    public void marshal(Writer writer, Object value) {
         gson.toJson(value, writer);
     }
 
     @Override
-    public <T> T unmarshal(Reader reader, Type type) {
-        return gson.fromJson(reader, type);
+    public <T> T unmarshal(InputStream inputStream, Charset charset, Type type) throws IOException {
+        try (Reader reader = new InputStreamReader(inputStream, charset)) {
+            return gson.fromJson(reader, type);
+        }
     }
 }

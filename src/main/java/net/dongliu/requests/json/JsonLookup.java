@@ -15,7 +15,7 @@ import java.util.Objects;
 public class JsonLookup {
     private static JsonLookup instance = new JsonLookup();
     @Nullable
-    private volatile JsonProvider registeredJsonProvider;
+    private volatile JsonProcessor registeredJsonProcessor;
 
     private JsonLookup() {
     }
@@ -27,12 +27,12 @@ public class JsonLookup {
     /**
      * Set json provider for using.
      *
-     * @see JsonProvider
-     * @see JacksonProvider
-     * @see GsonProvider
+     * @see JsonProcessor
+     * @see JacksonProcessor
+     * @see GsonProcessor
      */
-    public void register(JsonProvider jsonProvider) {
-        this.registeredJsonProvider = Objects.requireNonNull(jsonProvider);
+    public void register(JsonProcessor jsonProcessor) {
+        this.registeredJsonProcessor = Objects.requireNonNull(jsonProcessor);
     }
 
     /**
@@ -50,8 +50,8 @@ public class JsonLookup {
     /**
      * Create Gson Provider
      */
-    JsonProvider gsonProvider() {
-        return new GsonProvider();
+    JsonProcessor gsonProvider() {
+        return new GsonProcessor();
     }
 
     /**
@@ -78,46 +78,46 @@ public class JsonLookup {
     /**
      * Create Jackson Provider
      */
-    JsonProvider jacksonProvider() {
-        return new JacksonProvider();
+    JsonProcessor jacksonProvider() {
+        return new JacksonProcessor();
     }
 
-    JsonProvider fastJsonProvider() {
-        return new FastJsonProvider();
+    JsonProcessor fastJsonProvider() {
+        return new FastJsonProcessor();
     }
 
     /**
      * Find one json provider.
      *
-     * @throws ProviderNotFoundException if no json provider found
+     * @throws JsonProcessorNotFoundException if no json provider found
      */
     @Nonnull
-    public JsonProvider lookup() {
-        if (registeredJsonProvider != null) {
-            return registeredJsonProvider;
+    public JsonProcessor lookup() {
+        if (registeredJsonProcessor != null) {
+            return registeredJsonProcessor;
         }
 
         if (!init) {
             synchronized (this) {
                 if (!init) {
-                    lookedJsonProvider = lookupInClasspath();
+                    lookedJsonProcessor = lookupInClasspath();
                     init = true;
                 }
             }
         }
 
-        if (lookedJsonProvider != null) {
-            return lookedJsonProvider;
+        if (lookedJsonProcessor != null) {
+            return lookedJsonProcessor;
         }
-        throw new ProviderNotFoundException("Json Provider not found");
+        throw new JsonProcessorNotFoundException("Json Provider not found");
     }
 
     @Nullable
-    private JsonProvider lookedJsonProvider;
+    private JsonProcessor lookedJsonProcessor;
     private boolean init;
 
     @Nullable
-    private JsonProvider lookupInClasspath() {
+    private JsonProcessor lookupInClasspath() {
         if (hasJackson()) {
             return jacksonProvider();
         }

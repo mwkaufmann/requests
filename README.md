@@ -28,7 +28,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.16.0</version>
+    <version>4.17.0</version>
 </dependency>
 ```
 
@@ -190,7 +190,7 @@ String resp = Requests.post(url)
 
 ## Json support
 
-Requests can handle json encoder(for request body)/decoder(for response body), if having Jackson, Gson, or Fastjson lib in classpath.
+Requests can handle json encoder(for request body)/decoder(for response body), if having Json Binding, Jackson, Gson, or Fastjson lib in classpath.
 
 ```java
 // send json body, content-type is set to application/json
@@ -204,6 +204,14 @@ Person person = Requests.post("http://.../get_person")
 // json body decoder to generic type
 List<Person> persons = Requests.post("http://.../get_person_list")
                 .send().readToJson(new TypeInfer<List<Person>>() {});
+
+```
+
+You may set your own json processor by:
+
+```java
+JsonProcessor jsonProcessor = ...;
+JsonLookup.getInstance().register(jsonProcessor);
 
 ```
 

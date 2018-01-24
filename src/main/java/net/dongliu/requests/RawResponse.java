@@ -1,6 +1,6 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.exception.IllegalStatusException;
+import net.dongliu.requests.ResponseHandler.ResponseInfo;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
@@ -59,7 +59,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
 
     /**
      * Set response read charset.
-     * If not set, will get charset from response headers.
+     * If not set, would get charset from response headers. If not found, would use UTF-8.
      */
     public RawResponse charset(Charset charset) {
         this.charset = Objects.requireNonNull(charset);
@@ -67,15 +67,11 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     }
 
     /**
-     * Check the response status code, if is not 2xx, throw IllegalStatusException.
-     * You can want call this method first, if you want to use the response content.
-     *
-     * @throws IllegalStatusException
+     * Set response read charset.
+     * If not set, would get charset from response headers. If not found, would use UTF-8.
      */
-    public RawResponse checkStatus() throws IllegalStatusException {
-        if (this.statusCode < 200 || this.statusCode >= 300) {
-            throw new IllegalStatusException(this.statusCode);
-        }
+    public RawResponse charset(String charset) {
+        this.charset = Charset.forName(Objects.requireNonNull(charset));
         return this;
     }
 
@@ -119,8 +115,9 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      * The response is closed whether this call succeed or failed with exception.
      */
     public <T> Response<T> toResponse(ResponseHandler<T> handler) {
+        ResponseInfo responseInfo = new ResponseInfo(this.url, this.statusCode, this.headers, this.input);
         try {
-            T result = handler.handle(this.statusCode, this.headers, this.input);
+            T result = handler.handle(responseInfo);
             return new Response<>(this.url, this.statusCode, this.cookies, this.headers, result);
         } catch (IOException e) {
             throw new RequestsException(e);

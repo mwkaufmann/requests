@@ -4,21 +4,20 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 
 /**
  * Provider json ability via jackson
  *
  * @author Liu Dong
  */
-public class JacksonProvider extends AbstractJsonProvider implements JsonProvider {
+public class JacksonProcessor implements JsonProcessor {
 
     private final ObjectMapper objectMapper;
 
-    public JacksonProvider() {
+    public JacksonProcessor() {
         this(createDefault());
     }
 
@@ -26,7 +25,7 @@ public class JacksonProvider extends AbstractJsonProvider implements JsonProvide
         return new ObjectMapper().findAndRegisterModules();
     }
 
-    public JacksonProvider(ObjectMapper objectMapper) {
+    public JacksonProcessor(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
@@ -36,8 +35,10 @@ public class JacksonProvider extends AbstractJsonProvider implements JsonProvide
     }
 
     @Override
-    public <T> T unmarshal(Reader reader, Type type) throws IOException {
-        JavaType javaType = objectMapper.getTypeFactory().constructType(type);
-        return objectMapper.readValue(reader, javaType);
+    public <T> T unmarshal(InputStream inputStream, Charset charset, Type type) throws IOException {
+        try (Reader reader = new InputStreamReader(inputStream, charset)) {
+            JavaType javaType = objectMapper.getTypeFactory().constructType(type);
+            return objectMapper.readValue(reader, javaType);
+        }
     }
 }
