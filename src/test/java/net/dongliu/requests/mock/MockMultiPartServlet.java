@@ -36,7 +36,9 @@ public class MockMultiPartServlet extends HttpServlet {
         for (Part part : parts) {
             out.write(part.getName().getBytes(StandardCharsets.UTF_8));
             out.write('\n');
-            out.write(part.getContentType().getBytes(StandardCharsets.UTF_8));
+            if (part.getContentType() != null) {
+                out.write(part.getContentType().getBytes(StandardCharsets.UTF_8));
+            }
             out.write('\n');
             IOUtils.copy(part.getInputStream(), out);
             out.write('\n');

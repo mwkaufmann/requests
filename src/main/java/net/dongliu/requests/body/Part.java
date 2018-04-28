@@ -70,16 +70,17 @@ public class Part<T> implements Serializable {
      * Create a text multi-part field
      */
     public static Part<String> text(String name, String value) {
-        return new Part<>(name, null, RequestBody.text(value));
+        return new Part<>(name, null, RequestBody.text(value).setContentType(""));
     }
 
     /**
-     * Create a (name, value) param multi-part field
+     * Create a (name, value) text multi-part field.
+     *
+     * @deprecated use {@link #text(String, String)} instead.
      */
+    @Deprecated
     public static Part<String> param(String name, String value) {
-        RequestBody<String> body = RequestBody.text(value);
-        body.setContentType("");
-        return new Part<>(name, null, body);
+        return new Part<>(name, null, RequestBody.text(value).setContentType(""));
     }
 
     public String getName() {

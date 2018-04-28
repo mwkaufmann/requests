@@ -116,7 +116,7 @@ public class RequestsTest {
                 .multiPartBody(Part.text("test", "this is test value"))
                 .send().readToText();
         assertTrue(body.contains("this is test value"));
-        assertTrue(body.contains("plain/text; charset=utf-8"));
+        assertTrue(!body.contains("plain/text"));
     }
 
     @Test
