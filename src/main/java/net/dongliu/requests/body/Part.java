@@ -75,11 +75,19 @@ public class Part<T> implements Outputable, Serializable {
     }
 
     /**
-     * Create a file multi-part field.
+     * Create a file multi-part field, from file.
      * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
      */
     public static Part<File> file(String name, File file) {
-        return new Part<>(name, file.getName(), file, new Outputor<File>() {
+        return file(name, file.getName(), file);
+    }
+
+    /**
+     * Create a file multi-part field, from file.
+     * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
+     */
+    public static Part<File> file(String name, String fileName, File file) {
+        return new Part<>(name, fileName, file, new Outputor<File>() {
 
             @Override
             public void writeBody(File body, OutputStream out, Charset charset) throws IOException {
@@ -88,9 +96,12 @@ public class Part<T> implements Outputable, Serializable {
         }, ContentTypes.probeContentType(file));
     }
 
+
     /**
-     * Create a file multi-part field.
+     * Create a file multi-part field, from InputStream.
      * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
+     *
+     * @deprecated Http body may be send multi times(because of redirect or other reasons), use {@link Part#file(String, String, InputStreamSupplier)} instead.
      */
     @Deprecated
     public static Part<InputStream> file(String name, String fileName, InputStream in) {
@@ -104,7 +115,21 @@ public class Part<T> implements Outputable, Serializable {
     }
 
     /**
-     * Create a file multi-part field.
+     * Create a file multi-part field, from InputStream.
+     * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
+     */
+    public static Part<InputStreamSupplier> file(String name, String fileName, InputStreamSupplier supplier) {
+        return new Part<>(name, fileName, supplier, new Outputor<InputStreamSupplier>() {
+
+            @Override
+            public void writeBody(InputStreamSupplier body, OutputStream out, Charset charset) throws IOException {
+                IOUtils.copy(body.get(), out);
+            }
+        }, CONTENT_TYPE_BINARY);
+    }
+
+    /**
+     * Create a file multi-part field, from byte array data.
      * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
      */
     public static Part<byte[]> file(String name, String fileName, byte[] bytes) {

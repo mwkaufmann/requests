@@ -1,5 +1,6 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.body.InputStreamSupplier;
 import net.dongliu.requests.body.Part;
 import net.dongliu.requests.json.TypeInfer;
 import net.dongliu.requests.mock.MockServer;
@@ -8,6 +9,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.util.Arrays;
@@ -102,8 +104,12 @@ public class RequestsTest {
     @Test
     public void testMultiPart() {
         String body = Requests.post("http://127.0.0.1:8080/multi_part")
-                .multiPartBody(Part.file("writeTo", "keystore", this.getClass().getResourceAsStream("/keystore"))
-                        .contentType("application/octem-stream"))
+                .multiPartBody(Part.file("writeTo", "keystore", new InputStreamSupplier() {
+                    @Override
+                    public InputStream get() {
+                        return this.getClass().getResourceAsStream("/keystore");
+                    }
+                }).contentType("application/octem-stream"))
                 .send().readToText();
         assertTrue(body.contains("writeTo"));
         assertTrue(body.contains("application/octem-stream"));
@@ -115,7 +121,6 @@ public class RequestsTest {
         String body = Requests.post("http://127.0.0.1:8080/multi_part")
                 .multiPartBody(Part.text("test", "this is test value"))
                 .send().readToText();
-        System.out.println(body);
         assertTrue(body.contains("this is test value"));
         assertTrue(!body.contains("plain/text"));
     }

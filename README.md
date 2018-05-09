@@ -29,7 +29,7 @@ Requests is now in maven central repo.
 <dependency>
     <groupId>net.dongliu</groupId>
     <artifactId>requests</artifactId>
-    <version>4.17.1</version>
+    <version>4.18.0</version>
 </dependency>
 ```
 
@@ -173,8 +173,8 @@ resp = Requests.post(url).body(data).send().readToText();
 String str = ...;
 resp = Requests.post(url).body(str).send().readToText();
 // send data from inputStream
-InputStream in = ...
-resp = Requests.post(url).body(in).send().readToText();
+InputStreamSupplier supplier = ...;
+resp = Requests.post(url).body(supplier).send().readToText();
 ```
 
 One more complicate situation is multiPart post request, this can be done via multiPart method, 
@@ -182,11 +182,14 @@ one simplified multi part request example which send files and param data:
 
 ```java
 // send form-encoded data
-InputStream in = ...;
+InputStreamSupplier supplier = ...;
 byte[] bytes = ...;
 String resp = Requests.post(url)
-        .multiPartBody(Part.file("file1", new File(...)), Part.file("file2", new File("...")), Part.text("input", "on"))
-        .send().readToText();
+        .multiPartBody(
+            Part.file("file1", new File(...)),
+            Part.file("file2", "second_file.dat", supplier),
+            Part.text("input", "on")
+        ).send().readToText();
 ```
 
 ## Json support

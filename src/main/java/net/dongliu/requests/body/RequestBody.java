@@ -21,20 +21,34 @@ public abstract class RequestBody<T> implements Outputable, Serializable {
      */
     private final boolean includeCharset;
 
-    public RequestBody(T body, String contentType, boolean includeCharset) {
+    protected RequestBody(T body, String contentType, boolean includeCharset) {
         this.body = body;
         this.contentType = contentType;
         this.includeCharset = includeCharset;
     }
 
+    /**
+     * The request body
+     */
     public T getBody() {
         return body;
     }
 
     /**
      * Set content-type value for this request body
+     *
+     * @deprecated use {@link RequestBody#contentType(String)}
      */
+    @Deprecated
     public RequestBody<T> setContentType(String contentType) {
+        this.contentType = requireNonNull(contentType);
+        return this;
+    }
+
+    /**
+     * Set content-type value for this request body
+     */
+    public RequestBody<T> contentType(String contentType) {
         this.contentType = requireNonNull(contentType);
         return this;
     }
@@ -97,10 +111,19 @@ public abstract class RequestBody<T> implements Outputable, Serializable {
 
     /**
      * Create request body from input stream.
+     *
+     * @deprecated Http body may be send multi times(because of redirect or other reasons), use {@link RequestBody#inputStream(InputStreamSupplier)} )} instead.
      */
     @Deprecated
     public static RequestBody<InputStream> inputStream(InputStream in) {
         return new InputStreamRequestBody(requireNonNull(in));
+    }
+
+    /**
+     * Create request body from input stream.
+     */
+    public static RequestBody<InputStreamSupplier> inputStream(InputStreamSupplier supplier) {
+        return new InputStreamSupplierRequestBody(requireNonNull(supplier));
     }
 
     /**
