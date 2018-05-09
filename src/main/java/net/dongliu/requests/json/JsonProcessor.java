@@ -14,7 +14,7 @@ import java.nio.charset.Charset;
 public interface JsonProcessor {
 
     /**
-     * Serialize value to json, and write to writer
+     * Serialize value to json, and writeTo to writer
      */
     void marshal(Writer writer, Object value) throws IOException;
 

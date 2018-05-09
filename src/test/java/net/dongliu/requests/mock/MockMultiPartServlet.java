@@ -38,8 +38,8 @@ public class MockMultiPartServlet extends HttpServlet {
             out.write('\n');
             if (part.getContentType() != null) {
                 out.write(part.getContentType().getBytes(StandardCharsets.UTF_8));
+                out.write('\n');
             }
-            out.write('\n');
             IOUtils.copy(part.getInputStream(), out);
             out.write('\n');
         }

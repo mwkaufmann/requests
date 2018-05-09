@@ -271,6 +271,7 @@ public final class RequestBuilder {
     /**
      * Set input body
      */
+    @Deprecated
     public RequestBuilder body(InputStream input) {
         body = RequestBody.inputStream(input);
         return this;

@@ -1,10 +1,15 @@
 package net.dongliu.requests.body;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.Collection;
 
 /**
+ * MultiPart request body
+ *
  * @author Liu Dong
  */
 class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
@@ -17,60 +22,48 @@ class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
     }
 
     @Override
-    public void writeBody(OutputStream os, Charset charset) throws IOException {
-        OutputStream output = new NonCloseOutputStream(os);
-        try (Writer writer = new OutputStreamWriter(output)) {
-            for (Part part : getBody()) {
-                RequestBody body = part.getRequestBody();
-                String name = part.getName();
-                String fileName = part.getFileName();
+    public void writeBody(OutputStream output, Charset charset) throws IOException {
+        Writer writer = new OutputStreamWriter(output);
+        for (Part part : getBody()) {
+            String contentType = part.getContentType();
+            String name = part.getName();
+            String fileName = part.getFileName();
 
-                writeBoundary(writer);
+            writeBoundary(writer);
 
-                writer.write("Content-Disposition: form-data; name=\"" + name + "\"");
-                if (fileName != null && !fileName.isEmpty()) {
-                    writer.write("; filename=\"" + fileName + '"');
-                }
-                writer.write(LINE_END);
-                if (body.getContentType() != null && !body.getContentType().isEmpty()) {
-                    writer.write("Content-Type: " + body.getContentType());
-                    if (body.isIncludeCharset()) {
-                        writer.write("; charset=" + charset.name().toLowerCase());
-                    }
-                    writer.write(LINE_END);
-                }
-                writer.write(LINE_END);
-                writer.flush();
-
-                body.writeBody(output, charset);
-                writer.write(LINE_END);
-                writer.flush();
-                output.flush();
+            writer.write("Content-Disposition: form-data; name=\"" + name + "\"");
+            if (fileName != null && !fileName.isEmpty()) {
+                writer.write("; filename=\"" + fileName + '"');
             }
-            writer.write("--");
-            writer.write(BOUNDARY);
-            writer.write("--");
             writer.write(LINE_END);
-        } finally {
-            output.close();
+            if (contentType != null && !contentType.isEmpty()) {
+                writer.write("Content-Type: " + contentType);
+                Charset partCharset = part.getCharset();
+                if (partCharset != null) {
+                    writer.write("; charset=" + partCharset.name().toLowerCase());
+                }
+                writer.write(LINE_END);
+            }
+            writer.write(LINE_END);
+            writer.flush();
+
+            part.writeTo(output, charset);
+            output.flush();
+            writer.write(LINE_END);
+            writer.flush();
+            output.flush();
         }
+        writer.write("--");
+        writer.write(BOUNDARY);
+        writer.write("--");
+        writer.write(LINE_END);
+        writer.flush();
     }
 
     private void writeBoundary(Writer writer) throws IOException {
         writer.write("--");
         writer.write(BOUNDARY);
         writer.write(LINE_END);
-    }
-
-    private static class NonCloseOutputStream extends FilterOutputStream {
-
-        public NonCloseOutputStream(OutputStream out) {
-            super(out);
-        }
-
-        @Override
-        public void close() throws IOException {
-        }
     }
 
 }

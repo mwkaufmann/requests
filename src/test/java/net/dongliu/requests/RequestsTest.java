@@ -115,6 +115,7 @@ public class RequestsTest {
         String body = Requests.post("http://127.0.0.1:8080/multi_part")
                 .multiPartBody(Part.text("test", "this is test value"))
                 .send().readToText();
+        System.out.println(body);
         assertTrue(body.contains("this is test value"));
         assertTrue(!body.contains("plain/text"));
     }

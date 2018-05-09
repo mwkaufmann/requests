@@ -1,4 +1,5 @@
-Requests is a http request lib with fluent api for java, inspired by the python request module. 
+Requests is a http request lib with fluent api for java, inspired by the python request module.
+Requests requires JDK 1.7+.
 
 Table of Contents
 =================
@@ -184,7 +185,7 @@ one simplified multi part request example which send files and param data:
 InputStream in = ...;
 byte[] bytes = ...;
 String resp = Requests.post(url)
-        .multiPartBody(Part.file("file1", new File(...)), Part.file("file2", new File("...")), Part.param("input", "on"))
+        .multiPartBody(Part.file("file1", new File(...)), Part.file("file2", new File("...")), Part.text("input", "on"))
         .send().readToText();
 ```
 

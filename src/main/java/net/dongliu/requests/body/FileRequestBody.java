@@ -7,31 +7,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-
-import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_BINARY;
 
 /**
+ * Request body, which get data from file.
+ *
  * @author Liu Dong
  */
 class FileRequestBody extends RequestBody<File> {
     private static final long serialVersionUID = -1902920038280221251L;
 
     FileRequestBody(File body) {
-        super(body, getFileContentType(body), false);
-    }
-
-    private static String getFileContentType(File body) {
-        String contentType;
-        try {
-            contentType = Files.probeContentType(body.toPath());
-        } catch (IOException e) {
-            contentType = null;
-        }
-        if (contentType == null) {
-            contentType = CONTENT_TYPE_BINARY;
-        }
-        return contentType;
+        super(body, ContentTypes.probeContentType(body), false);
     }
 
     @Override

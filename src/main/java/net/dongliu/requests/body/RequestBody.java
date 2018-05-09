@@ -4,14 +4,15 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Request body parent class
  *
  * @author Liu Dong
  */
-public abstract class RequestBody<T> implements Serializable {
+public abstract class RequestBody<T> implements Outputable, Serializable {
     private static final long serialVersionUID = 1332594280620699388L;
     private final T body;
     private String contentType;
@@ -34,7 +35,7 @@ public abstract class RequestBody<T> implements Serializable {
      * Set content-type value for this request body
      */
     public RequestBody<T> setContentType(String contentType) {
-        this.contentType = Objects.requireNonNull(contentType);
+        this.contentType = requireNonNull(contentType);
         return this;
     }
 
@@ -54,6 +55,11 @@ public abstract class RequestBody<T> implements Serializable {
         return includeCharset;
     }
 
+    @Override
+    public void writeTo(OutputStream output, Charset charset) throws IOException {
+        writeBody(output, charset);
+    }
+
     /**
      * Write Request body.
      * Note: os should not be closed when this method finished.
@@ -71,7 +77,7 @@ public abstract class RequestBody<T> implements Serializable {
      * Create request body send string data
      */
     public static RequestBody<String> text(String value) {
-        return new StringRequestBody(Objects.requireNonNull(value));
+        return new StringRequestBody(requireNonNull(value));
     }
 
     /**
@@ -79,34 +85,35 @@ public abstract class RequestBody<T> implements Serializable {
      */
     public static RequestBody<Collection<? extends Map.Entry<String, ?>>>
     form(Collection<? extends Map.Entry<String, ?>> value) {
-        return new FormRequestBody(Objects.requireNonNull(value));
+        return new FormRequestBody(requireNonNull(value));
     }
 
     /**
      * Create request body send byte array data
      */
     public static RequestBody<byte[]> bytes(byte[] value) {
-        return new BytesRequestBody(Objects.requireNonNull(value));
+        return new BytesRequestBody(requireNonNull(value));
     }
 
     /**
-     * Create request body from input stream
+     * Create request body from input stream.
      */
+    @Deprecated
     public static RequestBody<InputStream> inputStream(InputStream in) {
-        return new InputStreamRequestBody(Objects.requireNonNull(in));
+        return new InputStreamRequestBody(requireNonNull(in));
     }
 
     /**
      * Create request body from file
      */
     public static RequestBody<File> file(File file) {
-        return new FileRequestBody(Objects.requireNonNull(file));
+        return new FileRequestBody(requireNonNull(file));
     }
 
     /**
      * Create multi-part post request body
      */
     public static RequestBody<Collection<? extends Part>> multiPart(Collection<? extends Part> parts) {
-        return new MultiPartRequestBody(Objects.requireNonNull(parts));
+        return new MultiPartRequestBody(requireNonNull(parts));
     }
 }
