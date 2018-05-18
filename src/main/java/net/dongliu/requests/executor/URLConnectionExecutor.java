@@ -20,7 +20,10 @@ import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.Charset;
 import java.security.KeyStore;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
@@ -40,7 +43,7 @@ class URLConnectionExecutor implements HttpExecutor {
         System.setProperty("sun.net.http.allowRestrictedHeaders", "true");
         System.setProperty("http.keepAlive", "true");
         // default is 5
-        System.setProperty("http.maxConnections", "50");
+        System.setProperty("http.maxConnections", "100");
     }
 
     @Nonnull
@@ -76,20 +79,8 @@ class URLConnectionExecutor implements HttpExecutor {
                 body = null;
             }
 
-            RequestBuilder builder = Requests.newRequest(method, redirectUrl)
-                    .sessionContext(request.getSessionContext())
-                    .socksTimeout(request.getSocksTimeout())
-                    .connectTimeout(request.getConnectTimeout())
-                    .basicAuth(request.getBasicAuth())
-                    .userAgent(request.getUserAgent())
-                    .compress(request.isCompress())
-                    .verify(request.isVerify())
-                    .keyStore(request.getKeyStore())
-                    .keepAlive(request.isKeepAlive())
-                    .followRedirect(false)
-                    .maxRedirectCount(request.getMaxRedirectCount())
-                    .proxy(request.getProxy())
-                    .body(body);
+            RequestBuilder builder = request.toBuilder().method(method).url(redirectUrl)
+                    .followRedirect(false).body(body);
             response = builder.send();
             if (!isRedirect(response.getStatusCode())) {
                 return response;
@@ -283,7 +274,8 @@ class URLConnectionExecutor implements HttpExecutor {
 
         // update session
         cookieJar.storeCookies(cookies);
-        return new RawResponse(url.toExternalForm(), status, Objects.requireNonNull(statusLine), cookies, headers, input, conn);
+        return new RawResponse(url.toExternalForm(), status, statusLine == null ? "" : statusLine,
+                cookies, headers, input, conn);
     }
 
     /**

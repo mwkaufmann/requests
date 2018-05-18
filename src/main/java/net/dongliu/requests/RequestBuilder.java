@@ -69,6 +69,7 @@ public final class RequestBuilder {
         basicAuth = request.getBasicAuth();
         sessionContext = request.getSessionContext();
         keepAlive = request.isKeepAlive();
+        keyStore = request.getKeyStore();
         this.url = request.getUrl();
         this.params = request.getParams();
     }
@@ -443,7 +444,10 @@ public final class RequestBuilder {
         return interceptors(Arrays.asList(interceptors));
     }
 
-    public RequestBuilder sessionContext(@Nullable SessionContext sessionContext) {
+    /**
+     * This method is only for internal use!
+     */
+    RequestBuilder sessionContext(@Nullable SessionContext sessionContext) {
         this.sessionContext = sessionContext;
         return this;
     }
