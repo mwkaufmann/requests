@@ -3,7 +3,4 @@
  *
  * @author Liu Dong
  */
-@ParametersAreNonnullByDefault
 package net.dongliu.requests.utils;
-
-import javax.annotation.ParametersAreNonnullByDefault;

@@ -1,6 +1,6 @@
 package net.dongliu.requests.executor;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Only for internal use
@@ -8,13 +8,13 @@ import javax.annotation.Nonnull;
 class URLConnectionExecutorFactory extends RequestExecutorFactory {
     static final RequestExecutorFactory instance = new URLConnectionExecutorFactory();
 
-    @Nonnull
+    @NotNull
     @Override
     public SessionContext newSessionContext() {
         return new SessionContext(new DefaultCookieJar());
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public HttpExecutor getHttpExecutor() {
         return new URLConnectionExecutor();

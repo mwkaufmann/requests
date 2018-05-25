@@ -3,17 +3,15 @@ package net.dongliu.requests.executor;
 import net.dongliu.requests.Cookie;
 import net.dongliu.requests.utils.Cookies;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
-import javax.annotation.concurrent.ThreadSafe;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * CookieJar that store cookie in memory, maintaining cookies following RFC 6265
  */
-@ThreadSafe
 class DefaultCookieJar implements CookieJar, Serializable {
 
     private static final long serialVersionUID = 8372575235144209124L;
@@ -39,7 +37,7 @@ class DefaultCookieJar implements CookieJar, Serializable {
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public synchronized List<Cookie> getCookies(URL url) {
         long now = System.currentTimeMillis();
@@ -62,19 +60,18 @@ class DefaultCookieJar implements CookieJar, Serializable {
         return matched;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public synchronized List<Cookie> getCookies() {
         return new ArrayList<>(cookieMap.values());
     }
 
-    @Immutable
     private static class CookieKey {
-        @Nonnull
+        @NotNull
         private final String domain;
-        @Nonnull
+        @NotNull
         private final String path;
-        @Nonnull
+        @NotNull
         private final String name;
 
         public CookieKey(String domain, String path, String name) {

@@ -1,12 +1,11 @@
 package net.dongliu.requests.utils;
 
+import java.util.Date;
+
+import org.jetbrains.annotations.Nullable;
+
 import net.dongliu.requests.Cookie;
 import net.dongliu.requests.Parameter;
-
-import javax.annotation.Nullable;
-import java.net.URI;
-import java.net.URL;
-import java.util.Date;
 
 /**
  * Only for internal use.

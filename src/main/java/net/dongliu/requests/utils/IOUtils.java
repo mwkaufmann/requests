@@ -1,9 +1,10 @@
 package net.dongliu.requests.utils;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Utils method for bytes io

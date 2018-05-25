@@ -9,8 +9,8 @@ import net.dongliu.requests.utils.IOUtils;
 import net.dongliu.requests.utils.NopHostnameVerifier;
 import net.dongliu.requests.utils.SSLSocketFactories;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.ByteArrayInputStream;
@@ -46,7 +46,7 @@ class URLConnectionExecutor implements HttpExecutor {
         System.setProperty("http.maxConnections", "100");
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public RawResponse proceed(Request request) {
         RawResponse response = doRequest(request);

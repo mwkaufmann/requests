@@ -1,18 +1,17 @@
 package net.dongliu.requests.executor;
 
-import net.dongliu.requests.Cookie;
-
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+
+import net.dongliu.requests.Cookie;
+
 /**
  * Cookie jar that do nothing. Used for plain request.
  */
-@Immutable
 class NopCookieJar implements CookieJar {
 
     static final NopCookieJar instance = new NopCookieJar();
@@ -25,13 +24,13 @@ class NopCookieJar implements CookieJar {
 
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public List<Cookie> getCookies(URL url) {
         return Collections.emptyList();
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public List<Cookie> getCookies() {
         return Collections.emptyList();

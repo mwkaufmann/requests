@@ -1,20 +1,24 @@
 package net.dongliu.requests;
 
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Wrap to deal with response headers
  *
  * @author Liu Dong
  */
-@Immutable
 public class Headers implements Serializable {
     private static final long serialVersionUID = -1283402589869346874L;
     private final List<Header> headers;
@@ -27,7 +31,7 @@ public class Headers implements Serializable {
     /**
      * Get headers by name. If not exists, return empty list
      */
-    @Nonnull
+    @NotNull
     public List<String> getHeaders(String name) {
         Objects.requireNonNull(name);
         ensureMap();
@@ -79,7 +83,7 @@ public class Headers implements Serializable {
         }
     }
 
-    @Nonnull
+    @NotNull
     public List<Header> getHeaders() {
         return headers;
     }

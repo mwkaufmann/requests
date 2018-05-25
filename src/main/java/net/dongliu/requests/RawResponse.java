@@ -6,7 +6,7 @@ import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
 import net.dongliu.requests.utils.IOUtils;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;

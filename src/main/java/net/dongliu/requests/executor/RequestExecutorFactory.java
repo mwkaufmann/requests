@@ -1,6 +1,6 @@
 package net.dongliu.requests.executor;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Request Client interface
@@ -14,9 +14,9 @@ public abstract class RequestExecutorFactory {
     /**
      * Create new session context
      */
-    @Nonnull
+    @NotNull
     public abstract SessionContext newSessionContext();
 
-    @Nonnull
+    @NotNull
     public abstract HttpExecutor getHttpExecutor();
 }

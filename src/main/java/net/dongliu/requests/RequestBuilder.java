@@ -7,7 +7,7 @@ import net.dongliu.requests.executor.HttpExecutor;
 import net.dongliu.requests.executor.RequestExecutorFactory;
 import net.dongliu.requests.executor.SessionContext;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.Proxy;

@@ -8,7 +8,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
@@ -169,7 +168,6 @@ public class RequestsTest {
         final long[] statusCode = {0};
         Interceptor interceptor = new Interceptor() {
             @Override
-            @Nonnull
             public RawResponse intercept(InvocationTarget target, Request request) {
                 RawResponse response = target.proceed(request);
                 statusCode[0] = response.getStatusCode();

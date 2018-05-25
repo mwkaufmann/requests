@@ -1,17 +1,16 @@
 package net.dongliu.requests.json;
 
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.ThreadSafe;
 import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Lookup json, from classpath
  *
  * @author Liu Dong
  */
-@ThreadSafe
 public class JsonLookup {
     private static JsonLookup instance = new JsonLookup();
     @Nullable
@@ -91,8 +90,9 @@ public class JsonLookup {
      *
      * @throws JsonProcessorNotFoundException if no json provider found
      */
-    @Nonnull
+    @NotNull
     public JsonProcessor lookup() {
+        JsonProcessor registeredJsonProcessor = this.registeredJsonProcessor;
         if (registeredJsonProcessor != null) {
             return registeredJsonProcessor;
         }

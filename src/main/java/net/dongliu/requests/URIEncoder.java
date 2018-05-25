@@ -2,7 +2,6 @@ package net.dongliu.requests;
 
 import net.dongliu.requests.exception.RequestsException;
 
-import javax.annotation.Nonnull;
 import java.io.CharArrayWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -12,6 +11,8 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>
@@ -406,7 +407,7 @@ public class URIEncoder {
         return list;
     }
 
-    @Nonnull
+    @NotNull
     public static List<Parameter<String>> toStringParameters(Collection<? extends Map.Entry<String, ?>> params) {
         List<Parameter<String>> parameters = new ArrayList<>(params.size());
         for (Map.Entry<String, ?> entry : params) {
@@ -415,7 +416,7 @@ public class URIEncoder {
         return parameters;
     }
 
-    @Nonnull
+    @NotNull
     public static URL joinUrl(URL url, Collection<? extends Map.Entry<String, String>> params, Charset charset) {
         if (params.isEmpty()) {
             return url;

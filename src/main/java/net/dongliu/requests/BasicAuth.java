@@ -1,11 +1,11 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.utils.Base64;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import net.dongliu.requests.utils.Base64;
 
 /**
  * Http Basic Authentication
@@ -27,6 +27,14 @@ public class BasicAuth implements Serializable {
     }
 
     public String getPassword() {
+        return password;
+    }
+
+    public String user() {
+        return user;
+    }
+
+    public String password() {
         return password;
     }
 

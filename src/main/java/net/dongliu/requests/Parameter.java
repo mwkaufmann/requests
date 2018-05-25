@@ -1,9 +1,10 @@
 package net.dongliu.requests;
 
-import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Immutable parameter entry, the key and value cannot be null
@@ -13,10 +14,10 @@ import java.util.Objects;
 public class Parameter<T> implements Map.Entry<String, T>, Serializable {
     private static final long serialVersionUID = -6525353427059094141L;
 
-    @Nonnull
-    private final String name;
-    @Nonnull
-    private final T value;
+    @NotNull
+    protected final String name;
+    @NotNull
+    protected final T value;
 
     public Parameter(String key, T value) {
         this.name = Objects.requireNonNull(key);
@@ -31,13 +32,23 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
         return name;
     }
 
-    @Nonnull
+    @NotNull
     public String getName() {
         return name;
     }
 
-    @Nonnull
+    @NotNull
+    public String name() {
+        return name;
+    }
+
+    @NotNull
     public T getValue() {
+        return value;
+    }
+
+    @NotNull
+    public T value() {
         return value;
     }
 

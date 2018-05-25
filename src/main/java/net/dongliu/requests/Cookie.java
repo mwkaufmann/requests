@@ -1,28 +1,23 @@
 package net.dongliu.requests;
 
-import javax.annotation.Nonnull;
-import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 
-@Immutable
-public class Cookie implements Map.Entry<String, String>, Serializable {
+import org.jetbrains.annotations.NotNull;
+
+public class Cookie extends Parameter<String> implements Map.Entry<String, String>, Serializable {
     private static final long serialVersionUID = -287880603936079757L;
     /**
      * The cookie domain set by attribute or from url
      */
-    @Nonnull
+    @NotNull
     private final String domain;
     /**
      * The cookie path set by attribute or from url
      */
-    @Nonnull
+    @NotNull
     private final String path;
-    @Nonnull
-    private final String name;
-    @Nonnull
-    private final String value;
     /**
      * The cookie expire timestamp, zero means no expiry is set
      */
@@ -38,39 +33,25 @@ public class Cookie implements Map.Entry<String, String>, Serializable {
     private final boolean hostOnly;
 
     public Cookie(String domain, String path, String name, String value, long expiry, boolean secure,
-                  boolean hostOnly) {
+            boolean hostOnly) {
+        super(name, value);
         this.domain = Objects.requireNonNull(domain);
         this.path = Objects.requireNonNull(path);
-        this.name = Objects.requireNonNull(name);
-        this.value = Objects.requireNonNull(value);
         this.expiry = expiry;
         this.secure = secure;
         this.hostOnly = hostOnly;
     }
 
-    @Nonnull
+    /**
+     * If cookie is expired
+     */
+    public boolean expired(long now) {
+        return expiry != 0 && expiry < now;
+    }
+
+    @NotNull
     public String getDomain() {
         return domain;
-    }
-
-    @Nonnull
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getKey() {
-        return name;
-    }
-
-    @Nonnull
-    public String getValue() {
-        return value;
-    }
-
-    @Override
-    public String setValue(String value) {
-        throw new UnsupportedOperationException();
     }
 
     public boolean isSecure() {
@@ -81,19 +62,34 @@ public class Cookie implements Map.Entry<String, String>, Serializable {
         return expiry;
     }
 
-    /**
-     * If cookie is expired
-     */
-    public boolean expired(long now) {
-        return expiry != 0 && expiry < now;
-    }
-
-    @Nonnull
+    @NotNull
     public String getPath() {
         return path;
     }
 
     public boolean isHostOnly() {
+        return hostOnly;
+    }
+
+    @NotNull
+    public String domain() {
+        return domain;
+    }
+
+    public boolean secure() {
+        return secure;
+    }
+
+    public long expiry() {
+        return expiry;
+    }
+
+    @NotNull
+    public String path() {
+        return path;
+    }
+
+    public boolean hostOnly() {
         return hostOnly;
     }
 

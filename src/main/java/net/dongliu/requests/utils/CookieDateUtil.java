@@ -1,9 +1,10 @@
 package net.dongliu.requests.utils;
 
-import javax.annotation.Nullable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Liu Dong

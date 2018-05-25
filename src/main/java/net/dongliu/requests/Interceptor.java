@@ -1,6 +1,6 @@
 package net.dongliu.requests;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Http request Interceptor
@@ -16,7 +16,7 @@ public interface Interceptor {
      * @param request the http request
      * @return http response from target invoke, or replaced / wrapped by implementation
      */
-    @Nonnull
+    @NotNull
     RawResponse intercept(InvocationTarget target, Request request);
 
 
@@ -24,7 +24,7 @@ public interface Interceptor {
         /**
          * Process the request, and return response
          */
-        @Nonnull
+        @NotNull
         RawResponse proceed(Request request);
     }
 }

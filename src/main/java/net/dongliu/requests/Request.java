@@ -1,10 +1,5 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.body.RequestBody;
-import net.dongliu.requests.executor.SessionContext;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import java.io.Serializable;
 import java.net.Proxy;
 import java.net.URL;
@@ -13,12 +8,16 @@ import java.security.KeyStore;
 import java.util.Collection;
 import java.util.Map;
 
+import org.jetbrains.annotations.Nullable;
+
+import net.dongliu.requests.body.RequestBody;
+import net.dongliu.requests.executor.SessionContext;
+
 /**
  * Http request
  *
  * @author Liu Dong
  */
-@Immutable
 public class Request implements Serializable {
     private static final long serialVersionUID = -2585065451136206831L;
     private final String method;

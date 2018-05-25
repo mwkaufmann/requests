@@ -1,9 +1,10 @@
 package net.dongliu.requests;
 
-import net.dongliu.requests.executor.HttpExecutor;
-
-import javax.annotation.Nonnull;
 import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+
+import net.dongliu.requests.executor.HttpExecutor;
 
 /**
  * @author Liu Dong
@@ -17,7 +18,7 @@ class InterceptorChain implements Interceptor.InvocationTarget {
         this.httpExecutor = httpExecutor;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public RawResponse proceed(Request request) {
         if (interceptorList.isEmpty()) {

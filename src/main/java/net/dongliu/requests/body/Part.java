@@ -2,12 +2,13 @@ package net.dongliu.requests.body;
 
 import net.dongliu.requests.utils.IOUtils;
 
-import javax.annotation.Nullable;
 import java.io.*;
 import java.nio.charset.Charset;
 
 import static java.util.Objects.requireNonNull;
 import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_BINARY;
+
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This class represent one part(field) of http multipart request body.
