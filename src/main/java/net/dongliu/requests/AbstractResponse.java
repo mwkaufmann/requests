@@ -1,10 +1,10 @@
 package net.dongliu.requests;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Common parent for RawResponse and Response
@@ -24,7 +24,9 @@ class AbstractResponse {
 
     /**
      * Get actual url (redirected)
+     * @deprecated using {@link #url}
      */
+    @Deprecated
     public String getURL() {
         return url;
     }
@@ -39,7 +41,9 @@ class AbstractResponse {
     /**
      * return response status code
      * @return status code
+     * @deprecated using {@link #statusCode}
      */
+    @Deprecated
     public int getStatusCode() {
         return statusCode;
     }
@@ -54,15 +58,28 @@ class AbstractResponse {
 
     /**
      * Get all cookies returned by this response
+     * @deprecated using {@link #cookies}
      */
+    @Deprecated
     @NotNull
     public List<Cookie> getCookies() {
         return cookies;
     }
 
     /**
-     * Get all response headers
+     * Get all cookies returned by this response
      */
+
+    @NotNull
+    public List<Cookie> cookies() {
+        return cookies;
+    }
+
+    /**
+     * Get all response headers
+     * @deprecated using {@link #headers}
+     */
+    @Deprecated
     @NotNull
     public List<Header> getHeaders() {
         return headers.getHeaders();

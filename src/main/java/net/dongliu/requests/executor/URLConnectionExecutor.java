@@ -5,12 +5,11 @@ import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.exception.TooManyRedirectsException;
 import net.dongliu.requests.utils.Cookies;
-import net.dongliu.requests.utils.IOUtils;
 import net.dongliu.requests.utils.NopHostnameVerifier;
 import net.dongliu.requests.utils.SSLSocketFactories;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.ByteArrayInputStream;
@@ -24,9 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.Inflater;
-import java.util.zip.InflaterInputStream;
 
 import static net.dongliu.requests.HttpHeaders.*;
 import static net.dongliu.requests.StatusCodes.*;
@@ -211,7 +207,7 @@ class URLConnectionExecutor implements HttpExecutor {
             if (body != null) {
                 sendBody(body, conn, charset);
             }
-            return getResponse(url, conn, cookieJar, request.isCompress(), request.getMethod());
+            return getResponse(url, conn, cookieJar, request.getMethod());
         } catch (IOException e) {
             conn.disconnect();
             throw new RequestsException(e);
@@ -224,8 +220,8 @@ class URLConnectionExecutor implements HttpExecutor {
     /**
      * Wrap response, deal with headers and cookies
      */
-    private RawResponse getResponse(URL url, HttpURLConnection conn, CookieJar cookieJar, boolean compress,
-                                    String method) throws IOException {
+    private RawResponse getResponse(URL url, HttpURLConnection conn, CookieJar cookieJar, String method)
+            throws IOException {
         // read result
         int status = conn.getResponseCode();
         String host = url.getHost().toLowerCase();
@@ -263,57 +259,16 @@ class URLConnectionExecutor implements HttpExecutor {
         } catch (IOException e) {
             input = conn.getErrorStream();
         }
-        if (input != null) {
-            // deal with [compressed] input, only when use intend to let requests handle compress
-            if (compress) {
-                input = wrapCompressBody(status, method, headers, input);
-            }
-        } else {
+        if (input == null) {
             input = new ByteArrayInputStream(new byte[0]);
         }
 
         // update session
         cookieJar.storeCookies(cookies);
-        return new RawResponse(url.toExternalForm(), status, statusLine == null ? "" : statusLine,
+        return new RawResponse(method, url.toExternalForm(), status, statusLine == null ? "" : statusLine,
                 cookies, headers, input, conn);
     }
 
-    /**
-     * Wrap response input stream if it is compressed, return input its self if not use compress
-     */
-    private InputStream wrapCompressBody(int status, String method, Headers headers, InputStream input)
-            throws IOException {
-        // if has no body, some server still set content-encoding header,
-        // GZIPInputStream wrap empty input stream will cause exception. we should check this
-        if (method.equals(Methods.HEAD)
-                || (status >= 100 && status < 200) || status == NOT_MODIFIED || status == NO_CONTENT) {
-            return input;
-        }
-
-        String contentEncoding = headers.getHeader(NAME_CONTENT_ENCODING);
-        if (contentEncoding == null) {
-            return input;
-        }
-
-        //we should remove the content-encoding header here?
-        switch (contentEncoding) {
-            case "gzip":
-                try {
-                    return new GZIPInputStream(input);
-                } catch (IOException e) {
-                    IOUtils.closeQuietly(input);
-                    throw e;
-                }
-            case "deflate":
-                // Note: deflate implements may or may not wrap in zlib due to rfc confusing. 
-                // here deal with deflate without zlib header
-                return new InflaterInputStream(input, new Inflater(true));
-            case "identity":
-            case "compress": //historic; deprecated in most applications and replaced by gzip or deflate
-            default:
-                return input;
-        }
-    }
 
     private void sendBody(RequestBody body, HttpURLConnection conn, Charset requestCharset) {
         try (OutputStream os = conn.getOutputStream()) {
