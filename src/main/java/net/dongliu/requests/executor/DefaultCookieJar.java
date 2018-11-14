@@ -20,7 +20,7 @@ class DefaultCookieJar implements CookieJar, Serializable {
     @Override
     public synchronized void storeCookies(Collection<Cookie> cookies) {
         for (Cookie cookie : cookies) {
-            CookieKey key = new CookieKey(cookie.getDomain(), cookie.getPath(), cookie.getName());
+            CookieKey key = new CookieKey(cookie.domain(), cookie.path(), cookie.name());
             cookieMap.put(key, cookie);
         }
         removeExpiredCookies();
@@ -54,7 +54,7 @@ class DefaultCookieJar implements CookieJar, Serializable {
         Collections.sort(matched, new Comparator<Cookie>() { // we did not sort using create time here
             @Override
             public int compare(Cookie cookie1, Cookie cookie2) {
-                return cookie2.getPath().length() - cookie1.getPath().length();
+                return cookie2.path().length() - cookie1.path().length();
             }
         });
         return matched;

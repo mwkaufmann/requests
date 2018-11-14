@@ -24,7 +24,7 @@ class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
     @Override
     public void writeBody(OutputStream output, Charset charset) throws IOException {
         Writer writer = new OutputStreamWriter(output);
-        for (Part part : getBody()) {
+        for (Part part : body()) {
             String contentType = part.getContentType();
             String name = part.getName();
             String fileName = part.getFileName();

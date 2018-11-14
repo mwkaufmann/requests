@@ -47,16 +47,16 @@ class URLConnectionExecutor implements HttpExecutor {
     public RawResponse proceed(Request request) {
         RawResponse response = doRequest(request);
 
-        int statusCode = response.getStatusCode();
-        if (!request.isFollowRedirect() || !isRedirect(statusCode)) {
+        int statusCode = response.statusCode();
+        if (!request.followRedirect() || !isRedirect(statusCode)) {
             return response;
         }
 
         // handle redirect
         response.discardBody();
         int redirectTimes = 0;
-        final int maxRedirectTimes = request.getMaxRedirectCount();
-        URL redirectUrl = request.getUrl();
+        final int maxRedirectTimes = request.maxRedirectCount();
+        URL redirectUrl = request.url();
         while (redirectTimes++ < maxRedirectTimes) {
             String location = response.getHeader(NAME_LOCATION);
             if (location == null) {
@@ -67,8 +67,8 @@ class URLConnectionExecutor implements HttpExecutor {
             } catch (MalformedURLException e) {
                 throw new RequestsException("Resolve redirect url error, location: " + location, e);
             }
-            String method = request.getMethod();
-            RequestBody<?> body = request.getBody();
+            String method = request.method();
+            RequestBody<?> body = request.body();
             if (statusCode == MOVED_PERMANENTLY || statusCode == FOUND || statusCode == SEE_OTHER) {
                 // 301/302 change method to get, due to historical reason.
                 method = Methods.GET;
@@ -78,7 +78,7 @@ class URLConnectionExecutor implements HttpExecutor {
             RequestBuilder builder = request.toBuilder().method(method).url(redirectUrl)
                     .followRedirect(false).body(body);
             response = builder.send();
-            if (!isRedirect(response.getStatusCode())) {
+            if (!isRedirect(response.statusCode())) {
                 return response;
             }
             response.discardBody();
@@ -93,11 +93,10 @@ class URLConnectionExecutor implements HttpExecutor {
 
 
     private RawResponse doRequest(Request request) {
-        Charset charset = request.getCharset();
-        URL url = URIEncoder.joinUrl(request.getUrl(), URIEncoder.toStringParameters(request.getParams()),
-                request.getCharset());
-        @Nullable RequestBody body = request.getBody();
-        @Nullable SessionContext sessionContext = request.getSessionContext();
+        Charset charset = request.charset();
+        URL url = URIEncoder.joinUrl(request.url(), URIEncoder.toStringParameters(request.params()), charset);
+        @Nullable RequestBody body = request.body();
+        @Nullable SessionContext sessionContext = request.sessionContext();
         CookieJar cookieJar;
         if (sessionContext == null) {
             cookieJar = NopCookieJar.instance;
@@ -107,7 +106,7 @@ class URLConnectionExecutor implements HttpExecutor {
 
         HttpURLConnection conn;
         try {
-            @Nullable Proxy proxy = request.getProxy();
+            @Nullable Proxy proxy = request.proxy();
             if (proxy != null) {
                 conn = (HttpURLConnection) url.openConnection(proxy);
             } else {
@@ -123,13 +122,13 @@ class URLConnectionExecutor implements HttpExecutor {
         // deal with https
         if (conn instanceof HttpsURLConnection) {
             SSLSocketFactory ssf = null;
-            if (!request.isVerify()) {
+            if (!request.verify()) {
                 // trust all certificates
                 ssf = SSLSocketFactories.getTrustAllSSLSocketFactory();
                 // do not verify host of certificate
                 ((HttpsURLConnection) conn).setHostnameVerifier(NopHostnameVerifier.getInstance());
-            } else if (request.getKeyStore() != null) {
-                KeyStore keyStore = request.getKeyStore();
+            } else if (request.keyStore() != null) {
+                KeyStore keyStore = request.keyStore();
                 ssf = SSLSocketFactories.getCustomTrustSSLSocketFactory(keyStore);
             }
             if (ssf != null) {
@@ -138,46 +137,46 @@ class URLConnectionExecutor implements HttpExecutor {
         }
 
         try {
-            conn.setRequestMethod(request.getMethod());
+            conn.setRequestMethod(request.method());
         } catch (ProtocolException e) {
             throw new RequestsException(e);
         }
-        conn.setReadTimeout(request.getSocksTimeout());
-        conn.setConnectTimeout(request.getConnectTimeout());
+        conn.setReadTimeout(request.socksTimeout());
+        conn.setConnectTimeout(request.connectTimeout());
         // Url connection did not deal with cookie when handle redirect. Disable it and handle it manually
         conn.setInstanceFollowRedirects(false);
         if (body != null) {
             conn.setDoOutput(true);
-            String contentType = body.getContentType();
+            String contentType = body.contentType();
             if (contentType != null) {
-                if (body.isIncludeCharset()) {
-                    contentType += "; charset=" + request.getCharset().name().toLowerCase();
+                if (body.includeCharset()) {
+                    contentType += "; charset=" + request.charset().name().toLowerCase();
                 }
                 conn.setRequestProperty(NAME_CONTENT_TYPE, contentType);
             }
         }
 
         // headers
-        if (!request.getUserAgent().isEmpty()) {
-            conn.setRequestProperty(NAME_USER_AGENT, request.getUserAgent());
+        if (!request.userAgent().isEmpty()) {
+            conn.setRequestProperty(NAME_USER_AGENT, request.userAgent());
         }
-        if (request.isCompress()) {
+        if (request.acceptCompress()) {
             conn.setRequestProperty(NAME_ACCEPT_ENCODING, "gzip, deflate");
         }
 
-        if (request.getBasicAuth() != null) {
-            conn.setRequestProperty(NAME_AUTHORIZATION, request.getBasicAuth().encode());
+        if (request.basicAuth() != null) {
+            conn.setRequestProperty(NAME_AUTHORIZATION, request.basicAuth().encode());
         }
 
         // set cookies
         Collection<Cookie> sessionCookies = cookieJar.getCookies(url);
-        if (!request.getCookies().isEmpty() || !sessionCookies.isEmpty()) {
+        if (!request.cookies().isEmpty() || !sessionCookies.isEmpty()) {
             StringBuilder sb = new StringBuilder();
-            for (Map.Entry<String, ?> entry : request.getCookies()) {
+            for (Map.Entry<String, ?> entry : request.cookies()) {
                 sb.append(entry.getKey()).append("=").append(String.valueOf(entry.getValue())).append("; ");
             }
             for (Cookie cookie : sessionCookies) {
-                sb.append(cookie.getName()).append("=").append(cookie.getValue()).append("; ");
+                sb.append(cookie.name()).append("=").append(cookie.value()).append("; ");
             }
             if (sb.length() > 2) {
                 sb.setLength(sb.length() - 2);
@@ -187,12 +186,12 @@ class URLConnectionExecutor implements HttpExecutor {
         }
 
         // set user custom headers
-        for (Map.Entry<String, ?> header : request.getHeaders()) {
+        for (Map.Entry<String, ?> header : request.headers()) {
             conn.setRequestProperty(header.getKey(), String.valueOf(header.getValue()));
         }
 
         // disable keep alive
-        if (!request.isKeepAlive()) {
+        if (!request.keepAlive()) {
             conn.setRequestProperty("Connection", "close");
         }
 
@@ -207,7 +206,7 @@ class URLConnectionExecutor implements HttpExecutor {
             if (body != null) {
                 sendBody(body, conn, charset);
             }
-            return getResponse(url, conn, cookieJar, request.getMethod());
+            return getResponse(url, conn, cookieJar, request.method());
         } catch (IOException e) {
             conn.disconnect();
             throw new RequestsException(e);

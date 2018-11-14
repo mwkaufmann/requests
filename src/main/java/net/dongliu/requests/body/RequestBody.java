@@ -29,8 +29,17 @@ public abstract class RequestBody<T> implements Outputable, Serializable {
 
     /**
      * The request body
+     * @deprecated use {@link #body()}
      */
+    @Deprecated
     public T getBody() {
+        return body;
+    }
+
+    /**
+     * The request body
+     */
+    public T body() {
         return body;
     }
 
@@ -57,15 +66,35 @@ public abstract class RequestBody<T> implements Outputable, Serializable {
      * the content type
      *
      * @return may be null if no content type is set
+     * @deprecated use {@link #contentType()}
      */
+    @Deprecated
     public String getContentType() {
         return contentType;
     }
 
     /**
+     * the content type
+     *
+     * @return may be null if no content type is set
+     */
+    public String contentType() {
+        return contentType;
+    }
+
+    /**
+     * If write charset to contentType
+     * @deprecated use {@link #includeCharset()}
+     */
+    @Deprecated
+    public boolean isIncludeCharset() {
+        return includeCharset;
+    }
+
+    /**
      * If write charset to contentType
      */
-    public boolean isIncludeCharset() {
+    public boolean includeCharset() {
         return includeCharset;
     }
 

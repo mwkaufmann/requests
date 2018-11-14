@@ -110,7 +110,7 @@ class AbstractResponse {
     @Nullable
     public Cookie getCookie(String name) {
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(name)) {
+            if (cookie.name().equals(name)) {
                 return cookie;
             }
         }

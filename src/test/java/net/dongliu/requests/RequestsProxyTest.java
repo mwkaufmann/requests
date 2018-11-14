@@ -27,24 +27,24 @@ public class RequestsProxyTest {
     }
 
     @Test
-    public void testHttpProxy() throws Exception {
+    public void testHttpProxy() {
         // http proxy with redirect
         RawResponse response = Requests
                 .get("https://www.google.com")
                 .proxy(Proxies.httpProxy("127.0.0.1", 1081))
                 .send();
         response.close();
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.statusCode());
     }
 
     @Test
-    public void testSocksProxy() throws Exception {
+    public void testSocksProxy() {
         // socks proxy with redirect
         RawResponse response = Requests
                 .get("https://www.google.com")
                 .proxy(Proxies.socksProxy("127.0.0.1", 1080))
                 .send();
         response.close();
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.statusCode());
     }
 }

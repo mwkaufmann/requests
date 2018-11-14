@@ -20,6 +20,6 @@ class InputStreamSupplierRequestBody extends RequestBody<InputStreamSupplier> {
 
     @Override
     public void writeBody(OutputStream os, Charset charset) throws IOException {
-        IOUtils.copy(getBody().get(), os);
+        IOUtils.copy(body().get(), os);
     }
 }

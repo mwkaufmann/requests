@@ -13,7 +13,7 @@ public class RequestBodyTest {
     @Test
     public void json() throws Exception {
         RequestBody<List<String>> body = RequestBody.json(Arrays.asList("1", "2", "3"));
-        assertEquals("application/json", body.getContentType());
+        assertEquals("application/json", body.contentType());
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         body.writeBody(bos, StandardCharsets.UTF_8);

@@ -24,7 +24,7 @@ class JsonRequestBody<T> extends RequestBody<T> {
     @Override
     public void writeBody(OutputStream os, Charset charset) throws IOException {
         try (Writer writer = new OutputStreamWriter(os, charset)) {
-            JsonLookup.getInstance().lookup().marshal(writer, getBody());
+            JsonLookup.getInstance().lookup().marshal(writer, body());
         }
     }
 }

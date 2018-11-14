@@ -30,8 +30,9 @@ public class Response<T> extends AbstractResponse implements Serializable {
     /**
      * Return the body part.
      * @return the body
-     * @see #body()
+     * @deprecated use {@link #body()}
      */
+    @Deprecated
     public T getBody() {
         return body;
     }

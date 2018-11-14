@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 import net.dongliu.requests.exception.RequestsException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.CharArrayWriter;
 import java.io.UnsupportedEncodingException;
@@ -11,8 +12,6 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-
-import org.jetbrains.annotations.NotNull;
 
 /**
  * <p>
@@ -347,7 +346,7 @@ public class URIEncoder {
      */
     public static String encodeForm(Parameter<String> query, Charset charset) {
         try {
-            return URLEncoder.encode(query.getName(), charset.name()) + "=" + URLEncoder.encode(query.getValue(),
+            return URLEncoder.encode(query.name(), charset.name()) + "=" + URLEncoder.encode(query.value(),
                     charset.name());
         } catch (UnsupportedEncodingException e) {
             // should not happen
@@ -362,9 +361,9 @@ public class URIEncoder {
         StringBuilder sb = new StringBuilder();
         try {
             for (Parameter<String> query : queries) {
-                sb.append(URLEncoder.encode(query.getName(), charset.name()));
+                sb.append(URLEncoder.encode(query.name(), charset.name()));
                 sb.append('=');
-                sb.append(URLEncoder.encode(query.getValue(), charset.name()));
+                sb.append(URLEncoder.encode(query.value(), charset.name()));
                 sb.append('&');
             }
         } catch (UnsupportedEncodingException e) {

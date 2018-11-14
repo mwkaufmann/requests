@@ -53,8 +53,8 @@ public class RequestsTest {
     public void testHead() {
         RawResponse resp = Requests.head("http://127.0.0.1:8080")
                 .requestCharset(StandardCharsets.UTF_8).send();
-        assertEquals(200, resp.getStatusCode());
-        String statusLine = resp.getStatusLine();
+        assertEquals(200, resp.statusCode());
+        String statusLine = resp.statusLine();
         assertEquals("HTTP/1.1 200 OK", statusLine);
         String text = resp.readToText();
         assertTrue(text.isEmpty());
@@ -74,8 +74,8 @@ public class RequestsTest {
         Response<String> response = Requests.get("http://127.0.0.1:8080/cookie")
                 .cookies(Parameter.of("test", "value")).send().toTextResponse();
         boolean flag = false;
-        for (Cookie cookie : response.getCookies()) {
-            if (cookie.getName().equals("test")) {
+        for (Cookie cookie : response.cookies()) {
+            if (cookie.name().equals("test")) {
                 flag = true;
                 break;
             }
@@ -88,16 +88,16 @@ public class RequestsTest {
         Response<String> response = Requests.get("http://127.0.0.1:8080/basicAuth")
                 .basicAuth("test", "password")
                 .send().toTextResponse();
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.statusCode());
     }
 
     @Test
     public void testRedirect() {
         Response<String> resp = Requests.get("http://127.0.0.1:8080/redirect").userAgent("my-user-agent")
                 .send().toTextResponse();
-        assertEquals(200, resp.getStatusCode());
-        assertTrue(resp.getBody().contains("/redirected"));
-        assertTrue(resp.getBody().contains("my-user-agent"));
+        assertEquals(200, resp.statusCode());
+        assertTrue(resp.body().contains("/redirected"));
+        assertTrue(resp.body().contains("my-user-agent"));
     }
 
     @Test
@@ -153,14 +153,14 @@ public class RequestsTest {
     public void testHttps() {
         Response<String> response = Requests.get("https://127.0.0.1:8443/https")
                 .verify(false).send().toTextResponse();
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.statusCode());
 
 
         KeyStore keyStore = KeyStores.load(this.getClass().getResourceAsStream("/keystore"), "123456".toCharArray());
         response = Requests.get("https://127.0.0.1:8443/https")
                 .keyStore(keyStore)
                 .send().toTextResponse();
-        assertEquals(200, response.getStatusCode());
+        assertEquals(200, response.statusCode());
     }
 
     @Test
@@ -170,7 +170,7 @@ public class RequestsTest {
             @Override
             public RawResponse intercept(InvocationTarget target, Request request) {
                 RawResponse response = target.proceed(request);
-                statusCode[0] = response.getStatusCode();
+                statusCode[0] = response.statusCode();
                 return response;
             }
         };

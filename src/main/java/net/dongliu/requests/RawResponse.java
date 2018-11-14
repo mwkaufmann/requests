@@ -306,13 +306,6 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     }
 
     /**
-     * The response status code
-     */
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    /**
      * Get the status line
      *
      * @deprecated use {@link #statusLine()}

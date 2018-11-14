@@ -70,41 +70,41 @@ public class CookiesTest {
                 " expires=Thu, 16-Mar-17 03:39:29 GMT; domain=www.baidu.com; path=/";
         Cookie cookie = Cookies.parseCookie(cookieStr, "www.baidu.com", "/");
         assertNotNull(cookie);
-        assertFalse(cookie.isHostOnly());
-        assertEquals("www.baidu.com", cookie.getDomain());
-        assertEquals(1489635569000L, cookie.getExpiry());
-        assertEquals("11937048251853133038_00_0_I_R_181_0303_C02F_N_I_I_0", cookie.getValue());
-        assertEquals("/", cookie.getPath());
-        assertEquals("__bsi", cookie.getName());
+        assertFalse(cookie.hostOnly());
+        assertEquals("www.baidu.com", cookie.domain());
+        assertEquals(1489635569000L, cookie.expiry());
+        assertEquals("11937048251853133038_00_0_I_R_181_0303_C02F_N_I_I_0", cookie.value());
+        assertEquals("/", cookie.path());
+        assertEquals("__bsi", cookie.name());
 
 
         cookieStr = "V2EX_TAB=\"2|1:0|10:1489639030|8:V2EX_TAB|4:YWxs|94149dfee574a182c7a43cbcb752230e9e09ca44173293ca6ab446e9e1754598\";" +
                 " expires=Thu, 30 Mar 2017 04:37:10 GMT; httponly; Path=/";
         cookie = Cookies.parseCookie(cookieStr, "www.v2ex.com", "/");
         assertNotNull(cookie);
-        assertEquals("www.v2ex.com", cookie.getDomain());
-        assertTrue(cookie.isHostOnly());
-        assertEquals(1490848630000L, cookie.getExpiry());
-        assertEquals("/", cookie.getPath());
-        assertEquals("V2EX_TAB", cookie.getName());
+        assertEquals("www.v2ex.com", cookie.domain());
+        assertTrue(cookie.hostOnly());
+        assertEquals(1490848630000L, cookie.expiry());
+        assertEquals("/", cookie.path());
+        assertEquals("V2EX_TAB", cookie.name());
 
         cookieStr = "YF-V5-G0=a2489c19ecf98bbe86a7bf6f0edcb071;Path=/";
         cookie = Cookies.parseCookie(cookieStr, "weibo.com", "/");
         assertNotNull(cookie);
-        assertTrue(cookie.isHostOnly());
-        assertEquals("weibo.com", cookie.getDomain());
-        assertEquals(0, cookie.getExpiry());
+        assertTrue(cookie.hostOnly());
+        assertEquals("weibo.com", cookie.domain());
+        assertEquals(0, cookie.expiry());
 
         cookieStr = "ALF=1521175171; expires=Friday, 16-Mar-2018 04:39:31 GMT; path=/; domain=.sina.com.cn";
         cookie = Cookies.parseCookie(cookieStr, "login.sina.com.cn", "/sso/");
         assertNotNull(cookie);
-        assertEquals("sina.com.cn", cookie.getDomain());
-        assertEquals(1521175171000L, cookie.getExpiry());
-        assertEquals("/", cookie.getPath());
+        assertEquals("sina.com.cn", cookie.domain());
+        assertEquals(1521175171000L, cookie.expiry());
+        assertEquals("/", cookie.path());
 
 
         cookie = Cookies.parseCookie("skey=@k4bPcIye6; PATH=/; DOMAIN=qq.com;", "ssl.ptlogin2.qq.com", "/");
         assertNotNull(cookie);
-        assertEquals("qq.com", cookie.getDomain());
+        assertEquals("qq.com", cookie.domain());
     }
 }

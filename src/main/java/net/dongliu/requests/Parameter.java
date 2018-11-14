@@ -1,10 +1,10 @@
 package net.dongliu.requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
-
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Immutable parameter entry, the key and value cannot be null
@@ -28,10 +28,20 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
         return new Parameter<>(key, value);
     }
 
+    /**
+     * @deprecated using {@link #name()}
+     */
+    @Deprecated
     public String getKey() {
         return name;
     }
 
+    /**
+     * the name of param
+     *
+     * @deprecated using {@link #name()}
+     */
+    @Deprecated
     @NotNull
     public String getName() {
         return name;
@@ -42,6 +52,10 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
         return name;
     }
 
+    /**
+     * @deprecated using {@link #value()}
+     */
+    @Deprecated
     @NotNull
     public T getValue() {
         return value;
@@ -52,6 +66,10 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
         return value;
     }
 
+    /**
+     * @deprecated not implemented
+     */
+    @Deprecated
     @Override
     public T setValue(T value) {
         throw new UnsupportedOperationException("Pair is read only");

@@ -22,6 +22,6 @@ class FileRequestBody extends RequestBody<File> {
 
     @Override
     public void writeBody(OutputStream os, Charset charset) throws IOException {
-        IOUtils.copy(new FileInputStream(getBody()), os);
+        IOUtils.copy(new FileInputStream(body()), os);
     }
 }

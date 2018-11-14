@@ -1,10 +1,10 @@
 package net.dongliu.requests;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
-
-import org.jetbrains.annotations.NotNull;
 
 public class Cookie extends Parameter<String> implements Map.Entry<String, String>, Serializable {
     private static final long serialVersionUID = -287880603936079757L;
@@ -49,24 +49,44 @@ public class Cookie extends Parameter<String> implements Map.Entry<String, Strin
         return expiry != 0 && expiry < now;
     }
 
+    /**
+     * @deprecated use {@link #domain()}
+     */
     @NotNull
+    @Deprecated
     public String getDomain() {
         return domain;
     }
 
+    /**
+     * @deprecated use {@link #secure()}
+     */
+    @Deprecated
     public boolean isSecure() {
         return secure;
     }
 
+    /**
+     * @deprecated use {@link #expiry()}
+     */
+    @Deprecated
     public long getExpiry() {
         return expiry;
     }
 
+    /**
+     * @deprecated use {@link #path()}
+     */
+    @Deprecated
     @NotNull
     public String getPath() {
         return path;
     }
 
+    /**
+     * @deprecated use {@link #hostOnly()}
+     */
+    @Deprecated
     public boolean isHostOnly() {
         return hostOnly;
     }

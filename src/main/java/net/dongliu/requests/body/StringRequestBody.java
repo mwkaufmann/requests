@@ -20,7 +20,7 @@ class StringRequestBody extends RequestBody<String> {
 
     @Override public void writeBody(OutputStream os, Charset charset) throws IOException {
         try (Writer writer = new OutputStreamWriter(os, charset)) {
-            writer.write(getBody());
+            writer.write(body());
         }
     }
 }

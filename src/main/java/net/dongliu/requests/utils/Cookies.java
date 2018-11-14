@@ -1,11 +1,10 @@
 package net.dongliu.requests.utils;
 
-import java.util.Date;
-
-import org.jetbrains.annotations.Nullable;
-
 import net.dongliu.requests.Cookie;
 import net.dongliu.requests.Parameter;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Date;
 
 /**
  * Only for internal use.
@@ -111,22 +110,22 @@ public class Cookies {
      * @param host should be lower case
      */
     public static boolean match(Cookie cookie, String protocol, String host, String path) {
-        if (cookie.isSecure() && !protocol.equalsIgnoreCase("https")) {
+        if (cookie.secure() && !protocol.equalsIgnoreCase("https")) {
             return false;
         }
 
         // check domain
-        if (isIP(host) || cookie.isHostOnly()) {
-            if (!host.equals(cookie.getDomain())) {
+        if (isIP(host) || cookie.hostOnly()) {
+            if (!host.equals(cookie.domain())) {
                 return false;
             }
         } else {
-            if (!Cookies.isDomainSuffix(host, cookie.getDomain())) {
+            if (!Cookies.isDomainSuffix(host, cookie.domain())) {
                 return false;
             }
         }
 
-        String cookiePath = cookie.getPath();
+        String cookiePath = cookie.path();
         // check path
         if (cookiePath.length() > path.length()) {
             return false;
@@ -167,18 +166,18 @@ public class Cookies {
                 continue;
             }
             Parameter<String> attribute = parseCookieAttribute(item);
-            switch (attribute.getKey().toLowerCase()) {
+            switch (attribute.name().toLowerCase()) {
                 case "domain":
-                    domain = normalizeDomain(attribute.getValue());
+                    domain = normalizeDomain(attribute.value());
                     break;
                 case "path":
-                    path = normalizePath(attribute.getValue());
+                    path = normalizePath(attribute.value());
                     break;
                 case "expires":
                     // If a cookie has both the Max-Age and the Expires attribute, the Max-Age attribute has precedence
                     // and controls the expiration date of the cookie.
                     if (expiry == 0) {
-                        Date date = CookieDateUtil.parseDate(attribute.getValue());
+                        Date date = CookieDateUtil.parseDate(attribute.value());
                         if (date != null) {
                             expiry = date.getTime();
                             if (expiry == 0) {
@@ -189,7 +188,7 @@ public class Cookies {
                     break;
                 case "max-age":
                     try {
-                        int seconds = Integer.parseInt(attribute.getValue());
+                        int seconds = Integer.parseInt(attribute.value());
                         expiry = System.currentTimeMillis() + seconds * 1000;
                         if (expiry == 0) {
                             expiry = 1;
@@ -225,7 +224,7 @@ public class Cookies {
             hostOnly = false;
         }
 
-        return new Cookie(domain, path, param.getKey(), param.getValue(), expiry, secure, hostOnly);
+        return new Cookie(domain, path, param.name(), param.value(), expiry, secure, hostOnly);
     }
 
 

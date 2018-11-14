@@ -6,8 +6,8 @@ import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.executor.HttpExecutor;
 import net.dongliu.requests.executor.RequestExecutorFactory;
 import net.dongliu.requests.executor.SessionContext;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.Proxy;
@@ -53,25 +53,25 @@ public final class RequestBuilder {
     }
 
     RequestBuilder(Request request) {
-        method = request.getMethod();
-        headers = request.getHeaders();
-        cookies = request.getCookies();
-        userAgent = request.getUserAgent();
-        charset = request.getCharset();
-        body = request.getBody();
-        socksTimeout = request.getSocksTimeout();
-        connectTimeout = request.getConnectTimeout();
-        proxy = request.getProxy();
-        followRedirect = request.isFollowRedirect();
-        maxRedirectCount = request.getMaxRedirectCount();
-        compress = request.isCompress();
-        verify = request.isVerify();
-        basicAuth = request.getBasicAuth();
-        sessionContext = request.getSessionContext();
-        keepAlive = request.isKeepAlive();
-        keyStore = request.getKeyStore();
-        this.url = request.getUrl();
-        this.params = request.getParams();
+        method = request.method();
+        headers = request.headers();
+        cookies = request.cookies();
+        userAgent = request.userAgent();
+        charset = request.charset();
+        body = request.body();
+        socksTimeout = request.socksTimeout();
+        connectTimeout = request.connectTimeout();
+        proxy = request.proxy();
+        followRedirect = request.followRedirect();
+        maxRedirectCount = request.maxRedirectCount();
+        compress = request.acceptCompress();
+        verify = request.verify();
+        basicAuth = request.basicAuth();
+        sessionContext = request.sessionContext();
+        keepAlive = request.keepAlive();
+        keyStore = request.keyStore();
+        this.url = request.url();
+        this.params = request.params();
     }
 
     public RequestBuilder method(String method) {
