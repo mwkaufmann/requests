@@ -1,6 +1,6 @@
 package net.dongliu.requests.mock;
 
-import net.dongliu.requests.utils.IOUtils;
+import net.dongliu.commons.io.InputStreams;
 import org.eclipse.jetty.server.Request;
 
 import javax.servlet.MultipartConfigElement;
@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -40,7 +41,9 @@ public class MockMultiPartServlet extends HttpServlet {
                 out.write(part.getContentType().getBytes(StandardCharsets.UTF_8));
                 out.write('\n');
             }
-            IOUtils.copy(part.getInputStream(), out);
+            try (InputStream in = part.getInputStream()) {
+                InputStreams.transferTo(in, out);
+            }
             out.write('\n');
         }
     }

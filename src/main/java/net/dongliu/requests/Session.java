@@ -1,11 +1,9 @@
 package net.dongliu.requests;
 
+import net.dongliu.requests.executor.SessionContext;
+
 import java.net.URL;
 import java.util.List;
-
-import org.jetbrains.annotations.NotNull;
-
-import net.dongliu.requests.executor.SessionContext;
 
 /**
  * Http request share cookies etc.
@@ -75,9 +73,8 @@ public class Session {
     /**
      * Return all cookies this session current hold.
      */
-    @NotNull
     public List<Cookie> currentCookies() {
-        return context.getCookieJar().getCookies();
+        return context.cookieJar().getCookies();
     }
 
     /**

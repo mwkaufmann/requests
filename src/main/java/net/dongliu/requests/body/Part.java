@@ -1,6 +1,7 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.requests.utils.IOUtils;
+import net.dongliu.commons.annotation.Nullable;
+import net.dongliu.commons.io.InputStreams;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -8,7 +9,6 @@ import java.nio.charset.Charset;
 import static java.util.Objects.requireNonNull;
 import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_BINARY;
 
-import org.jetbrains.annotations.Nullable;
 
 /**
  * This class represent one part(field) of http multipart request body.
@@ -88,11 +88,9 @@ public class Part<T> implements Outputable, Serializable {
      * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
      */
     public static Part<File> file(String name, String fileName, File file) {
-        return new Part<>(name, fileName, file, new Outputor<File>() {
-
-            @Override
-            public void writeBody(File body, OutputStream out, Charset charset) throws IOException {
-                IOUtils.copy(new FileInputStream(body), out);
+        return new Part<>(name, fileName, file, (body, out, charset) -> {
+            try (InputStream in = new FileInputStream(body)) {
+                InputStreams.transferTo(in, out);
             }
         }, ContentTypes.probeContentType(file));
     }
@@ -106,11 +104,9 @@ public class Part<T> implements Outputable, Serializable {
      */
     @Deprecated
     public static Part<InputStream> file(String name, String fileName, InputStream in) {
-        return new Part<>(name, fileName, in, new Outputor<InputStream>() {
-
-            @Override
-            public void writeBody(InputStream body, OutputStream out, Charset charset) throws IOException {
-                IOUtils.copy(body, out);
+        return new Part<>(name, fileName, in, (body, out, charset) -> {
+            try (InputStream bin = body) {
+                InputStreams.transferTo(bin, out);
             }
         }, CONTENT_TYPE_BINARY);
     }
@@ -120,11 +116,9 @@ public class Part<T> implements Outputable, Serializable {
      * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
      */
     public static Part<InputStreamSupplier> file(String name, String fileName, InputStreamSupplier supplier) {
-        return new Part<>(name, fileName, supplier, new Outputor<InputStreamSupplier>() {
-
-            @Override
-            public void writeBody(InputStreamSupplier body, OutputStream out, Charset charset) throws IOException {
-                IOUtils.copy(body.get(), out);
+        return new Part<>(name, fileName, supplier, (body, out, charset) -> {
+            try (InputStream in = body.get()) {
+                InputStreams.transferTo(in, out);
             }
         }, CONTENT_TYPE_BINARY);
     }
@@ -134,12 +128,7 @@ public class Part<T> implements Outputable, Serializable {
      * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
      */
     public static Part<byte[]> file(String name, String fileName, byte[] bytes) {
-        return new Part<>(name, fileName, bytes, new Outputor<byte[]>() {
-            @Override
-            public void writeBody(byte[] body, OutputStream out, Charset charset) throws IOException {
-                out.write(body);
-            }
-        }, CONTENT_TYPE_BINARY);
+        return new Part<>(name, fileName, bytes, (body, out, charset) -> out.write(body), CONTENT_TYPE_BINARY);
     }
 
     /**
@@ -147,14 +136,11 @@ public class Part<T> implements Outputable, Serializable {
      * This return a part equivalent to &lt;input type="text" /&gt; field in multi part form.
      */
     public static Part<String> text(String name, String value) {
-        return new Part<>(name, null, value, new Outputor<String>() {
-            @Override
-            public void writeBody(String body, OutputStream out, Charset charset) throws IOException {
-                // just use charset of request to encode this part
-                OutputStreamWriter writer = new OutputStreamWriter(out, charset);
-                writer.write(body);
-                writer.flush();
-            }
+        return new Part<>(name, null, value, (body, out, charset) -> {
+            // just use charset of request to encode this part
+            OutputStreamWriter writer = new OutputStreamWriter(out, charset);
+            writer.write(body);
+            writer.flush();
         }, null);
     }
 

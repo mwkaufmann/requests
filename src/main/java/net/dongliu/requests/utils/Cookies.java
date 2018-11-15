@@ -1,8 +1,8 @@
 package net.dongliu.requests.utils;
 
+import net.dongliu.commons.annotation.Nullable;
 import net.dongliu.requests.Cookie;
 import net.dongliu.requests.Parameter;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Date;
 

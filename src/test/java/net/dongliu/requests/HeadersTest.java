@@ -1,5 +1,6 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.collection.Lists;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -17,12 +18,12 @@ public class HeadersTest {
                 new Header("Location", "www2"),
                 new Header("Content-Length", "100")
         ));
-        assertEquals(Arrays.asList("www", "www2"), headers.getHeaders("Location"));
+        assertEquals(Lists.of("www", "www2"), headers.getHeaders("Location"));
     }
 
     @Test
     public void getHeader() {
-        Headers headers = new Headers(Arrays.asList(
+        Headers headers = new Headers(Lists.of(
                 new Header("Location", "www"),
                 new Header("Location", "www2"),
                 new Header("Content-Length", "100")
@@ -33,7 +34,7 @@ public class HeadersTest {
 
     @Test
     public void getLongHeader() {
-        Headers headers = new Headers(Arrays.asList(
+        Headers headers = new Headers(Lists.of(
                 new Header("Location", "www"),
                 new Header("Location", "www2"),
                 new Header("Content-Length", "100")

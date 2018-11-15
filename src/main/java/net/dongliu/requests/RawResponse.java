@@ -1,11 +1,14 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.Lazy;
+import net.dongliu.commons.annotation.Nullable;
+import net.dongliu.commons.io.Closeables;
+import net.dongliu.commons.io.InputStreams;
+import net.dongliu.commons.io.Readers;
 import net.dongliu.requests.ResponseHandler.ResponseInfo;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.json.JsonLookup;
 import net.dongliu.requests.json.TypeInfer;
-import net.dongliu.requests.utils.IOUtils;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -65,7 +68,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
 
     @Override
     public void close() {
-        IOUtils.closeQuietly(body);
+        Closeables.closeQuietly(body);
         conn.disconnect();
     }
 
@@ -108,8 +111,9 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      */
     public String readToText() {
         Charset charset = getCharset();
-        try (Reader reader = new InputStreamReader(decompressBody(), charset)) {
-            return IOUtils.readAll(reader);
+        try (InputStream in = body();
+             Reader reader = new InputStreamReader(in, charset)) {
+            return Readers.readAll(reader);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -129,7 +133,9 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      */
     public byte[] readToBytes() {
         try {
-            return IOUtils.readAll(decompressBody());
+            try (InputStream in = body()) {
+                return InputStreams.readAll(in);
+            }
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -142,7 +148,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      * The response is closed whether this call succeed or failed with exception.
      */
     public <T> Response<T> toResponse(ResponseHandler<T> handler) {
-        ResponseInfo responseInfo = new ResponseInfo(this.url, this.statusCode, this.headers, decompressBody());
+        ResponseInfo responseInfo = new ResponseInfo(this.url, this.statusCode, this.headers, body());
         try {
             T result = handler.handle(responseInfo);
             return new Response<>(this.url, this.statusCode, this.cookies, this.headers, result);
@@ -167,7 +173,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      */
     public <T> T readToJson(Type type) {
         try {
-            return JsonLookup.getInstance().lookup().unmarshal(decompressBody(), getCharset(), type);
+            return JsonLookup.getInstance().lookup().unmarshal(body(), getCharset(), type);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -213,7 +219,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     public void writeToFile(File file) {
         try {
             try (OutputStream os = new FileOutputStream(file)) {
-                IOUtils.copy(decompressBody(), os);
+                InputStreams.transferTo(body(), os);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -228,7 +234,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     public void writeToFile(Path path) {
         try {
             try (OutputStream os = Files.newOutputStream(path)) {
-                IOUtils.copy(decompressBody(), os);
+                InputStreams.transferTo(body(), os);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -244,7 +250,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     public void writeToFile(String path) {
         try {
             try (OutputStream os = new FileOutputStream(path)) {
-                IOUtils.copy(decompressBody(), os);
+                InputStreams.transferTo(body(), os);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -267,7 +273,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      */
     public void writeTo(OutputStream out) {
         try {
-            IOUtils.copy(decompressBody(), out);
+            InputStreams.transferTo(body(), out);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -282,8 +288,9 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      */
     public void writeTo(Writer writer) {
         try {
-            try (Reader reader = new InputStreamReader(decompressBody(), getCharset())) {
-                IOUtils.copy(reader, writer);
+            try (InputStream in = body();
+                 Reader reader = new InputStreamReader(in, getCharset())) {
+                Readers.transferTo(reader, writer);
             }
         } catch (IOException e) {
             throw new RequestsException(e);
@@ -296,8 +303,8 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      * Consume and discard this response body.
      */
     public void discardBody() {
-        try {
-            IOUtils.skipAll(body);
+        try (InputStream in = body) {
+            InputStreams.discardAll(in);
         } catch (IOException e) {
             throw new RequestsException(e);
         } finally {
@@ -322,6 +329,8 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
         return statusLine;
     }
 
+    private Lazy<InputStream> decompressedBody = Lazy.of(this::decompressBody);
+
     /**
      * The response body input stream
      *
@@ -329,16 +338,14 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      */
     @Deprecated
     public InputStream getInput() {
-        //TODO: fix this.
-        return decompressBody();
+        return decompressedBody.get();
     }
 
     /**
      * The response body input stream
      */
     public InputStream body() {
-        //TODO: fix this.
-        return decompressBody();
+        return decompressedBody.get();
     }
 
     private Charset getCharset() {
@@ -374,7 +381,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
                 try {
                     return new GZIPInputStream(body);
                 } catch (IOException e) {
-                    IOUtils.closeQuietly(body);
+                    Closeables.closeQuietly(body);
                     throw new RequestsException(e);
                 }
             case "deflate":

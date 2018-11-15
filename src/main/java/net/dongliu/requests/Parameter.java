@@ -1,7 +1,5 @@
 package net.dongliu.requests;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
@@ -14,9 +12,7 @@ import java.util.Objects;
 public class Parameter<T> implements Map.Entry<String, T>, Serializable {
     private static final long serialVersionUID = -6525353427059094141L;
 
-    @NotNull
     protected final String name;
-    @NotNull
     protected final T value;
 
     public Parameter(String key, T value) {
@@ -42,12 +38,10 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
      * @deprecated using {@link #name()}
      */
     @Deprecated
-    @NotNull
     public String getName() {
         return name;
     }
 
-    @NotNull
     public String name() {
         return name;
     }
@@ -56,12 +50,10 @@ public class Parameter<T> implements Map.Entry<String, T>, Serializable {
      * @deprecated using {@link #value()}
      */
     @Deprecated
-    @NotNull
     public T getValue() {
         return value;
     }
 
-    @NotNull
     public T value() {
         return value;
     }

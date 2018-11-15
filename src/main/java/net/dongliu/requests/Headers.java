@@ -1,18 +1,14 @@
 package net.dongliu.requests;
 
 
+import net.dongliu.commons.annotation.Nullable;
+
 import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Wrap to deal with response headers
@@ -25,15 +21,14 @@ public class Headers implements Serializable {
     private transient volatile Map<String, List<String>> map;
 
     public Headers(List<Header> headers) {
-        this.headers = Collections.unmodifiableList(Objects.requireNonNull(headers));
+        this.headers = Collections.unmodifiableList(requireNonNull(headers));
     }
 
     /**
      * Get headers by name. If not exists, return empty list
      */
-    @NotNull
     public List<String> getHeaders(String name) {
-        Objects.requireNonNull(name);
+        requireNonNull(name);
         ensureMap();
         List<String> values = map.get(name.toLowerCase());
         if (values == null) {
@@ -50,7 +45,7 @@ public class Headers implements Serializable {
     @Deprecated
     @Nullable
     public String getFirstHeader(String name) {
-        Objects.requireNonNull(name);
+        requireNonNull(name);
         return getHeader(name);
     }
 
@@ -60,7 +55,7 @@ public class Headers implements Serializable {
     @Nullable
     public String getHeader(String name) {
         ensureMap();
-        Objects.requireNonNull(name);
+        requireNonNull(name);
         List<String> values = map.get(name.toLowerCase());
         if (values == null) {
             return null;
@@ -83,7 +78,6 @@ public class Headers implements Serializable {
         }
     }
 
-    @NotNull
     public List<Header> getHeaders() {
         return headers;
     }

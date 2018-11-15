@@ -2,6 +2,8 @@ package net.dongliu.requests.executor;
 
 import java.io.Serializable;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Maintain session.
  */
@@ -10,10 +12,18 @@ public class SessionContext implements Serializable {
     private final CookieJar cookieJar;
 
     public SessionContext(CookieJar cookieJar) {
-        this.cookieJar = cookieJar;
+        this.cookieJar = requireNonNull(cookieJar);
     }
 
+    /**
+     * @deprecated use {@link #cookieJar()}
+     */
+    @Deprecated
     public CookieJar getCookieJar() {
+        return cookieJar;
+    }
+
+    public CookieJar cookieJar() {
         return cookieJar;
     }
 }

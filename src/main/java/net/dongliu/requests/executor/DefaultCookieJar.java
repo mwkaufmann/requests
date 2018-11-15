@@ -7,8 +7,6 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.*;
 
-import org.jetbrains.annotations.NotNull;
-
 /**
  * CookieJar that store cookie in memory, maintaining cookies following RFC 6265
  */
@@ -28,16 +26,9 @@ class DefaultCookieJar implements CookieJar, Serializable {
 
     private void removeExpiredCookies() {
         long now = System.currentTimeMillis();
-        Iterator<Map.Entry<CookieKey, Cookie>> iterator = cookieMap.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<CookieKey, Cookie> entry = iterator.next();
-            if (entry.getValue().expired(now)) {
-                iterator.remove();
-            }
-        }
+        cookieMap.entrySet().removeIf(entry -> entry.getValue().expired(now));
     }
 
-    @NotNull
     @Override
     public synchronized List<Cookie> getCookies(URL url) {
         long now = System.currentTimeMillis();
@@ -51,27 +42,19 @@ class DefaultCookieJar implements CookieJar, Serializable {
             }
             matched.add(cookie);
         }
-        Collections.sort(matched, new Comparator<Cookie>() { // we did not sort using create time here
-            @Override
-            public int compare(Cookie cookie1, Cookie cookie2) {
-                return cookie2.path().length() - cookie1.path().length();
-            }
-        });
+        // we did not sort using create time here
+        matched.sort((cookie1, cookie2) -> cookie2.path().length() - cookie1.path().length());
         return matched;
     }
 
-    @NotNull
     @Override
     public synchronized List<Cookie> getCookies() {
         return new ArrayList<>(cookieMap.values());
     }
 
     private static class CookieKey {
-        @NotNull
         private final String domain;
-        @NotNull
         private final String path;
-        @NotNull
         private final String name;
 
         public CookieKey(String domain, String path, String name) {

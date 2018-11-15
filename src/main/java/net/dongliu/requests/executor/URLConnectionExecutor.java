@@ -1,5 +1,6 @@
 package net.dongliu.requests.executor;
 
+import net.dongliu.commons.annotation.Nullable;
 import net.dongliu.requests.*;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
@@ -7,8 +8,6 @@ import net.dongliu.requests.exception.TooManyRedirectsException;
 import net.dongliu.requests.utils.Cookies;
 import net.dongliu.requests.utils.NopHostnameVerifier;
 import net.dongliu.requests.utils.SSLSocketFactories;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
@@ -18,7 +17,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.*;
 import java.nio.charset.Charset;
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -42,7 +40,6 @@ class URLConnectionExecutor implements HttpExecutor {
         System.setProperty("http.maxConnections", "100");
     }
 
-    @NotNull
     @Override
     public RawResponse proceed(Request request) {
         RawResponse response = doRequest(request);
@@ -96,22 +93,20 @@ class URLConnectionExecutor implements HttpExecutor {
         Charset charset = request.charset();
         URL url = URIEncoder.joinUrl(request.url(), URIEncoder.toStringParameters(request.params()), charset);
         @Nullable RequestBody body = request.body();
-        @Nullable SessionContext sessionContext = request.sessionContext();
         CookieJar cookieJar;
-        if (sessionContext == null) {
-            cookieJar = NopCookieJar.instance;
+        if (request.sessionContext() != null) {
+            cookieJar = request.sessionContext().cookieJar();
         } else {
-            cookieJar = sessionContext.getCookieJar();
+            cookieJar = NopCookieJar.instance;
         }
 
+        @Nullable Proxy proxy = request.proxy();
+        if (proxy == null) {
+            proxy = Proxy.NO_PROXY;
+        }
         HttpURLConnection conn;
         try {
-            @Nullable Proxy proxy = request.proxy();
-            if (proxy != null) {
-                conn = (HttpURLConnection) url.openConnection(proxy);
-            } else {
-                conn = (HttpURLConnection) url.openConnection();
-            }
+            conn = (HttpURLConnection) url.openConnection(proxy);
         } catch (IOException e) {
             throw new RequestsException(e);
         }
@@ -121,18 +116,15 @@ class URLConnectionExecutor implements HttpExecutor {
 
         // deal with https
         if (conn instanceof HttpsURLConnection) {
-            SSLSocketFactory ssf = null;
+            HttpsURLConnection httpsConn = (HttpsURLConnection) conn;
             if (!request.verify()) {
-                // trust all certificates
-                ssf = SSLSocketFactories.getTrustAllSSLSocketFactory();
+                SSLSocketFactory ssf = SSLSocketFactories.getTrustAllSSLSocketFactory();
+                httpsConn.setSSLSocketFactory(ssf);
                 // do not verify host of certificate
-                ((HttpsURLConnection) conn).setHostnameVerifier(NopHostnameVerifier.getInstance());
+                httpsConn.setHostnameVerifier(NopHostnameVerifier.getInstance());
             } else if (request.keyStore() != null) {
-                KeyStore keyStore = request.keyStore();
-                ssf = SSLSocketFactories.getCustomTrustSSLSocketFactory(keyStore);
-            }
-            if (ssf != null) {
-                ((HttpsURLConnection) conn).setSSLSocketFactory(ssf);
+                SSLSocketFactory ssf = SSLSocketFactories.getCustomTrustSSLSocketFactory(request.keyStore());
+                httpsConn.setSSLSocketFactory(ssf);
             }
         }
 

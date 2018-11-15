@@ -1,7 +1,6 @@
 package net.dongliu.requests.executor;
 
-import org.jetbrains.annotations.NotNull;
-
+import net.dongliu.commons.annotation.NonNull;
 import net.dongliu.requests.Interceptor;
 import net.dongliu.requests.RawResponse;
 import net.dongliu.requests.Request;
@@ -15,6 +14,6 @@ public interface HttpExecutor extends Interceptor.InvocationTarget {
     /**
      * Process the request, and return response
      */
-    @NotNull
+    @NonNull
     RawResponse proceed(Request request);
 }

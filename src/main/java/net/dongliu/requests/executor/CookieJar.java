@@ -1,12 +1,10 @@
 package net.dongliu.requests.executor;
 
+import net.dongliu.requests.Cookie;
+
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
-
-import org.jetbrains.annotations.NotNull;
-
-import net.dongliu.requests.Cookie;
 
 /**
  * Interface for storing cookies
@@ -23,12 +21,10 @@ public interface CookieJar {
      *
      * @return the cookie match url, return empty collection if no match cookie
      */
-    @NotNull
     List<Cookie> getCookies(URL url);
 
     /**
      * Get all cookies in this store
      */
-    @NotNull
     List<Cookie> getCookies();
 }

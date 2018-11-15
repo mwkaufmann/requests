@@ -1,13 +1,12 @@
 package net.dongliu.requests.mock;
 
-import net.dongliu.requests.utils.Base64;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Base64;
 
 /**
  * @author Liu Dong {@literal <im@dongliu.net>}
@@ -32,7 +31,7 @@ public class MockBasicAuthenticationServlet extends HttpServlet {
         }
     }
 
-    private boolean allowUser(String auth) throws IOException {
+    private boolean allowUser(String auth) {
 
         if (auth == null) {
             return false;

@@ -1,10 +1,10 @@
 package net.dongliu.requests.json;
 
 
-import java.util.Objects;
+import net.dongliu.commons.annotation.NonNull;
+import net.dongliu.commons.annotation.Nullable;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import java.util.Objects;
 
 /**
  * Lookup json, from classpath
@@ -90,7 +90,7 @@ public class JsonLookup {
      *
      * @throws JsonProcessorNotFoundException if no json provider found
      */
-    @NotNull
+    @NonNull
     public JsonProcessor lookup() {
         JsonProcessor registeredJsonProcessor = this.registeredJsonProcessor;
         if (registeredJsonProcessor != null) {

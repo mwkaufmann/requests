@@ -1,15 +1,15 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.collection.Lists;
 import org.junit.Test;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class URIEncoderTest {
     @Test
@@ -21,15 +21,15 @@ public class URIEncoderTest {
                 empty, StandardCharsets.UTF_8).toExternalForm());
 
         assertEquals("http://www.test.com/path?t=v", URIEncoder.joinUrl(new URL("http://www.test.com/path"),
-                Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
+                Lists.of(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
         assertEquals("http://www.test.com/path?s=t&t=v", URIEncoder.joinUrl(new URL("http://www.test.com/path?s=t"),
-                Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
+                Lists.of(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
         assertEquals("http://www.test.com/path?t=v", URIEncoder.joinUrl(new URL("http://www.test.com/path?"),
-                Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
+                Lists.of(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
         assertEquals("http://www.test.com/path?t=v#seg", URIEncoder.joinUrl(new URL("http://www.test.com/path#seg"),
-                Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
+                Lists.of(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
         assertEquals("http://www.test.com/path?t=v#", URIEncoder.joinUrl(new URL("http://www.test.com/path#"),
-                Arrays.asList(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
+                Lists.of(Parameter.of("t", "v")), StandardCharsets.UTF_8).toExternalForm());
     }
 
 }

@@ -40,7 +40,6 @@ public class Response<T> extends AbstractResponse implements Serializable {
     /**
      * Return the body part.
      * @return the body
-     * @see #getBody()
      */
     public T body() {
         return body;

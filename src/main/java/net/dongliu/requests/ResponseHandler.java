@@ -2,7 +2,6 @@ package net.dongliu.requests;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 
 /**
  * Handler raw response body, convert to result T
@@ -21,41 +20,77 @@ public interface ResponseHandler<T> {
         private String url;
         private int statusCode;
         private Headers headers;
-        private InputStream in;
+        private InputStream body;
 
-        ResponseInfo(String url, int statusCode, Headers headers, InputStream in) {
+        ResponseInfo(String url, int statusCode, Headers headers, InputStream body) {
             this.url = url;
             this.statusCode = statusCode;
             this.headers = headers;
-            this.in = in;
+            this.body = body;
         }
 
         /**
          * The url after redirect. if no redirect during request, this url is the origin url send.
+         * @deprecated use {@link #url()}
          */
+        @Deprecated
         public String getUrl() {
             return url;
         }
 
         /**
          * The response status code
+         * @deprecated use {@link #statusCode()}
          */
+        @Deprecated
         public int getStatusCode() {
             return statusCode;
         }
 
         /**
          * The response headers
+         * @deprecated use {@link #headers()}
          */
+        @Deprecated
         public Headers getHeaders() {
             return headers;
         }
 
         /**
          * The response input stream
+         * @deprecated use {@link #body()}
          */
+        @Deprecated
         public InputStream getIn() {
-            return in;
+            return body;
+        }
+
+        /**
+         * The url after redirect. if no redirect during request, this url is the origin url send.
+         */
+        public String url() {
+            return url;
+        }
+
+        /**
+         * The response status code
+         */
+        public int statusCode() {
+            return statusCode;
+        }
+
+        /**
+         * The response headers
+         */
+        public Headers headers() {
+            return headers;
+        }
+
+        /**
+         * The response body as input stream
+         */
+        public InputStream body() {
+            return body;
         }
     }
 }

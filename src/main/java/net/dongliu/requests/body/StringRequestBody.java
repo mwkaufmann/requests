@@ -18,7 +18,8 @@ class StringRequestBody extends RequestBody<String> {
         super(body, CONTENT_TYPE_TEXT, true);
     }
 
-    @Override public void writeBody(OutputStream os, Charset charset) throws IOException {
+    @Override
+    public void writeBody(OutputStream os, Charset charset) throws IOException {
         try (Writer writer = new OutputStreamWriter(os, charset)) {
             writer.write(body());
         }

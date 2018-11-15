@@ -1,7 +1,6 @@
 package net.dongliu.requests;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.dongliu.commons.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -61,7 +60,6 @@ class AbstractResponse {
      * @deprecated using {@link #cookies}
      */
     @Deprecated
-    @NotNull
     public List<Cookie> getCookies() {
         return cookies;
     }
@@ -70,7 +68,6 @@ class AbstractResponse {
      * Get all cookies returned by this response
      */
 
-    @NotNull
     public List<Cookie> cookies() {
         return cookies;
     }
@@ -80,7 +77,6 @@ class AbstractResponse {
      * @deprecated using {@link #headers}
      */
     @Deprecated
-    @NotNull
     public List<Header> getHeaders() {
         return headers.getHeaders();
     }
@@ -88,7 +84,6 @@ class AbstractResponse {
     /**
      * Return all response headers
      */
-    @NotNull
     public List<Header> headers() {
         return headers.getHeaders();
     }
@@ -139,7 +134,6 @@ class AbstractResponse {
     /**
      * Get all headers values with name. If not exists, return empty list
      */
-    @NotNull
     public List<String> getHeaders(String name) {
         return this.headers.getHeaders(name);
     }

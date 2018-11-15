@@ -1,12 +1,13 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.annotation.Nullable;
+import net.dongliu.commons.collection.Lists;
 import net.dongliu.requests.body.Part;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
 import net.dongliu.requests.executor.HttpExecutor;
 import net.dongliu.requests.executor.RequestExecutorFactory;
 import net.dongliu.requests.executor.SessionContext;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -40,6 +41,7 @@ public final class RequestBuilder {
     int maxRedirectCount = 5;
     boolean compress = true;
     boolean verify = true;
+    @Nullable
     BasicAuth basicAuth;
     @Nullable
     SessionContext sessionContext;
@@ -106,7 +108,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder headers(Map.Entry<String, ?>... headers) {
-        headers(Arrays.asList(headers));
+        headers(Lists.of(headers));
         return this;
     }
 
@@ -131,7 +133,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder cookies(Map.Entry<String, ?>... cookies) {
-        cookies(Arrays.asList(cookies));
+        cookies(Lists.of(cookies));
         return this;
     }
 
@@ -161,7 +163,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder params(Map.Entry<String, ?>... params) {
-        this.params = Arrays.asList(params);
+        this.params = Lists.of(params);
         return this;
     }
 
@@ -216,7 +218,7 @@ public final class RequestBuilder {
     @Deprecated
     @SafeVarargs
     public final RequestBuilder forms(Map.Entry<String, ?>... formBody) {
-        return forms(Arrays.asList(formBody));
+        return forms(Lists.of(formBody));
     }
 
     /**
@@ -243,7 +245,7 @@ public final class RequestBuilder {
      */
     @SafeVarargs
     public final RequestBuilder body(Map.Entry<String, ?>... formBody) {
-        return body(Arrays.asList(formBody));
+        return body(Lists.of(formBody));
     }
 
     /**
@@ -418,7 +420,7 @@ public final class RequestBuilder {
      * @see #multiPartBody(Collection)
      */
     public final RequestBuilder multiPartBody(Part<?>... parts) {
-        return multiPartBody(Arrays.asList(parts));
+        return multiPartBody(Lists.of(parts));
     }
 
     /**
@@ -441,7 +443,7 @@ public final class RequestBuilder {
      * Set interceptors
      */
     public RequestBuilder interceptors(Interceptor... interceptors) {
-        return interceptors(Arrays.asList(interceptors));
+        return interceptors(Lists.of(interceptors));
     }
 
     /**

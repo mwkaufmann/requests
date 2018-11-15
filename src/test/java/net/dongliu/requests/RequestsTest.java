@@ -1,5 +1,6 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.collection.Lists;
 import net.dongliu.requests.body.InputStreamSupplier;
 import net.dongliu.requests.body.Part;
 import net.dongliu.requests.json.TypeInfer;
@@ -11,7 +12,6 @@ import org.junit.Test;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +126,7 @@ public class RequestsTest {
 
     @Test
     public void sendJson() {
-        String text = Requests.post("http://127.0.0.1:8080/echo_body").jsonBody(Arrays.asList(1, 2, 3))
+        String text = Requests.post("http://127.0.0.1:8080/echo_body").jsonBody(Lists.of(1, 2, 3))
                 .send().readToText();
         assertTrue(text.startsWith("["));
         assertTrue(text.endsWith("]"));
@@ -134,7 +134,7 @@ public class RequestsTest {
 
     @Test
     public void receiveJson() {
-        List<Integer> list = Requests.post("http://127.0.0.1:8080/echo_body").jsonBody(Arrays.asList(1, 2, 3))
+        List<Integer> list = Requests.post("http://127.0.0.1:8080/echo_body").jsonBody(Lists.of(1, 2, 3))
                 .send().readToJson(new TypeInfer<List<Integer>>() {
                 });
         assertEquals(3, list.size());
@@ -166,13 +166,10 @@ public class RequestsTest {
     @Test
     public void testInterceptor() {
         final long[] statusCode = {0};
-        Interceptor interceptor = new Interceptor() {
-            @Override
-            public RawResponse intercept(InvocationTarget target, Request request) {
-                RawResponse response = target.proceed(request);
-                statusCode[0] = response.statusCode();
-                return response;
-            }
+        Interceptor interceptor = (target, request) -> {
+            RawResponse response = target.proceed(request);
+            statusCode[0] = response.statusCode();
+            return response;
         };
 
         String text = Requests.get("http://127.0.0.1:8080/echo_header")

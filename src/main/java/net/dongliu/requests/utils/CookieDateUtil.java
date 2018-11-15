@@ -1,10 +1,11 @@
 package net.dongliu.requests.utils;
 
+import net.dongliu.commons.annotation.Nullable;
+import net.dongliu.commons.collection.Lists;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import org.jetbrains.annotations.Nullable;
 
 /**
  * @author Liu Dong
@@ -27,7 +28,7 @@ final class CookieDateUtil {
      */
     public static final String PATTERN_ASCTIME = "EEE MMM d HH:mm:ss yyyy";
 
-    private static final Collection<String> DEFAULT_PATTERNS = Arrays.asList(
+    private static final Collection<String> DEFAULT_PATTERNS = Lists.of(
             PATTERN_ASCTIME, PATTERN_RFC1036, PATTERN_RFC1123);
 
     private static final Date DEFAULT_TWO_DIGIT_YEAR_START;
@@ -54,6 +55,7 @@ final class CookieDateUtil {
      * @param dateValue the date value to parse
      * @return the parsed date
      */
+    @Nullable
     public static Date parseDate(String dateValue) {
         return parseDate(dateValue, DEFAULT_PATTERNS);
     }
@@ -65,6 +67,7 @@ final class CookieDateUtil {
      * @param dateFormats the date formats to use
      * @return the parsed date
      */
+    @Nullable
     public static Date parseDate(String dateValue, Collection<String> dateFormats) {
         return parseDate(dateValue, dateFormats, DEFAULT_TWO_DIGIT_YEAR_START);
     }

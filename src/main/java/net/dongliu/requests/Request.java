@@ -1,8 +1,8 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.annotation.Nullable;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.executor.SessionContext;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.Serializable;
 import java.net.Proxy;
@@ -39,6 +39,7 @@ public class Request implements Serializable {
     private final boolean verify;
     @Nullable
     private final KeyStore keyStore;
+    @Nullable
     private final BasicAuth basicAuth;
     @Nullable
     private final SessionContext sessionContext;
@@ -257,6 +258,7 @@ public class Request implements Serializable {
         return charset;
     }
 
+    @Nullable
     public RequestBody<?> body() {
         return body;
     }
@@ -269,6 +271,7 @@ public class Request implements Serializable {
         return connectTimeout;
     }
 
+    @Nullable
     public Proxy proxy() {
         return proxy;
     }

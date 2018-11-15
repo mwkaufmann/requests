@@ -1,7 +1,7 @@
 package net.dongliu.requests;
 
+import net.dongliu.commons.io.Closeables;
 import net.dongliu.requests.exception.TrustManagerLoadFailedException;
-import net.dongliu.requests.utils.IOUtils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,7 +37,7 @@ public class KeyStores {
         } catch (CertificateException | NoSuchAlgorithmException | KeyStoreException | IOException e) {
             throw new TrustManagerLoadFailedException(e);
         } finally {
-            IOUtils.closeQuietly(in);
+            Closeables.closeQuietly(in);
         }
     }
 }

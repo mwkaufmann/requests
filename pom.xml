@@ -8,7 +8,7 @@
     <artifactId>requests</artifactId>
     <name>Convenient http client for java</name>
     <packaging>jar</packaging>
-    <version>4.18.2</version>
+    <version>5.0.0</version>
     <url>https://github.com/clearthesky/requests</url>
 
     <parent>
@@ -41,17 +41,16 @@
     </licenses>
 
     <properties>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <jackson.version>2.8.1</jackson.version>
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>16.0.1</version>
-            <scope>provided</scope>
+            <groupId>net.dongliu</groupId>
+            <artifactId>commons</artifactId>
+            <version>6.10.4</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

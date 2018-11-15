@@ -1,22 +1,20 @@
 package net.dongliu.requests;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class Cookie extends Parameter<String> implements Map.Entry<String, String>, Serializable {
     private static final long serialVersionUID = -287880603936079757L;
     /**
      * The cookie domain set by attribute or from url
      */
-    @NotNull
     private final String domain;
     /**
      * The cookie path set by attribute or from url
      */
-    @NotNull
     private final String path;
     /**
      * The cookie expire timestamp, zero means no expiry is set
@@ -35,8 +33,8 @@ public class Cookie extends Parameter<String> implements Map.Entry<String, Strin
     public Cookie(String domain, String path, String name, String value, long expiry, boolean secure,
             boolean hostOnly) {
         super(name, value);
-        this.domain = Objects.requireNonNull(domain);
-        this.path = Objects.requireNonNull(path);
+        this.domain = requireNonNull(domain);
+        this.path = requireNonNull(path);
         this.expiry = expiry;
         this.secure = secure;
         this.hostOnly = hostOnly;
@@ -52,7 +50,6 @@ public class Cookie extends Parameter<String> implements Map.Entry<String, Strin
     /**
      * @deprecated use {@link #domain()}
      */
-    @NotNull
     @Deprecated
     public String getDomain() {
         return domain;
@@ -78,7 +75,6 @@ public class Cookie extends Parameter<String> implements Map.Entry<String, Strin
      * @deprecated use {@link #path()}
      */
     @Deprecated
-    @NotNull
     public String getPath() {
         return path;
     }
@@ -91,7 +87,6 @@ public class Cookie extends Parameter<String> implements Map.Entry<String, Strin
         return hostOnly;
     }
 
-    @NotNull
     public String domain() {
         return domain;
     }
@@ -104,7 +99,6 @@ public class Cookie extends Parameter<String> implements Map.Entry<String, Strin
         return expiry;
     }
 
-    @NotNull
     public String path() {
         return path;
     }

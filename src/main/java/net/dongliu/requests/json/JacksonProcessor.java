@@ -2,8 +2,8 @@ package net.dongliu.requests.json;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.dongliu.commons.annotation.Nullable;
 
-import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
