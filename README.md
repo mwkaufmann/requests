@@ -16,7 +16,7 @@ Table of Contents
   * [Basic Auth](#basic-auth)
   * [Redirection](#redirection)
   * [Timeout](#timeout)
-  * [Response compress](#response-compress)
+  * [Response compress](#response-compress-encoding)
   * [Https Verification](#https-verification)
   * [Proxy](#proxy)
 * [Session](#session)
@@ -57,7 +57,7 @@ The response object have several common http response fields can be used:
 
 ```java
 RawResponse resp = Requests.get(url).send();
-int statusCode = resp.getStatusCode();
+int statusCode = resp.statusCode();
 String contentLen = resp.getHeader("Content-Length");
 Cookie cookie = resp.getCookie("_bd_name");
 String body = resp.readToText();
@@ -244,11 +244,14 @@ You can set connection connect timeout, and socket read/write timeout value, as 
 Requests.get(url).socketTimeout(20_000).connectTimeout(30_000).send();
 ```
 
-## Response compress 
-Requests send Accept-Encoding: gzip, deflate, and handle gzipped response in default. You can disable this by:
+## Response compress encoding
+Requests send Accept-Encoding: gzip, deflate, and auto handle response decompress in default. You can disable this by:
 
 ```java
-Requests.get(url).compress(false).send();
+// do not send Accept-Encoding: gzip, deflate header
+String resp = Requests.get(url).acceptCompress(false).send().readToText();
+// do not decompress response body
+String resp2 = Requests.get(url).send().decompress(false).readToText();
 ```
 
 ## Https Verification 
