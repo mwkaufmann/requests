@@ -16,7 +16,7 @@ class BytesRequestBody extends RequestBody<byte[]> {
         super(body, CONTENT_TYPE_BINARY, false);
     }
 
-    @Override public void writeBody(OutputStream os, Charset charset) throws IOException {
-        os.write(body());
+    @Override public void writeBody(OutputStream out, Charset charset) throws IOException {
+        out.write(body());
     }
 }

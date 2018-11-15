@@ -22,12 +22,12 @@ class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
     }
 
     @Override
-    public void writeBody(OutputStream output, Charset charset) throws IOException {
-        Writer writer = new OutputStreamWriter(output);
+    public void writeBody(OutputStream out, Charset charset) throws IOException {
+        Writer writer = new OutputStreamWriter(out);
         for (Part part : body()) {
-            String contentType = part.getContentType();
-            String name = part.getName();
-            String fileName = part.getFileName();
+            String contentType = part.contentType();
+            String name = part.name();
+            String fileName = part.fileName();
 
             writeBoundary(writer);
 
@@ -36,9 +36,10 @@ class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
                 writer.write("; filename=\"" + fileName + '"');
             }
             writer.write(LINE_END);
+
             if (contentType != null && !contentType.isEmpty()) {
                 writer.write("Content-Type: " + contentType);
-                Charset partCharset = part.getCharset();
+                Charset partCharset = part.charset();
                 if (partCharset != null) {
                     writer.write("; charset=" + partCharset.name().toLowerCase());
                 }
@@ -47,11 +48,11 @@ class MultiPartRequestBody extends RequestBody<Collection<? extends Part>> {
             writer.write(LINE_END);
             writer.flush();
 
-            part.writeTo(output, charset);
-            output.flush();
+            part.writeTo(out);
+            out.flush();
             writer.write(LINE_END);
             writer.flush();
-            output.flush();
+            out.flush();
         }
         writer.write("--");
         writer.write(BOUNDARY);

@@ -12,7 +12,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author Liu Dong
  */
-public abstract class RequestBody<T> implements Outputable, Serializable {
+public abstract class RequestBody<T> implements Serializable {
     private static final long serialVersionUID = 1332594280620699388L;
     private final T body;
     private String contentType;
@@ -98,16 +98,21 @@ public abstract class RequestBody<T> implements Outputable, Serializable {
         return includeCharset;
     }
 
-    @Override
-    public void writeTo(OutputStream output, Charset charset) throws IOException {
-        writeBody(output, charset);
+    /**
+     * Write the request body to output stream.
+     *
+     * @param out  the output stream to writeTo to
+     * @param charset the charset to use
+     */
+    public void writeTo(OutputStream out, Charset charset) throws IOException {
+        writeBody(out, charset);
     }
 
     /**
      * Write Request body.
      * Note: os should not be closed when this method finished.
      */
-    public abstract void writeBody(OutputStream os, Charset charset) throws IOException;
+    public abstract void writeBody(OutputStream out, Charset charset) throws IOException;
 
     /**
      * Create request body send json data

@@ -23,9 +23,9 @@ class FormRequestBody extends RequestBody<Collection<? extends Map.Entry<String,
     }
 
     @Override
-    public void writeBody(OutputStream os, Charset charset) throws IOException {
+    public void writeBody(OutputStream out, Charset charset) throws IOException {
         String content = URIEncoder.encodeForms(URIEncoder.toStringParameters(body()), charset);
-        try (Writer writer = new OutputStreamWriter(os, charset)) {
+        try (Writer writer = new OutputStreamWriter(out, charset)) {
             writer.write(content);
         }
     }

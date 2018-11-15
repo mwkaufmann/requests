@@ -35,7 +35,7 @@ public class Request implements Serializable {
     private final Proxy proxy;
     private final boolean followRedirect;
     private final int maxRedirectCount;
-    private final boolean compress;
+    private final boolean acceptCompress;
     private final boolean verify;
     @Nullable
     private final KeyStore keyStore;
@@ -58,7 +58,7 @@ public class Request implements Serializable {
         proxy = builder.proxy;
         followRedirect = builder.followRedirect;
         maxRedirectCount = builder.maxRedirectCount;
-        compress = builder.compress;
+        acceptCompress = builder.acceptCompress;
         verify = builder.verify;
         keyStore = builder.keyStore;
         basicAuth = builder.basicAuth;
@@ -170,7 +170,7 @@ public class Request implements Serializable {
      */
     @Deprecated
     public boolean isCompress() {
-        return compress;
+        return acceptCompress;
     }
 
     /**
@@ -285,7 +285,7 @@ public class Request implements Serializable {
     }
 
     public boolean acceptCompress() {
-        return compress;
+        return acceptCompress;
     }
 
     public boolean verify() {

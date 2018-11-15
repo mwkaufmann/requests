@@ -39,7 +39,7 @@ public final class RequestBuilder {
     Proxy proxy;
     boolean followRedirect = true;
     int maxRedirectCount = 5;
-    boolean compress = true;
+    boolean acceptCompress = true;
     boolean verify = true;
     @Nullable
     BasicAuth basicAuth;
@@ -66,7 +66,7 @@ public final class RequestBuilder {
         proxy = request.proxy();
         followRedirect = request.followRedirect();
         maxRedirectCount = request.maxRedirectCount();
-        compress = request.acceptCompress();
+        acceptCompress = request.acceptCompress();
         verify = request.verify();
         basicAuth = request.basicAuth();
         sessionContext = request.sessionContext();
@@ -339,9 +339,19 @@ public final class RequestBuilder {
 
     /**
      * Set accept compressed response. default true
+     * @deprecated use {@link #acceptCompress(boolean)}
      */
+    @Deprecated
     public RequestBuilder compress(boolean compress) {
-        this.compress = compress;
+        this.acceptCompress = compress;
+        return this;
+    }
+
+    /**
+     * Set accept compressed response. default true
+     */
+    public RequestBuilder acceptCompress(boolean acceptCompress) {
+        this.acceptCompress = acceptCompress;
         return this;
     }
 

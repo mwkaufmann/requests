@@ -1,5 +1,5 @@
 Requests is a http request lib with fluent api for java, inspired by the python request module.
-Requests requires JDK 1.7+.
+Requests requires JDK 1.8+, the last version support Java7 is 4.18.* .
 
 Table of Contents
 =================

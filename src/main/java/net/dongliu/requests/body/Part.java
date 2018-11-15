@@ -1,11 +1,13 @@
 package net.dongliu.requests.body;
 
+import net.dongliu.commons.Objects2;
 import net.dongliu.commons.annotation.Nullable;
 import net.dongliu.commons.io.InputStreams;
 
 import java.io.*;
 import java.nio.charset.Charset;
 
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
 import static java.util.Objects.requireNonNull;
 import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_BINARY;
 
@@ -15,7 +17,7 @@ import static net.dongliu.requests.HttpHeaders.CONTENT_TYPE_BINARY;
  *
  * @author Liu Dong
  */
-public class Part<T> implements Outputable, Serializable {
+public class Part<T> implements Serializable {
     private static final long serialVersionUID = -8628605676399143491L;
 
     /**
@@ -37,42 +39,44 @@ public class Part<T> implements Outputable, Serializable {
      * The content type of this Part.
      */
     @Nullable
-    private String contentType;
+    private final String contentType;
 
-    private final Outputor<T> outputor;
     /**
      * The charset of this part content.
      */
     @Nullable
-    private Charset charset;
+    private final Charset charset;
 
-    private Part(String name, @Nullable String fileName, T body, Outputor<T> outputor, @Nullable String contentType) {
+    private final PartWriter<T> partWriter;
+
+    private Part(String name, @Nullable String fileName, T body, @Nullable String contentType,
+                 @Nullable Charset charset, PartWriter<T> partWriter) {
         this.name = requireNonNull(name);
         this.fileName = fileName;
         this.body = requireNonNull(body);
         this.contentType = contentType;
-        this.outputor = requireNonNull(outputor);
+        this.charset = charset;
+        this.partWriter = partWriter;
     }
 
     /**
      * Set content type for this part.
      */
     public Part<T> contentType(String contentType) {
-        this.contentType = requireNonNull(contentType);
-        return this;
+        requireNonNull(contentType);
+        return new Part<>(name, fileName, body, contentType, charset, partWriter);
     }
 
     /**
      * The charset of this part's content. Each part of MultiPart body can has it's own charset set.
-     * If not set, the part is supposed to be binary content, without charset in content type.
      * Default not set.
      *
      * @param charset the charset
      * @return self
      */
     public Part<T> charset(Charset charset) {
-        this.charset = requireNonNull(charset);
-        return this;
+        requireNonNull(charset);
+        return new Part<>(name, fileName, body, contentType, charset, partWriter);
     }
 
     /**
@@ -88,11 +92,11 @@ public class Part<T> implements Outputable, Serializable {
      * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
      */
     public static Part<File> file(String name, String fileName, File file) {
-        return new Part<>(name, fileName, file, (body, out, charset) -> {
+        return new Part<>(name, fileName, file, ContentTypes.probeContentType(file), null, (body, out, charset) -> {
             try (InputStream in = new FileInputStream(body)) {
                 InputStreams.transferTo(in, out);
             }
-        }, ContentTypes.probeContentType(file));
+        });
     }
 
 
@@ -104,11 +108,11 @@ public class Part<T> implements Outputable, Serializable {
      */
     @Deprecated
     public static Part<InputStream> file(String name, String fileName, InputStream in) {
-        return new Part<>(name, fileName, in, (body, out, charset) -> {
+        return new Part<>(name, fileName, in, CONTENT_TYPE_BINARY, null, (body, out, charset) -> {
             try (InputStream bin = body) {
                 InputStreams.transferTo(bin, out);
             }
-        }, CONTENT_TYPE_BINARY);
+        });
     }
 
     /**
@@ -116,11 +120,11 @@ public class Part<T> implements Outputable, Serializable {
      * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
      */
     public static Part<InputStreamSupplier> file(String name, String fileName, InputStreamSupplier supplier) {
-        return new Part<>(name, fileName, supplier, (body, out, charset) -> {
-            try (InputStream in = body.get()) {
-                InputStreams.transferTo(in, out);
+        return new Part<>(name, fileName, supplier, CONTENT_TYPE_BINARY, null, (body, out, charset) -> {
+            try (InputStream bin = body.get()) {
+                InputStreams.transferTo(bin, out);
             }
-        }, CONTENT_TYPE_BINARY);
+        });
     }
 
     /**
@@ -128,7 +132,7 @@ public class Part<T> implements Outputable, Serializable {
      * This return a part equivalent to &lt;input type="file" /&gt; field in multi part form.
      */
     public static Part<byte[]> file(String name, String fileName, byte[] bytes) {
-        return new Part<>(name, fileName, bytes, (body, out, charset) -> out.write(body), CONTENT_TYPE_BINARY);
+        return new Part<>(name, fileName, bytes, CONTENT_TYPE_BINARY, null, (body, out, charset) -> out.write(body));
     }
 
     /**
@@ -136,12 +140,12 @@ public class Part<T> implements Outputable, Serializable {
      * This return a part equivalent to &lt;input type="text" /&gt; field in multi part form.
      */
     public static Part<String> text(String name, String value) {
-        return new Part<>(name, null, value, (body, out, charset) -> {
-            // just use charset of request to encode this part
-            OutputStreamWriter writer = new OutputStreamWriter(out, charset);
+        // the text part do not set content type
+        return new Part<>(name, null, value, null, null, (body, out, charset) -> {
+            OutputStreamWriter writer = new OutputStreamWriter(out, Objects2.elvis(charset, ISO_8859_1));
             writer.write(body);
             writer.flush();
-        }, null);
+        });
     }
 
     /**
@@ -156,56 +160,101 @@ public class Part<T> implements Outputable, Serializable {
     }
 
     /**
-     * The part field name
-     *
-     * @return the name
+     * @deprecated use {@link #name()}
      */
+    @Deprecated
     public String getName() {
         return name;
     }
 
     /**
-     * may be null if not exists
+     * @deprecated use {@link #fileName()}
      */
+    @Deprecated
     @Nullable
     public String getFileName() {
         return fileName;
     }
 
     /**
-     * The part body
+     * @deprecated use {@link #body()}
      */
+    @Deprecated
     public T getBody() {
         return body;
     }
 
     /**
-     * The content type.
+     * @deprecated use {@link #contentType()}
      */
+    @Deprecated
     @Nullable
     public String getContentType() {
         return contentType;
     }
 
-    @Override
-    public void writeTo(OutputStream output, Charset charset) throws IOException {
-        // the charset is only for text part.
-        // cause text part do not has content Type header, we just use the request header's charset, hope server can handle it.
-        outputor.writeBody(body, output, charset);
-    }
-
     /**
-     * The charset of this part's content. Each part of MultiPart body can has it's own charset set.
-     * If not set, the part is supposed to be binary content, without charset in content type.
-     *
-     * @return the charset of this part content. if not set, return null.
+     * @deprecated use {@link #charset()}
      */
+    @Deprecated
     @Nullable
     public Charset getCharset() {
         return charset;
     }
 
-    private interface Outputor<T> {
-        void writeBody(T body, OutputStream out, Charset charset) throws IOException;
+    /**
+     * The part field name
+     *
+     * @return the name
+     */
+    public String name() {
+        return name;
+    }
+
+    /**
+     * The filename of th part. may be null if not exists
+     */
+    @Nullable
+    public String fileName() {
+        return fileName;
+    }
+
+    /**
+     * The part body
+     */
+    public T body() {
+        return body;
+    }
+
+    /**
+     * The content type of the part. For text part, the contentType is always null.
+     */
+    @Nullable
+    public String contentType() {
+        return contentType;
+    }
+
+
+    /**
+     * The charset of this part's content. Each part of MultiPart body can has it's own charset set.
+     * For text part, the charset is always null.
+     *
+     * @return the charset of this part content. if not set, return null.
+     */
+    @Nullable
+    public Charset charset() {
+        return charset;
+    }
+
+    /**
+     * Write part content to output stream.
+     */
+    public void writeTo(OutputStream out) throws IOException {
+        partWriter.writeTo(body, out, charset);
+    }
+
+
+    private interface PartWriter<T> {
+        void writeTo(T body, OutputStream out, @Nullable Charset charset) throws IOException;
     }
 }
