@@ -8,7 +8,7 @@
     <artifactId>requests</artifactId>
     <name>Convenient http client for java</name>
     <packaging>jar</packaging>
-    <version>5.0.0</version>
+    <version>5.0.1</version>
     <url>https://github.com/clearthesky/requests</url>
 
     <parent>
@@ -50,7 +50,7 @@
         <dependency>
             <groupId>net.dongliu</groupId>
             <artifactId>commons</artifactId>
-            <version>6.10.4</version>
+            <version>6.10.5</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 import net.dongliu.commons.Lazy;
+import net.dongliu.commons.annotation.InternalUseOnly;
 import net.dongliu.commons.annotation.Nullable;
 import net.dongliu.commons.io.Closeables;
 import net.dongliu.commons.io.InputStreams;
@@ -44,6 +45,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     private final boolean decompress;
 
     // Only for internal use. Do not call this method.
+    @InternalUseOnly
     public RawResponse(String method, String url, int statusCode, String statusLine, List<Cookie> cookies, Headers headers,
                        InputStream input, HttpURLConnection conn) {
         super(url, statusCode, cookies, headers);

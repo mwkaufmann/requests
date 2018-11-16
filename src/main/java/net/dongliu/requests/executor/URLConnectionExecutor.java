@@ -1,6 +1,7 @@
 package net.dongliu.requests.executor;
 
 import net.dongliu.commons.annotation.Nullable;
+import net.dongliu.commons.io.InputStreams;
 import net.dongliu.requests.*;
 import net.dongliu.requests.body.RequestBody;
 import net.dongliu.requests.exception.RequestsException;
@@ -11,7 +12,6 @@ import net.dongliu.requests.utils.SSLSocketFactories;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -251,7 +251,7 @@ class URLConnectionExecutor implements HttpExecutor {
             input = conn.getErrorStream();
         }
         if (input == null) {
-            input = new ByteArrayInputStream(new byte[0]);
+            input = InputStreams.empty();
         }
 
         // update session
