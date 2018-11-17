@@ -8,7 +8,7 @@
     <artifactId>requests</artifactId>
     <name>Convenient http client for java</name>
     <packaging>jar</packaging>
-    <version>5.0.2</version>
+    <version>5.0.3</version>
     <url>https://github.com/clearthesky/requests</url>
 
     <parent>
@@ -43,7 +43,9 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <jackson.version>2.8.1</jackson.version>
+        <jackson.version>2.9.7</jackson.version>
+        <gson.version>2.8.5</gson.version>
+        <fastjson.version>1.2.51</fastjson.version>
     </properties>
 
     <dependencies>
@@ -55,7 +57,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.7</version>
+            <version>${gson.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -79,7 +81,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.29</version>
+            <version>${fastjson.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -132,11 +134,14 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <additionalOptions>-Xdoclint:none</additionalOptions>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.moditect</groupId>
                         <artifactId>moditect-maven-plugin</artifactId>
-                        <version>1.0.0.Alpha2</version>
+                        <version>1.0.0.Beta1</version>
                         <executions>
                             <execution>
                                 <id>add-module-info</id>
@@ -146,19 +151,9 @@
                                 </goals>
                                 <configuration>
                                     <module>
-                                        <moduleInfo>
-                                            <name>net.dongliu.requests</name>
-                                            <exports>
-                                                net.dongliu.requests;
-                                                net.dongliu.requests.body;
-                                                net.dongliu.requests.exception;
-                                                net.dongliu.requests.json;
-                                                !*;
-                                            </exports>
-                                            <requires>
-                                                net.dongliu.commons;
-                                            </requires>
-                                        </moduleInfo>
+                                        <moduleInfoFile>
+                                            src/main/module/module-info.java
+                                        </moduleInfoFile>
                                     </module>
                                 </configuration>
                             </execution>
