@@ -52,7 +52,7 @@
         <dependency>
             <groupId>net.dongliu</groupId>
             <artifactId>commons</artifactId>
-            <version>6.10.6</version>
+            <version>6.10.7</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -141,7 +141,7 @@
                     <plugin>
                         <groupId>org.moditect</groupId>
                         <artifactId>moditect-maven-plugin</artifactId>
-                        <version>1.0.0.Beta1</version>
+                        <version>1.0.0.Beta2</version>
                         <executions>
                             <execution>
                                 <id>add-module-info</id>
@@ -150,6 +150,7 @@
                                     <goal>add-module-info</goal>
                                 </goals>
                                 <configuration>
+                                    <jvmVersion>9</jvmVersion>
                                     <module>
                                         <moduleInfoFile>
                                             src/main/module/module-info.java
