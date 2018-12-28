@@ -2,10 +2,12 @@ package net.dongliu.requests;
 
 
 import net.dongliu.commons.annotation.Nullable;
+import net.dongliu.commons.collection.Lists;
 
 import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.*;
 
 import static java.util.Objects.requireNonNull;
@@ -32,7 +34,7 @@ public class Headers implements Serializable {
         ensureMap();
         List<String> values = map.get(name.toLowerCase());
         if (values == null) {
-            return Collections.emptyList();
+            return Lists.of();
         }
         return Collections.unmodifiableList(values);
     }
@@ -88,20 +90,9 @@ public class Headers implements Serializable {
      * @return the charset, or defaultCharset if no charset is set.
      */
     public Charset getCharset(Charset defaultCharset) {
-        Charset charset = getCharset();
-        return charset == null ? defaultCharset : charset;
-    }
-
-    /**
-     * Get charset set in content type header.
-     *
-     * @return null if no charset is set.
-     */
-    @Nullable
-    public Charset getCharset() {
         String contentType = getHeader(HttpHeaders.NAME_CONTENT_TYPE);
         if (contentType == null) {
-            return StandardCharsets.UTF_8;
+            return defaultCharset;
         }
         String[] items = contentType.split(";");
         for (String item : items) {
@@ -115,10 +106,27 @@ public class Headers implements Serializable {
             }
             String key = item.substring(0, idx).trim();
             if (key.equalsIgnoreCase("charset")) {
-                return Charset.forName(item.substring(idx + 1).trim());
+                try {
+                    return Charset.forName(item.substring(idx + 1).trim());
+                } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
+                    return defaultCharset;
+                }
             }
         }
-        return StandardCharsets.UTF_8;
+        return defaultCharset;
+    }
+
+    /**
+     * Get charset set in content type header.
+     *
+     * @return null if no charset is set.
+     *
+     * @deprecated using {@link #getCharset(Charset)} instead
+     */
+    @Nullable
+    @Deprecated
+    public Charset getCharset() {
+        return getCharset(null);
     }
 
 

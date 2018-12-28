@@ -26,10 +26,10 @@ import java.util.*;
 public final class RequestBuilder {
     String method = Methods.GET;
     URL url;
-    Collection<? extends Map.Entry<String, ?>> headers = Collections.emptyList();
-    Collection<? extends Map.Entry<String, ?>> cookies = Collections.emptyList();
+    Collection<? extends Map.Entry<String, ?>> headers = Lists.of();
+    Collection<? extends Map.Entry<String, ?>> cookies = Lists.of();
     String userAgent = DefaultSettings.USER_AGENT;
-    Collection<? extends Map.Entry<String, ?>> params = Collections.emptyList();
+    Collection<? extends Map.Entry<String, ?>> params = Lists.of();
     Charset charset = StandardCharsets.UTF_8;
     @Nullable
     RequestBody<?> body;

@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 public class URIEncoderTest {
     @Test
     public void joinUrl() throws Exception {
-        List<Map.Entry<String, String>> empty = Collections.emptyList();
+        List<Map.Entry<String, String>> empty = Lists.of();
         assertEquals("http://www.test.com/", URIEncoder.joinUrl(new URL("http://www.test.com/"),
                 empty, StandardCharsets.UTF_8).toExternalForm());
         assertEquals("http://www.test.com/path", URIEncoder.joinUrl(new URL("http://www.test.com/path"),

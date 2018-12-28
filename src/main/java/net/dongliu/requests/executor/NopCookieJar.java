@@ -1,10 +1,10 @@
 package net.dongliu.requests.executor;
 
+import net.dongliu.commons.collection.Lists;
 import net.dongliu.requests.Cookie;
 
 import java.net.URL;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,11 +24,11 @@ class NopCookieJar implements CookieJar {
 
     @Override
     public List<Cookie> getCookies(URL url) {
-        return Collections.emptyList();
+        return Lists.of();
     }
 
     @Override
     public List<Cookie> getCookies() {
-        return Collections.emptyList();
+        return Lists.of();
     }
 }
