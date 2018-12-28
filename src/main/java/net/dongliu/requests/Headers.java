@@ -1,6 +1,7 @@
 package net.dongliu.requests;
 
 
+import net.dongliu.commons.Lazy;
 import net.dongliu.commons.annotation.Nullable;
 import net.dongliu.commons.collection.Lists;
 
@@ -13,17 +14,36 @@ import java.util.*;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Wrap to deal with response headers
+ * Wrap to deal with response headers.
+ * This class is thread-safe.
  *
  * @author Liu Dong
  */
 public class Headers implements Serializable {
     private static final long serialVersionUID = -1283402589869346874L;
     private final List<Header> headers;
-    private transient volatile Map<String, List<String>> map;
+    private transient final Lazy<Map<String, List<String>>> lazyMap;
 
     public Headers(List<Header> headers) {
-        this.headers = Collections.unmodifiableList(requireNonNull(headers));
+        this.headers = Lists.copy(requireNonNull(headers));
+        this.lazyMap = Lazy.of(() -> toMap(headers));
+    }
+
+    private static Map<String, List<String>> toMap(List<Header> headers) {
+        Map<String, List<String>> map = new HashMap<>();
+        for (Map.Entry<String, String> header : headers) {
+            String key = header.getKey().toLowerCase();
+            String value = header.getValue();
+            List<String> list = map.get(key);
+            if (list == null) {
+                list = new ArrayList<>(4);
+                list.add(value);
+                map.put(key, list);
+            } else {
+                list.add(value);
+            }
+        }
+        return map;
     }
 
     /**
@@ -31,8 +51,7 @@ public class Headers implements Serializable {
      */
     public List<String> getHeaders(String name) {
         requireNonNull(name);
-        ensureMap();
-        List<String> values = map.get(name.toLowerCase());
+        List<String> values = lazyMap.get().get(name.toLowerCase());
         if (values == null) {
             return Lists.of();
         }
@@ -56,9 +75,8 @@ public class Headers implements Serializable {
      */
     @Nullable
     public String getHeader(String name) {
-        ensureMap();
         requireNonNull(name);
-        List<String> values = map.get(name.toLowerCase());
+        List<String> values = lazyMap.get().get(name.toLowerCase());
         if (values == null) {
             return null;
         }
@@ -127,26 +145,5 @@ public class Headers implements Serializable {
     @Deprecated
     public Charset getCharset() {
         return getCharset(null);
-    }
-
-
-    private void ensureMap() {
-        if (this.map != null) {
-            return;
-        }
-        Map<String, List<String>> map = new HashMap<>();
-        for (Map.Entry<String, String> header : headers) {
-            String key = header.getKey().toLowerCase();
-            String value = header.getValue();
-            List<String> list = map.get(key);
-            if (list == null) {
-                list = new ArrayList<>(4);
-                list.add(value);
-                map.put(key, list);
-            } else {
-                list.add(value);
-            }
-        }
-        this.map = map;
     }
 }
