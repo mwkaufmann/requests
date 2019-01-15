@@ -9,6 +9,7 @@ import net.dongliu.requests.exception.TooManyRedirectsException;
 import net.dongliu.requests.utils.Cookies;
 import net.dongliu.requests.utils.NopHostnameVerifier;
 import net.dongliu.requests.utils.SSLSocketFactories;
+import net.dongliu.requests.utils.URLUtils;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSocketFactory;
@@ -91,7 +92,7 @@ class URLConnectionExecutor implements HttpExecutor {
 
     private RawResponse doRequest(Request request) {
         Charset charset = request.charset();
-        URL url = URIEncoder.joinUrl(request.url(), URIEncoder.toStringParameters(request.params()), charset);
+        URL url = URLUtils.joinUrl(request.url(), URLUtils.toStringParameters(request.params()), charset);
         @Nullable RequestBody body = request.body();
         CookieJar cookieJar;
         if (request.sessionContext() != null) {

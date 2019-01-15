@@ -1,6 +1,6 @@
 package net.dongliu.requests.body;
 
-import net.dongliu.requests.URIEncoder;
+import net.dongliu.requests.utils.URLUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -24,7 +24,7 @@ class FormRequestBody extends RequestBody<Collection<? extends Map.Entry<String,
 
     @Override
     public void writeBody(OutputStream out, Charset charset) throws IOException {
-        String content = URIEncoder.encodeForms(URIEncoder.toStringParameters(body()), charset);
+        String content = URLUtils.encodeForms(URLUtils.toStringParameters(body()), charset);
         try (Writer writer = new OutputStreamWriter(out, charset)) {
             writer.write(content);
         }
