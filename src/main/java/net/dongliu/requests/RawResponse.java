@@ -39,10 +39,19 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
     private final String method;
     private final String statusLine;
     private final InputStream body;
-    private final HttpURLConnection conn;
     @Nullable
     private final Charset charset;
     private final boolean decompress;
+
+    public RawResponse(String method, String url, int statusCode, String statusLine, List<Cookie> cookies,
+                       Headers headers, InputStream body, Charset charset, boolean decompress) {
+        super(url, statusCode, cookies, headers);
+        this.method = method;
+        this.statusLine = statusLine;
+        this.body = body;
+        this.charset = charset;
+        this.decompress = decompress;
+    }
 
     // Only for internal use. Do not call this method.
     @InternalUseOnly
@@ -51,27 +60,19 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
         super(url, statusCode, cookies, headers);
         this.method = method;
         this.statusLine = statusLine;
-        this.body = input;
-        this.conn = conn;
+        this.body = new HttpConnInputStream(input, conn);
         this.charset = null;
         this.decompress = true;
     }
 
-    private RawResponse(String method, String url, int statusCode, String statusLine, List<Cookie> cookies, Headers headers,
-                        InputStream input, HttpURLConnection conn, Charset charset, boolean decompress) {
-        super(url, statusCode, cookies, headers);
-        this.method = method;
-        this.statusLine = statusLine;
-        this.body = input;
-        this.conn = conn;
-        this.charset = charset;
-        this.decompress = decompress;
-    }
 
     @Override
     public void close() {
-        Closeables.closeQuietly(body);
-        conn.disconnect();
+        try {
+            body.close();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -90,7 +91,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      * If not set, would get charset from response headers. If not found, would use UTF-8.
      */
     public RawResponse charset(Charset charset) {
-        return new RawResponse(method, url, statusCode, statusLine, cookies, headers, body, conn, charset, decompress);
+        return new RawResponse(method, url, statusCode, statusLine, cookies, headers, body, charset, decompress);
     }
 
     /**
@@ -105,7 +106,7 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
      * If decompress http response body. Default is true.
      */
     public RawResponse decompress(boolean decompress) {
-        return new RawResponse(method, url, statusCode, statusLine, cookies, headers, body, conn, charset, decompress);
+        return new RawResponse(method, url, statusCode, statusLine, cookies, headers, body, charset, decompress);
     }
 
     /**
@@ -343,11 +344,24 @@ public class RawResponse extends AbstractResponse implements AutoCloseable {
         return decompressedBody.get();
     }
 
+    public String method() {
+        return method;
+    }
+
     /**
      * The response body input stream
      */
     public InputStream body() {
         return decompressedBody.get();
+    }
+
+    @Nullable
+    public Charset charset() {
+        return charset;
+    }
+
+    public boolean decompress() {
+        return decompress;
     }
 
     private Charset getCharset() {
