@@ -80,14 +80,14 @@ boolean result = Requests.get(url).send().writeToFile("/path/to/save/file");
 Requests default use UTF-8 to encode parameters, post forms or request string body, you can set other charset by:
 
 ```java
-String resp = Requests.get(url).requestCharset(StandardCharsets.ISO_8859_1).send().readToText();
+String resp = Requests.get(url).charset(StandardCharsets.ISO_8859_1).send().readToText();
 ```
 
 When read response to text-based result, use charset get from http response header, or UTF-8 if not found.
 You can force use specified charset by:
 
 ```java
-String resp = Requests.get(url).send().withCharset(StandardCharsets.ISO_8859_1).readToText();
+String resp = Requests.get(url).send().charset(StandardCharsets.ISO_8859_1).readToText();
 ```
 
 ## Passing Parameters 
@@ -106,17 +106,17 @@ String resp = Requests.get(url)
         .send().readToText();
 ```
 
-If you want to send post www-form-encoded parameters, use forms() methods:
+If you want to send post www-form-encoded parameters, use body() methods:
 
 ```java
 // set params by map
 Map<String, Object> params = new HashMap<>();
 params.put("k1", "v1");
 params.put("k2", "v2");
-String resp = Requests.post(url).forms(params).send().readToText();
+String resp = Requests.post(url).body(params).send().readToText();
 // set multi params
 String resp = Requests.post(url)
-        .forms(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
+        .body(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 ```
 The forms parameter should only works with post method.
@@ -159,13 +159,13 @@ Http Post, Put, Patch method can send request body. Take Post for example:
 
 ```java
 // set post form data
-String resp = Requests.post(url).forms(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
+String resp = Requests.post(url).body(Parameter.of("k1", "v1"), Parameter.of("k2", "v2"))
         .send().readToText();
 // set post form data by map
 Map<String, Object> formData = new HashMap<>();
 formData.put("k1", "v1");
 formData.put("k2", "v2");
-String resp = Requests.post(url).forms(formData).send().readToText();
+String resp = Requests.post(url).body(formData).send().readToText();
 // send byte array data as body
 byte[] data = ...;
 resp = Requests.post(url).body(data).send().readToText();
@@ -241,7 +241,7 @@ You can set connection connect timeout, and socket read/write timeout value, as 
 
 ```java
 // set connect timeout and socket timeout
-Requests.get(url).socketTimeout(20_000).connectTimeout(30_000).send();
+Requests.get(url).socksTimeout(20_000).connectTimeout(30_000).send();
 ```
 
 ## Response compress encoding
