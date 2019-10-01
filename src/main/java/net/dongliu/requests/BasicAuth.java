@@ -1,8 +1,9 @@
 package net.dongliu.requests;
 
 
+import com.migcomponents.migbase64.Base64;
+
 import java.io.Serializable;
-import java.util.Base64;
 import java.util.Objects;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -50,7 +51,8 @@ public class BasicAuth implements Serializable {
      * Encode to http header
      */
     public String encode() {
-        return "Basic " + Base64.getEncoder().encodeToString((user + ":" + password).getBytes(UTF_8));
+        return "Basic " + Base64.encodeToString((user + ":" + password).getBytes(UTF_8), false);
+//        return "Basic " + Base64.getEncoder().encodeToString((user + ":" + password).getBytes(UTF_8));
     }
 
 }

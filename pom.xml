@@ -97,6 +97,11 @@
             <version>9.3.13.v20161014</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.brsanthu</groupId>
+            <artifactId>migbase64</artifactId>
+            <version>2.2</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -111,6 +116,21 @@
                             <Automatic-Module-Name>net.dongliu.requests</Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <finalName>Requests</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <archive>
+                        <manifest>
+                            <mainClass>net.dongliu.requests.Requests</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
             </plugin>
             <plugin>
